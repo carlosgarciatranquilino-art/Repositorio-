@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Value Bets & Kelly Playdoit</title>
+  <style>
+    :root {
+      --primary: #2e7d32; /* Verde tipo cancha/apuestas */
+      --secondary: #1b5e20;
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #333333;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 10px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+    .bankroll-section {
+      background-color: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .bankroll-input {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--primary);
+      width: 100px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5px;
+    }
+    .control-panel {
+      background-color: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    select, button, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: var(--secondary);
+    }
+    .match-card {
+      background-color: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+      border-left: 5px solid var(--primary);
+    }
+    .match-header {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+    .match-date {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 15px;
+    }
+    .calculator-area {
+      background-color: #f9f9f9;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px dashed #ccc;
+    }
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .calc-row label {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+    .calc-row input {
+      flex: 1;
+      margin: 0;
+    }
+    .result-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .good-bet {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .bad-bet {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    #loading {
+      text-align: center;
+      display: none;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      background: #e0e0e0;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Calculadora de Apuestas Playdoit</h1>
+
+    <div class="bankroll-section">
+      <label for="bankroll">Tu Capital (Bankroll) en Pesos:</label><br><br>
+      $<input type="number" id="bankroll" class="bankroll-input" value="200" step="1" min="1">
+    </div>
+
+    <div class="control-panel">
+      <label for="leagueSelect">Selecciona la Liga / Torneo:</label>
+      <select id="leagueSelect">
+        <option value="soccer_mexico_ligamx">Liga MX (México)</option>
+        <option value="soccer_epl">Premier League (Inglaterra)</option>
+        <option value="soccer_spain_la_liga">La Liga (España)</option>
+        <option value="soccer_france_ligue_one">Ligue 1 (Francia)</option>
+        <option value="soccer_fifa_world_cup">Mundial FIFA 2026</option>
+      </select>
+      <button onclick="loadMatches()">Cargar Partidos</button>
+    </div>
+
+    <div id="loading">Cargando partidos desde la API... Por favor espera.</div>
+    <div id="error-message" style="color: red; text-align: center; font-weight: bold;"></div>
+
+    <div id="matches-container">
+      <!-- Los partidos se insertarán aquí dinámicamente -->
+    </div>
+  </div>
+
+  <script>
+    // Variable global para almacenar los partidos cargados
+    let currentMatches = [];
+
+    // Llamada al backend (Code.gs) para obtener partidos
+    function loadMatches() {
+      const league = document.getElementById('leagueSelect').value;
+      const loading = document.getElementById('loading');
+      const container = document.getElementById('matches-container');
+      const errorDiv = document.getElementById('error-message');
+
+      loading.style.display = 'block';
+      container.innerHTML = '';
+      errorDiv.innerHTML = '';
+
+      google.script.run
+        .withSuccessHandler(onMatchesLoaded)
+        .withFailureHandler(onApiError)
+        .getMatches(league);
+    }
+
+    function onApiError(error) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-message').innerHTML = 'Error de comunicación: ' + error.message;
+    }
+
+    function onMatchesLoaded(response) {
+      document.getElementById('loading').style.display = 'none';
+      const container = document.getElementById('matches-container');
+      const errorDiv = document.getElementById('error-message');
+
+      if (response && response.error) {
+        errorDiv.innerHTML = response.error;
+        return;
+      }
+
+      currentMatches = response;
+
+      if (!currentMatches || currentMatches.length === 0) {
+        container.innerHTML = '<p style="text-align:center;">No hay partidos disponibles para esta liga en este momento o las casas de apuestas aún no publican cuotas.</p>';
+        return;
+      }
+
+      renderMatches();
+    }
+
+    function renderMatches() {
+      const container = document.getElementById('matches-container');
+
+      currentMatches.forEach((match, index) => {
+        // Obtenemos probabilidades reales (calculadas en el backend)
+        const probHome = (match.trueProb.home * 100).toFixed(1);
+        const probDraw = (match.trueProb.draw * 100).toFixed(1);
+        const probAway = (match.trueProb.away * 100).toFixed(1);
+
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        card.innerHTML = `
+          <div class="match-header">${match.homeTeam} vs ${match.awayTeam}</div>
+          <div class="match-date">${match.date}</div>
+
+          <div style="font-size: 0.85rem; margin-bottom: 10px;">
+            <strong>Probabilidades Reales Estimadas:</strong><br>
+            <span class="badge">Local: ${probHome}%</span>
+            <span class="badge">Empate: ${probDraw}%</span>
+            <span class="badge">Visita: ${probAway}%</span>
+          </div>
+
+          <div class="calculator-area">
+            <strong>Analizar Apuesta en Playdoit</strong>
+            <p style="font-size:0.8rem; color:#666; margin-top:0;">1. Elige qué quieres apostar. 2. Ingresa el Momio Decimal que te ofrece Playdoit hoy.</p>
+
+            <div class="calc-row">
+              <label>Selección:</label>
+              <select id="sel-${index}" onchange="calculateValue(${index})">
+                <option value="home">Gana Local (${match.homeTeam})</option>
+                <option value="draw">Empate</option>
+                <option value="away">Gana Visita (${match.awayTeam})</option>
+              </select>
+            </div>
+
+            <div class="calc-row">
+              <label>Momio en Playdoit (Decimal, ej 2.10):</label>
+              <input type="number" id="odds-${index}" step="0.01" min="1.01" placeholder="Ej: 2.10" oninput="calculateValue(${index})">
+            </div>
+
+            <div id="result-${index}" class="result-box" style="display:none;"></div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Calcula si hay valor usando la formula Kelly y el backend
+    function calculateValue(index) {
+      const match = currentMatches[index];
+      const selection = document.getElementById(`sel-${index}`).value;
+      const playdoitOdds = parseFloat(document.getElementById(`odds-${index}`).value);
+      const resultDiv = document.getElementById(`result-${index}`);
+      const bankroll = parseFloat(document.getElementById('bankroll').value);
+
+      if (isNaN(playdoitOdds) || playdoitOdds <= 1 || isNaN(bankroll) || bankroll <= 0) {
+        resultDiv.style.display = 'none';
+        return;
+      }
+
+      // Obtener la probabilidad real calculada de ese mercado
+      const realProb = match.trueProb[selection];
+
+      // Llamar al backend para calcular Kelly
+      google.script.run
+        .withSuccessHandler(function(kellyFraction) {
+          showResult(resultDiv, kellyFraction, bankroll, realProb, playdoitOdds);
+        })
+        .calculateKelly(realProb, playdoitOdds);
+    }
+
+    function showResult(resultDiv, kellyFraction, bankroll, realProb, playdoitOdds) {
+      resultDiv.style.display = 'block';
+
+      // Calcular el Valor Esperado (EV) porcentual para mostrarlo
+      // EV = (Probabilidad * Momio) - 1
+      const ev = (realProb * playdoitOdds) - 1;
+      const evPercent = (ev * 100).toFixed(2);
+
+      if (kellyFraction > 0) {
+        const betAmount = (bankroll * kellyFraction).toFixed(2);
+        resultDiv.className = 'result-box good-bet';
+        resultDiv.innerHTML = `
+          ✅ BUENA APUESTA (Value Bet)<br>
+          <span style="font-size:0.8rem;">Ventaja matemática: +${evPercent}%</span><br>
+          <span style="font-size:1.2rem;">Cantidad recomendada a apostar:<br> <strong>$${betAmount} pesos</strong></span>
+        `;
+      } else {
+        resultDiv.className = 'result-box bad-bet';
+        resultDiv.innerHTML = `
+          ❌ MALA APUESTA<br>
+          <span style="font-size:0.8rem;">Desventaja matemática: ${evPercent}%</span><br>
+          No apuestes. El momio de Playdoit es muy bajo para el riesgo.
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
