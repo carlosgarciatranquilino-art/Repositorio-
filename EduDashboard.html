@@ -197,19 +197,31 @@
 
     <div class="dashboard-grid" id="dashboard-content" style="display: none;">
 
-      <!-- Gráfico de Dona: Distribución de Arquetipos -->
+      <!-- Gráficos de Dona: Arquetipos (Top 10 y Bottom 10) -->
       <div class="card">
-        <h2>Distribución de Arquetipos</h2>
+        <h2>Top 10 Arquetipos Más Frecuentes</h2>
         <div class="chart-container">
-          <canvas id="archetypeChart"></canvas>
+          <canvas id="archetypeTopChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>10 Arquetipos Menos Frecuentes</h2>
+        <div class="chart-container">
+          <canvas id="archetypeBottomChart"></canvas>
         </div>
       </div>
 
-      <!-- Gráfico de Barras: Promedio por Arquetipo o Afinidad -->
+      <!-- Gráficos de Barras: Mejores y Peores Promedios por Participante -->
       <div class="card">
-        <h2>Promedio General por Afinidad</h2>
+        <h2>Top 10 Mejores Promedios</h2>
         <div class="chart-container">
-          <canvas id="averageChart"></canvas>
+          <canvas id="averageTopChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>10 Promedios Más Bajos</h2>
+        <div class="chart-container">
+          <canvas id="averageBottomChart"></canvas>
         </div>
       </div>
 
@@ -244,8 +256,10 @@
     };
 
     // Variables globales para las instancias de Chart.js y evitar que se superpongan si se recarga
-    let archetypeChartInst = null;
-    let averageChartInst = null;
+    let archetypeTopInst = null;
+    let archetypeBottomInst = null;
+    let averageTopInst = null;
+    let averageBottomInst = null;
     let skillsChartInst = null;
 
     // Colores institucionales para usar en Chart.js
@@ -376,11 +390,35 @@
         const tr = document.createElement('tr');
         headers.forEach(h => {
           const td = document.createElement('td');
-          // Formatear decimales si es número
           let val = data[i][h];
-          if (typeof val === 'number' && !Number.isInteger(val)) {
-             val = val.toFixed(2);
+
+          // Lógica para colorear celdas numéricas de promedios/habilidades
+          if (typeof val === 'number') {
+            if (!Number.isInteger(val)) {
+              val = parseFloat(val.toFixed(2));
+            }
+
+            // Asumimos que valores típicos de habilidades/promedios caen entre 0 y 100 (o escalas similares)
+            // Solo aplicamos color si es un campo numérico (ignora IDs u otros no relevantes si superan 100 por mucho)
+            if (val >= 0 && val <= 100) {
+              if (val < 50) {
+                // Tonos oscuros (Rojo Vino Institucional + texto blanco)
+                td.style.backgroundColor = colors.vinoOscuro;
+                td.style.color = '#ffffff';
+                td.style.fontWeight = 'bold';
+              } else if (val >= 50 && val <= 70) {
+                // Tonos claros (Beige oscuro Institucional)
+                td.style.backgroundColor = colors.beigeOscuro;
+                td.style.color = "#333333";
+              } else if (val > 70) {
+                // Dorados claros (Beige claro / Dorado claro Institucional)
+                td.style.backgroundColor = colors.beigeClaro;
+                td.style.color = colors.vinoOscuro;
+                td.style.fontWeight = 'bold';
+              }
+            }
           }
+
           td.textContent = val !== undefined ? val : '';
           tr.appendChild(td);
         });
@@ -396,8 +434,8 @@
       // 1. Identificar columnas (Ignora mayúsculas/minúsculas y acentos)
       const normHeaders = headers.map(h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
 
+      let colName = headers.find((h, i) => normHeaders[i].includes('nombre') || normHeaders[i].includes('participante'));
       let colArchetype = headers.find((h, i) => normHeaders[i].includes('arquetipo'));
-      let colAffinity = headers.find((h, i) => normHeaders[i].includes('afinidad'));
       let colAverage = headers.find((h, i) => normHeaders[i].includes('promedio'));
 
       // Habilidades: Asumimos que son las columnas numéricas que NO son promedio, id, etc.
@@ -407,43 +445,49 @@
                !n.includes('arquetipo') && !n.includes('afinidad') && !n.includes('fecha');
       });
 
-      // -- GRAFICO 1: Distribución de Arquetipos (Dona) --
+      // -- GRAFICO 1 y 2: Distribución de Arquetipos (Dona: Top 10 y Bottom 10) --
       if (colArchetype) {
         const counts = {};
         data.forEach(row => {
           let val = row[colArchetype] || 'No definido';
           counts[val] = (counts[val] || 0) + 1;
         });
-        renderArchetypeChart(Object.keys(counts), Object.values(counts));
+
+        // Ordenar arquetipos por frecuencia descendente
+        const sortedArchetypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+        const top10 = sortedArchetypes.slice(0, 10);
+        renderArchetypeChart('archetypeTopChart', top10.map(item => item[0]), top10.map(item => item[1]), archetypeTopInst, chartPalette);
+
+        const bottom10 = sortedArchetypes.slice(-10).reverse(); // Reverse para mostrar de menos a más dentro de los menos frecuentes
+        renderArchetypeChart('archetypeBottomChart', bottom10.map(item => item[0]), bottom10.map(item => item[1]), archetypeBottomInst, chartPalette.slice().reverse());
       } else {
-        document.getElementById('archetypeChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontró columna "Arquetipo".</p>';
+        document.getElementById('archetypeTopChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontró columna "Arquetipo".</p>';
+        document.getElementById('archetypeBottomChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontró columna "Arquetipo".</p>';
       }
 
-      // -- GRAFICO 2: Promedio por Afinidad (Barras) --
-      if (colAffinity && colAverage) {
-        const sumAndCount = {};
-        data.forEach(row => {
-          let valAff = row[colAffinity] || 'No definido';
+      // -- GRAFICO 3 y 4: Promedios por Participante (Barras: Mejores 10 y Peores 10) --
+      if (colName && colAverage) {
+        const participantAverages = [];
+        data.forEach((row, idx) => {
+          let valName = row[colName] || `Participante ${idx + 1}`;
           let valAvg = parseFloat(row[colAverage]);
           if (!isNaN(valAvg)) {
-            if (!sumAndCount[valAff]) sumAndCount[valAff] = { sum: 0, count: 0 };
-            sumAndCount[valAff].sum += valAvg;
-            sumAndCount[valAff].count += 1;
+            participantAverages.push({ name: valName, avg: valAvg });
           }
         });
 
-        const labels = [];
-        const averages = [];
-        for (const [key, value] of Object.entries(sumAndCount)) {
-          labels.push(key);
-          averages.push((value.sum / value.count).toFixed(2));
-        }
-        renderAverageChart(labels, averages, 'Promedio por Afinidad');
-      } else if (colAverage) {
-         // Fallback si no hay afinidad pero si promedio general
-         document.getElementById('averageChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Se encontró Promedio pero no "Afinidad" para agrupar.</p>';
+        // Ordenar por promedio descendente
+        participantAverages.sort((a, b) => b.avg - a.avg);
+
+        const top10Avgs = participantAverages.slice(0, 10);
+        renderAverageChart('averageTopChart', top10Avgs.map(item => item.name), top10Avgs.map(item => item.avg), 'Promedio', colors.dorado, colors.ocreOscuro, averageTopInst);
+
+        const bottom10Avgs = participantAverages.slice(-10).reverse(); // Mostrar los peores
+        renderAverageChart('averageBottomChart', bottom10Avgs.map(item => item.name), bottom10Avgs.map(item => item.avg), 'Promedio', colors.vinoClaro, colors.vinoOscuro, averageBottomInst);
       } else {
-        document.getElementById('averageChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontraron columnas "Afinidad" o "Promedio".</p>';
+        document.getElementById('averageTopChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontraron columnas "Nombre" o "Promedio".</p>';
+        document.getElementById('averageBottomChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontraron columnas "Nombre" o "Promedio".</p>';
       }
 
       // -- GRAFICO 3: Mapa de Habilidades (Radar) --
@@ -481,17 +525,17 @@
     /**
      * Dibuja el gráfico de Dona para Arquetipos
      */
-    function renderArchetypeChart(labels, data) {
-      const ctx = document.getElementById('archetypeChart').getContext('2d');
-      if (archetypeChartInst) archetypeChartInst.destroy();
+    function renderArchetypeChart(elementId, labels, data, chartInst, palette) {
+      const ctx = document.getElementById(elementId).getContext('2d');
+      if (chartInst) chartInst.destroy();
 
-      archetypeChartInst = new Chart(ctx, {
+      chartInst = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: chartPalette,
+            backgroundColor: palette,
             borderWidth: 2,
             borderColor: '#ffffff'
           }]
@@ -504,24 +548,28 @@
           }
         }
       });
+
+      // Actualizar la referencia global correspondiente
+      if (elementId === 'archetypeTopChart') archetypeTopInst = chartInst;
+      if (elementId === 'archetypeBottomChart') archetypeBottomInst = chartInst;
     }
 
     /**
      * Dibuja el gráfico de Barras para Promedios
      */
-    function renderAverageChart(labels, data, title) {
-      const ctx = document.getElementById('averageChart').getContext('2d');
-      if (averageChartInst) averageChartInst.destroy();
+    function renderAverageChart(elementId, labels, data, title, bgColor, borderColor, chartInst) {
+      const ctx = document.getElementById(elementId).getContext('2d');
+      if (chartInst) chartInst.destroy();
 
-      averageChartInst = new Chart(ctx, {
+      chartInst = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
           datasets: [{
             label: title,
             data: data,
-            backgroundColor: colors.vinoClaro,
-            borderColor: colors.vinoOscuro,
+            backgroundColor: bgColor,
+            borderColor: borderColor,
             borderWidth: 1,
             borderRadius: 4
           }]
@@ -543,6 +591,29 @@
           }
         }
       });
+
+      if (elementId === 'averageTopChart') averageTopInst = chartInst;
+      if (elementId === 'averageBottomChart') averageBottomInst = chartInst;
+    }
+
+    /**
+     * Función auxiliar para dividir textos largos en varias líneas y evitar que se corten en Chart.js
+     */
+    function wrapLabelText(text, maxCharsPerLine) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        for (let i = 0; i < words.length; i++) {
+            if (currentLine.length + words[i].length > maxCharsPerLine) {
+                if (currentLine.length > 0) lines.push(currentLine.trim());
+                currentLine = words[i] + ' ';
+            } else {
+                currentLine += words[i] + ' ';
+            }
+        }
+        if (currentLine.trim().length > 0) lines.push(currentLine.trim());
+        return lines;
     }
 
     /**
@@ -552,13 +623,13 @@
       const ctx = document.getElementById('skillsChart').getContext('2d');
       if (skillsChartInst) skillsChartInst.destroy();
 
-      // Cortamos labels largos si existen
-      const shortLabels = labels.map(l => l.length > 15 ? l.substring(0,15)+'...' : l);
+      // Dividimos textos largos en líneas en lugar de cortarlos con "..."
+      const wrappedLabels = labels.map(l => wrapLabelText(l, 15));
 
       skillsChartInst = new Chart(ctx, {
         type: 'radar',
         data: {
-          labels: shortLabels,
+          labels: wrappedLabels,
           datasets: [{
             label: 'Puntaje Promedio',
             data: data,
