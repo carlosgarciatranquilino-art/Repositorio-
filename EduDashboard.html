@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Institucional</title>
+
+  <!-- Incluir Chart.js para los gráficos dinámicos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Paleta Institucional:
+       Rojo vino: #56212F, #9F2241
+       Ocre/Dorado: #977E5B, #BC955B
+       Beige/Gris Cálido: #D6D1CA, #DDC8A4
+  -->
+  <style>
+    :root {
+      /* Colores Institucionales */
+      --vino-oscuro: #56212F;
+      --vino-claro: #9F2241;
+      --ocre-oscuro: #977E5B;
+      --dorado: #BC955B;
+      --beige-oscuro: #D6D1CA;
+      --beige-claro: #DDC8A4;
+
+      --bg-color: #f8f9fa; /* Fondo muy claro para limpieza */
+      --card-bg: #ffffff;
+      --text-main: #333333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header Institucional */
+    .header {
+      background: linear-gradient(135deg, var(--vino-oscuro) 0%, var(--vino-claro) 100%);
+      color: white;
+      padding: 20px 30px;
+      text-align: center;
+      border-bottom: 5px solid var(--dorado);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      margin: 5px 0 0 0;
+      color: var(--beige-claro);
+      font-size: 1.1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 0 20px;
+    }
+
+    /* Controles y Alertas */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background-color: var(--card-bg);
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-left: 5px solid var(--ocre-oscuro);
+    }
+
+    button {
+      background-color: var(--vino-claro);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: var(--vino-oscuro);
+    }
+
+    #status {
+      font-weight: bold;
+      color: var(--ocre-oscuro);
+    }
+
+    .error { color: var(--vino-claro) !important; }
+
+    /* Layout del Dashboard */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-top: 4px solid var(--beige-oscuro);
+    }
+
+    .card h2 {
+      color: var(--vino-oscuro);
+      font-size: 1.3rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      text-align: center;
+      border-bottom: 2px solid var(--beige-claro);
+      padding-bottom: 10px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    /* Card a todo lo ancho para la tabla u otros gráficos */
+    .card-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Estilos para la Tabla Dinámica */
+    .table-container {
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--beige-oscuro);
+    }
+
+    th {
+      background-color: var(--vino-claro);
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(214, 209, 202, 0.2); /* beige oscuro con transparencia */
+    }
+
+    tr:hover {
+      background-color: rgba(188, 149, 91, 0.1); /* dorado con transparencia */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Dashboard Institucional</h1>
+    <p>Reporte de Análisis y Desempeño Estudiantil</p>
+  </div>
+
+  <div class="container">
+    <div class="controls">
+      <div id="status">Esperando conexión con Google Sheets...</div>
+      <button onclick="loadData()" id="loadBtn">Cargar / Actualizar Datos</button>
+    </div>
+
+    <div class="dashboard-grid" id="dashboard-content" style="display: none;">
+
+      <!-- Gráficos de Dona: Arquetipos (Top 10 y Bottom 10) -->
+      <div class="card">
+        <h2>Top 10 Arquetipos Más Frecuentes</h2>
+        <div class="chart-container">
+          <canvas id="archetypeTopChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>10 Arquetipos Menos Frecuentes</h2>
+        <div class="chart-container">
+          <canvas id="archetypeBottomChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráficos de Barras: Mejores y Peores Promedios por Participante -->
+      <div class="card">
+        <h2>Top 10 Mejores Promedios</h2>
+        <div class="chart-container">
+          <canvas id="averageTopChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>10 Promedios Más Bajos</h2>
+        <div class="chart-container">
+          <canvas id="averageBottomChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico de Radar: Habilidades Promedio -->
+      <div class="card card-full">
+        <h2>Mapa de Habilidades Generales (Promedio)</h2>
+        <div class="chart-container" style="height: 400px; display: flex; justify-content: center;">
+          <canvas id="skillsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- NUEVA SECCIÓN: Grupos de Élite -->
+      <div class="card card-full" style="background-color: transparent; box-shadow: none; border: none; padding-bottom: 0;">
+        <h2 style="color: var(--vino-oscuro); font-size: 1.8rem; border-bottom: 3px solid var(--dorado); margin-bottom: 5px;">Grupos de Élite (Top Talent)</h2>
+        <p style="text-align: center; color: var(--text-main); margin-bottom: 20px;">Top de participantes según sus habilidades desarrolladas por dimensión.</p>
+      </div>
+
+      <div class="card">
+        <h2>1. Creadores de Clima</h2>
+        <div class="chart-container">
+          <canvas id="eliteClimaChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Comunicadores</h2>
+        <div class="chart-container">
+          <canvas id="eliteComChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Innovadores</h2>
+        <div class="chart-container">
+          <canvas id="eliteInnChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Pensadores Críticos</h2>
+        <div class="chart-container">
+          <canvas id="eliteCritChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Tabla de Datos Originales -->
+      <div class="card card-full">
+        <h2>Base de Datos Principal</h2>
+        <div class="table-container">
+          <table id="dataTable">
+            <thead>
+              <tr id="tableHeaders"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Se ejecuta al cargar la página para intentar cargar los datos automáticamente
+    window.onload = function() {
+      // Opcional: cargar automáticamente
+      // loadData();
+    };
+
+    // Variables globales para las instancias de Chart.js y evitar que se superpongan si se recarga
+    let archetypeTopInst = null;
+    let archetypeBottomInst = null;
+    let averageTopInst = null;
+    let averageBottomInst = null;
+    let skillsChartInst = null;
+    let eliteClimaInst = null;
+    let eliteComInst = null;
+    let eliteInnInst = null;
+    let eliteCritInst = null;
+
+    // Colores institucionales para usar en Chart.js
+    const colors = {
+      vinoOscuro: '#56212F',
+      vinoClaro: '#9F2241',
+      ocreOscuro: '#977E5B',
+      dorado: '#BC955B',
+      beigeOscuro: '#D6D1CA',
+      beigeClaro: '#DDC8A4'
+    };
+
+    // Paleta de colores para gráficos de múltiples categorías (como dona/pie)
+    const chartPalette = [
+      colors.vinoOscuro, colors.dorado, colors.vinoClaro,
+      colors.ocreOscuro, '#70424d', '#cca97c', colors.beigeOscuro
+    ];
+
+    /**
+     * Inicia la carga de datos desde Google Apps Script backend
+     */
+    function loadData() {
+      const statusDiv = document.getElementById('status');
+      const loadBtn = document.getElementById('loadBtn');
+      const dashboard = document.getElementById('dashboard-content');
+
+      try {
+        statusDiv.textContent = 'Iniciando conexión con Google Sheets... Por favor espera.';
+        statusDiv.className = '';
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'Cargando...';
+        dashboard.style.display = 'none';
+
+        if (typeof google === 'undefined' || typeof google.script === 'undefined') {
+          throw new Error('La API de Google Script no está disponible. Asegúrate de estar ejecutando esto dentro del entorno de Apps Script y no como un archivo HTML local.');
+        }
+
+        // Llamada asíncrona al backend (EduDashboard.gs)
+        google.script.run
+          .withSuccessHandler(onDataSuccess)
+          .withFailureHandler(onDataError)
+          .getSheetData();
+      } catch (e) {
+        statusDiv.textContent = 'Error al iniciar: ' + e.message;
+        statusDiv.className = 'error';
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Cargar / Actualizar Datos';
+      }
+    }
+
+    /**
+     * Callback cuando los datos se obtienen exitosamente del backend
+     */
+    function onDataSuccess(responseStr) {
+      const loadBtn = document.getElementById('loadBtn');
+      const statusDiv = document.getElementById('status');
+      loadBtn.disabled = false;
+      loadBtn.textContent = 'Cargar / Actualizar Datos';
+
+      try {
+        const response = JSON.parse(responseStr);
+
+        if (response.error) {
+          statusDiv.textContent = 'Error: ' + response.error;
+          statusDiv.className = 'error';
+          return;
+        }
+
+        const data = response.data;
+        const headers = response.headers;
+
+        if (!data || data.length === 0) {
+           statusDiv.textContent = 'No se encontraron datos en la hoja.';
+           statusDiv.className = 'error';
+           return;
+        }
+
+        statusDiv.textContent = `Datos cargados: ${data.length} registros encontrados.`;
+        statusDiv.className = '';
+
+        // Mostrar el dashboard
+        document.getElementById('dashboard-content').style.display = 'grid';
+
+        // 1. Renderizar la tabla de datos
+        renderTable(headers, data);
+
+        // 2. Procesar datos y renderizar gráficos
+        processAndRenderCharts(headers, data);
+
+      } catch (e) {
+        statusDiv.textContent = 'Error al procesar los datos: ' + e.message;
+        statusDiv.className = 'error';
+      }
+    }
+
+    /**
+     * Callback para manejo de errores de conexión general
+     */
+    function onDataError(error) {
+      const loadBtn = document.getElementById('loadBtn');
+      const statusDiv = document.getElementById('status');
+      loadBtn.disabled = false;
+      loadBtn.textContent = 'Cargar / Actualizar Datos';
+      statusDiv.textContent = 'Error de comunicación con el servidor: ' + (error.message || error);
+      statusDiv.className = 'error';
+    }
+
+    /**
+     * Rellena la tabla HTML con los datos brutos
+     */
+    function renderTable(headers, data) {
+      const headRow = document.getElementById('tableHeaders');
+      const body = document.getElementById('tableBody');
+
+      headRow.innerHTML = '';
+      body.innerHTML = '';
+
+      // Crear encabezados
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        headRow.appendChild(th);
+      });
+
+      // Crear filas (limitamos a 100 para no saturar el DOM en caso de sheets gigantes)
+      const limit = Math.min(data.length, 100);
+      for (let i = 0; i < limit; i++) {
+        const tr = document.createElement('tr');
+        headers.forEach(h => {
+          const td = document.createElement('td');
+          let val = data[i][h];
+
+          // Lógica para colorear celdas numéricas de promedios/habilidades
+          if (typeof val === 'number') {
+            if (!Number.isInteger(val)) {
+              val = parseFloat(val.toFixed(2));
+            }
+
+            // Asumimos que valores típicos de habilidades/promedios caen entre 0 y 100 (o escalas similares)
+            // Solo aplicamos color si es un campo numérico (ignora IDs u otros no relevantes si superan 100 por mucho)
+            if (val >= 0 && val <= 100) {
+              if (val < 50) {
+                // Tonos oscuros (Rojo Vino Institucional + texto blanco)
+                td.style.backgroundColor = colors.vinoOscuro;
+                td.style.color = '#ffffff';
+                td.style.fontWeight = 'bold';
+              } else if (val >= 50 && val <= 70) {
+                // Tonos claros (Beige oscuro Institucional)
+                td.style.backgroundColor = colors.beigeOscuro;
+                td.style.color = "#333333";
+              } else if (val > 70) {
+                // Dorados claros (Beige claro / Dorado claro Institucional)
+                td.style.backgroundColor = colors.beigeClaro;
+                td.style.color = colors.vinoOscuro;
+                td.style.fontWeight = 'bold';
+              }
+            }
+          }
+
+          td.textContent = val !== undefined ? val : '';
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      }
+    }
+
+    /**
+     * Intenta inferir qué columnas corresponden a qué dato basado en nombres comunes,
+     * procesa los datos y dibuja los gráficos de Chart.js
+     */
+    function processAndRenderCharts(headers, data) {
+      // 1. Identificar columnas (Ignora mayúsculas/minúsculas y acentos)
+      const normHeaders = headers.map(h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+
+      let colName = headers.find((h, i) => normHeaders[i].includes('nombre') || normHeaders[i].includes('participante'));
+      let colArchetype = headers.find((h, i) => normHeaders[i].includes('arquetipo'));
+      let colAverage = headers.find((h, i) => normHeaders[i].includes('promedio'));
+
+      // Habilidades: Asumimos que son las columnas numéricas que NO son promedio, id, etc.
+      let colSkills = headers.filter(h => {
+        const n = h.toLowerCase();
+        return !n.includes('nombre') && !n.includes('id') && !n.includes('promedio') &&
+               !n.includes('arquetipo') && !n.includes('afinidad') && !n.includes('fecha');
+      });
+
+      // -- GRAFICO 1 y 2: Distribución de Arquetipos (Dona: Top 10 y Bottom 10) --
+      if (colArchetype) {
+        const counts = {};
+        data.forEach(row => {
+          let val = row[colArchetype] || 'No definido';
+          counts[val] = (counts[val] || 0) + 1;
+        });
+
+        // Ordenar arquetipos por frecuencia descendente
+        const sortedArchetypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+        const top10 = sortedArchetypes.slice(0, 10);
+        renderArchetypeChart('archetypeTopChart', top10.map(item => item[0]), top10.map(item => item[1]), archetypeTopInst, chartPalette);
+
+        const bottom10 = sortedArchetypes.slice(-10).reverse(); // Reverse para mostrar de menos a más dentro de los menos frecuentes
+        renderArchetypeChart('archetypeBottomChart', bottom10.map(item => item[0]), bottom10.map(item => item[1]), archetypeBottomInst, chartPalette.slice().reverse());
+      } else {
+        document.getElementById('archetypeTopChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontró columna "Arquetipo".</p>';
+        document.getElementById('archetypeBottomChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontró columna "Arquetipo".</p>';
+      }
+
+      // -- GRAFICO 3 y 4: Promedios por Participante (Barras: Mejores 10 y Peores 10) --
+      if (colName && colAverage) {
+        const participantAverages = [];
+        data.forEach((row, idx) => {
+          let valName = row[colName] || `Participante ${idx + 1}`;
+          let valAvg = parseFloat(row[colAverage]);
+          if (!isNaN(valAvg)) {
+            participantAverages.push({ name: valName, avg: valAvg });
+          }
+        });
+
+        // Ordenar por promedio descendente
+        participantAverages.sort((a, b) => b.avg - a.avg);
+
+        const top10Avgs = participantAverages.slice(0, 10);
+        renderAverageChart('averageTopChart', top10Avgs.map(item => item.name), top10Avgs.map(item => item.avg), 'Promedio', colors.dorado, colors.ocreOscuro, averageTopInst);
+
+        const bottom10Avgs = participantAverages.slice(-10).reverse(); // Mostrar los peores
+        renderAverageChart('averageBottomChart', bottom10Avgs.map(item => item.name), bottom10Avgs.map(item => item.avg), 'Promedio', colors.vinoClaro, colors.vinoOscuro, averageBottomInst);
+      } else {
+        document.getElementById('averageTopChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontraron columnas "Nombre" o "Promedio".</p>';
+        document.getElementById('averageBottomChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontraron columnas "Nombre" o "Promedio".</p>';
+      }
+
+      // -- GRAFICO 3: Mapa de Habilidades (Radar) --
+      // Filtramos las columnas numéricas para las habilidades (chequeando la primera fila válida)
+      let numericSkills = [];
+      if (data.length > 0) {
+         numericSkills = colSkills.filter(col => {
+             // Buscar el primer valor no vacío de esa columna
+             const sample = data.find(r => r[col] !== '' && r[col] !== undefined && r[col] !== null);
+             return sample && !isNaN(parseFloat(sample[col]));
+         });
+      }
+
+      if (numericSkills.length >= 3) {
+        // Solo tomaremos las primeras 8 habilidades para no saturar el radar
+        const radarSkills = numericSkills.slice(0, 8);
+        const skillAverages = radarSkills.map(skill => {
+            let sum = 0, count = 0;
+            data.forEach(row => {
+                let val = parseFloat(row[skill]);
+                if (!isNaN(val)) {
+                    sum += val;
+                    count++;
+                }
+            });
+            return count > 0 ? (sum / count).toFixed(2) : 0;
+        });
+
+        renderSkillsChart(radarSkills, skillAverages);
+      } else {
+         document.getElementById('skillsChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:100px;">Se requieren al menos 3 columnas numéricas de "Habilidades" para este gráfico.</p>';
+      }
+
+      // -- NUEVO: GRUPOS DE ÉLITE --
+      if (colName && numericSkills.length > 0) {
+
+        // Función auxiliar para buscar el nombre real de la columna usando palabras clave
+        function findColumn(keywords) {
+            for (let k of keywords) {
+                let found = headers.find((h, i) => normHeaders[i].includes(k));
+                if (found) return found;
+            }
+            return null;
+        }
+
+        // Definición de las habilidades por dimensión (usamos palabras clave sin acentos)
+        const dims = {
+            clima: ['autocontrol', 'equipo', 'colaboracion', 'colaborativo'], // Creadores de clima
+            com: ['autocontrol', 'comunicacion', 'retroalimentacion', 'vocacion', 'calidad'], // Comunicadores
+            inn: ['tecnologia', 'seguimiento', 'reflexionar', 'critico', 'analisis'], // Innovadores
+            crit: ['normativa', 'colaborar', 'vocacion', 'calidad'] // Pensadores críticos
+        };
+
+        // Identificar las columnas reales en el sheet y asegurar que no haya duplicados (Set)
+        const cols = {
+            clima: [...new Set(dims.clima.map(k => findColumn([k])).filter(c => c))],
+            com: [...new Set(dims.com.map(k => findColumn([k])).filter(c => c))],
+            inn: [...new Set(dims.inn.map(k => findColumn([k])).filter(c => c))],
+            crit: [...new Set(dims.crit.map(k => findColumn([k])).filter(c => c))]
+        };
+
+        // Función para calcular y ordenar el Top para un grupo específico
+        function getTopElite(columnsToAvg, topN = 10) {
+            if (columnsToAvg.length === 0) return [];
+
+            const scores = [];
+            data.forEach((row, idx) => {
+                let valName = row[colName] || `Participante ${idx + 1}`;
+                let sum = 0;
+                let count = 0;
+
+                columnsToAvg.forEach(col => {
+                    let val = parseFloat(row[col]);
+                    if (!isNaN(val)) {
+                        sum += val;
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    scores.push({ name: valName, score: sum / count });
+                }
+            });
+
+            return scores.sort((a, b) => b.score - a.score).slice(0, topN);
+        }
+
+        const topClima = getTopElite(cols.clima);
+        const topCom = getTopElite(cols.com);
+        const topInn = getTopElite(cols.inn);
+        const topCrit = getTopElite(cols.crit);
+
+        // Renderizar los nuevos gráficos de barras horizontales (Top 10 max)
+        renderEliteChart('eliteClimaChart', topClima, 'Score Clima', colors.vinoClaro, eliteClimaInst);
+        renderEliteChart('eliteComChart', topCom, 'Score Com.', colors.dorado, eliteComInst);
+        renderEliteChart('eliteInnChart', topInn, 'Score Inn.', colors.ocreOscuro, eliteInnInst);
+        renderEliteChart('eliteCritChart', topCrit, 'Score Crítico', colors.beigeOscuro, eliteCritInst);
+
+      } else {
+        document.getElementById('eliteClimaChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+        document.getElementById('eliteComChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+        document.getElementById('eliteInnChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+        document.getElementById('eliteCritChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+      }
+
+    }
+
+    /**
+     * Dibuja el gráfico de Dona para Arquetipos
+     */
+    function renderArchetypeChart(elementId, labels, data, chartInst, palette) {
+      const ctx = document.getElementById(elementId).getContext('2d');
+      if (chartInst) chartInst.destroy();
+
+      chartInst = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: palette,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+
+      // Actualizar la referencia global correspondiente
+      if (elementId === 'archetypeTopChart') archetypeTopInst = chartInst;
+      if (elementId === 'archetypeBottomChart') archetypeBottomInst = chartInst;
+    }
+
+    /**
+     * Dibuja el gráfico de Barras para Promedios
+     */
+    function renderAverageChart(elementId, labels, data, title, bgColor, borderColor, chartInst) {
+      const ctx = document.getElementById(elementId).getContext('2d');
+      if (chartInst) chartInst.destroy();
+
+      chartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: title,
+            data: data,
+            backgroundColor: bgColor,
+            borderColor: borderColor,
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: colors.beigeOscuro }
+            },
+            x: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      if (elementId === 'averageTopChart') averageTopInst = chartInst;
+      if (elementId === 'averageBottomChart') averageBottomInst = chartInst;
+    }
+
+    /**
+     * Función auxiliar para dividir textos largos en varias líneas y evitar que se corten en Chart.js
+     */
+    function wrapLabelText(text, maxCharsPerLine) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        for (let i = 0; i < words.length; i++) {
+            if (currentLine.length + words[i].length > maxCharsPerLine) {
+                if (currentLine.length > 0) lines.push(currentLine.trim());
+                currentLine = words[i] + ' ';
+            } else {
+                currentLine += words[i] + ' ';
+            }
+        }
+        if (currentLine.trim().length > 0) lines.push(currentLine.trim());
+        return lines;
+    }
+
+    /**
+     * Dibuja el gráfico de Radar (Telaraña) para Habilidades
+     */
+    function renderSkillsChart(labels, data) {
+      const ctx = document.getElementById('skillsChart').getContext('2d');
+      if (skillsChartInst) skillsChartInst.destroy();
+
+      // Dividimos textos largos en líneas en lugar de cortarlos con "..."
+      const wrappedLabels = labels.map(l => wrapLabelText(l, 15));
+
+      skillsChartInst = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: wrappedLabels,
+          datasets: [{
+            label: 'Puntaje Promedio',
+            data: data,
+            backgroundColor: 'rgba(188, 149, 91, 0.4)', // Dorado transparente
+            borderColor: colors.dorado,
+            pointBackgroundColor: colors.vinoOscuro,
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: colors.vinoOscuro,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: colors.beigeOscuro },
+              grid: { color: colors.beigeOscuro },
+              pointLabels: {
+                font: { size: 12, family: "'Segoe UI', sans-serif" },
+                color: '#333333'
+              },
+              ticks: {
+                  backdropColor: 'transparent',
+                  color: colors.vinoOscuro,
+                  z: 10
+              }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    /**
+     * Dibuja los gráficos de Barras Horizontales para los Grupos de Élite
+     */
+    function renderEliteChart(elementId, eliteData, labelTitle, barColor, chartInst) {
+      const ctx = document.getElementById(elementId).getContext('2d');
+      if (chartInst) chartInst.destroy();
+
+      const labels = eliteData.map(d => d.name.length > 20 ? d.name.substring(0, 20) + '...' : d.name);
+      const data = eliteData.map(d => d.score.toFixed(2));
+
+      chartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: labelTitle,
+            data: data,
+            backgroundColor: barColor,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y', // Convertir a barras horizontales
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: colors.beigeOscuro }
+            },
+            y: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      if (elementId === 'eliteClimaChart') eliteClimaInst = chartInst;
+      if (elementId === 'eliteComChart') eliteComInst = chartInst;
+      if (elementId === 'eliteInnChart') eliteInnInst = chartInst;
+      if (elementId === 'eliteCritChart') eliteCritInst = chartInst;
+    }
+  </script>
+
+</body>
+</html>
