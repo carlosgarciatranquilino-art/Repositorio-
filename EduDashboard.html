@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Institucional</title>
+
+  <!-- Incluir Chart.js para los gráficos dinámicos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Paleta Institucional:
+       Rojo vino: #56212F, #9F2241
+       Ocre/Dorado: #977E5B, #BC955B
+       Beige/Gris Cálido: #D6D1CA, #DDC8A4
+  -->
+  <style>
+    :root {
+      /* Colores Institucionales */
+      --vino-oscuro: #56212F;
+      --vino-claro: #9F2241;
+      --ocre-oscuro: #977E5B;
+      --dorado: #BC955B;
+      --beige-oscuro: #D6D1CA;
+      --beige-claro: #DDC8A4;
+
+      --bg-color: #f8f9fa; /* Fondo muy claro para limpieza */
+      --card-bg: #ffffff;
+      --text-main: #333333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header Institucional */
+    .header {
+      background: linear-gradient(135deg, var(--vino-oscuro) 0%, var(--vino-claro) 100%);
+      color: white;
+      padding: 20px 30px;
+      text-align: center;
+      border-bottom: 5px solid var(--dorado);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      margin: 5px 0 0 0;
+      color: var(--beige-claro);
+      font-size: 1.1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 0 20px;
+    }
+
+    /* Controles y Alertas */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background-color: var(--card-bg);
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-left: 5px solid var(--ocre-oscuro);
+    }
+
+    button {
+      background-color: var(--vino-claro);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: var(--vino-oscuro);
+    }
+
+    #status {
+      font-weight: bold;
+      color: var(--ocre-oscuro);
+    }
+
+    .error { color: var(--vino-claro) !important; }
+
+    /* Layout del Dashboard */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-top: 4px solid var(--beige-oscuro);
+    }
+
+    .card h2 {
+      color: var(--vino-oscuro);
+      font-size: 1.3rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      text-align: center;
+      border-bottom: 2px solid var(--beige-claro);
+      padding-bottom: 10px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    /* Card a todo lo ancho para la tabla u otros gráficos */
+    .card-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Estilos para la Tabla Dinámica */
+    .table-container {
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--beige-oscuro);
+    }
+
+    th {
+      background-color: var(--vino-claro);
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(214, 209, 202, 0.2); /* beige oscuro con transparencia */
+    }
+
+    tr:hover {
+      background-color: rgba(188, 149, 91, 0.1); /* dorado con transparencia */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Dashboard Institucional</h1>
+    <p>Reporte de Análisis y Desempeño Estudiantil</p>
+  </div>
+
+  <div class="container">
+    <div class="controls">
+      <div id="status">Esperando conexión con Google Sheets...</div>
+      <button onclick="loadData()" id="loadBtn">Cargar / Actualizar Datos</button>
+    </div>
+
+    <div class="dashboard-grid" id="dashboard-content" style="display: none;">
+
+      <!-- Gráfico de Dona: Distribución de Arquetipos -->
+      <div class="card">
+        <h2>Distribución de Arquetipos</h2>
+        <div class="chart-container">
+          <canvas id="archetypeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico de Barras: Promedio por Arquetipo o Afinidad -->
+      <div class="card">
+        <h2>Promedio General por Afinidad</h2>
+        <div class="chart-container">
+          <canvas id="averageChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico de Radar: Habilidades Promedio -->
+      <div class="card card-full">
+        <h2>Mapa de Habilidades Generales (Promedio)</h2>
+        <div class="chart-container" style="height: 400px; display: flex; justify-content: center;">
+          <canvas id="skillsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Tabla de Datos Originales -->
+      <div class="card card-full">
+        <h2>Base de Datos Principal</h2>
+        <div class="table-container">
+          <table id="dataTable">
+            <thead>
+              <tr id="tableHeaders"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales para las instancias de Chart.js y evitar que se superpongan si se recarga
+    let archetypeChartInst = null;
+    let averageChartInst = null;
+    let skillsChartInst = null;
+
+    // Colores institucionales para usar en Chart.js
+    const colors = {
+      vinoOscuro: '#56212F',
+      vinoClaro: '#9F2241',
+      ocreOscuro: '#977E5B',
+      dorado: '#BC955B',
+      beigeOscuro: '#D6D1CA',
+      beigeClaro: '#DDC8A4'
+    };
+
+    // Paleta de colores para gráficos de múltiples categorías (como dona/pie)
+    const chartPalette = [
+      colors.vinoOscuro, colors.dorado, colors.vinoClaro,
+      colors.ocreOscuro, '#70424d', '#cca97c', colors.beigeOscuro
+    ];
+
+    /**
+     * Inicia la carga de datos desde Google Apps Script backend
+     */
+    function loadData() {
+      const statusDiv = document.getElementById('status');
+      const loadBtn = document.getElementById('loadBtn');
+      const dashboard = document.getElementById('dashboard-content');
+
+      statusDiv.textContent = 'Cargando datos desde Google Sheets...';
+      statusDiv.className = '';
+      loadBtn.disabled = true;
+      dashboard.style.display = 'none';
+
+      // Llamada asíncrona al backend (EduDashboard.gs)
+      google.script.run
+        .withSuccessHandler(onDataSuccess)
+        .withFailureHandler(onDataError)
+        .getSheetData();
+    }
+
+    /**
+     * Callback cuando los datos se obtienen exitosamente del backend
+     */
+    function onDataSuccess(responseStr) {
+      const loadBtn = document.getElementById('loadBtn');
+      const statusDiv = document.getElementById('status');
+      loadBtn.disabled = false;
+
+      try {
+        const response = JSON.parse(responseStr);
+
+        if (response.error) {
+          statusDiv.textContent = 'Error: ' + response.error;
+          statusDiv.className = 'error';
+          return;
+        }
+
+        const data = response.data;
+        const headers = response.headers;
+
+        if (!data || data.length === 0) {
+           statusDiv.textContent = 'No se encontraron datos en la hoja.';
+           statusDiv.className = 'error';
+           return;
+        }
+
+        statusDiv.textContent = \`Datos cargados: \${data.length} registros encontrados.\`;
+        statusDiv.className = '';
+
+        // Mostrar el dashboard
+        document.getElementById('dashboard-content').style.display = 'grid';
+
+        // 1. Renderizar la tabla de datos
+        renderTable(headers, data);
+
+        // 2. Procesar datos y renderizar gráficos
+        processAndRenderCharts(headers, data);
+
+      } catch (e) {
+        statusDiv.textContent = 'Error al procesar los datos: ' + e.message;
+        statusDiv.className = 'error';
+      }
+    }
+
+    /**
+     * Callback para manejo de errores de conexión general
+     */
+    function onDataError(error) {
+      const loadBtn = document.getElementById('loadBtn');
+      const statusDiv = document.getElementById('status');
+      loadBtn.disabled = false;
+      statusDiv.textContent = 'Error de comunicación: ' + error.message;
+      statusDiv.className = 'error';
+    }
+
+    /**
+     * Rellena la tabla HTML con los datos brutos
+     */
+    function renderTable(headers, data) {
+      const headRow = document.getElementById('tableHeaders');
+      const body = document.getElementById('tableBody');
+
+      headRow.innerHTML = '';
+      body.innerHTML = '';
+
+      // Crear encabezados
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        headRow.appendChild(th);
+      });
+
+      // Crear filas (limitamos a 100 para no saturar el DOM en caso de sheets gigantes)
+      const limit = Math.min(data.length, 100);
+      for (let i = 0; i < limit; i++) {
+        const tr = document.createElement('tr');
+        headers.forEach(h => {
+          const td = document.createElement('td');
+          // Formatear decimales si es número
+          let val = data[i][h];
+          if (typeof val === 'number' && !Number.isInteger(val)) {
+             val = val.toFixed(2);
+          }
+          td.textContent = val !== undefined ? val : '';
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      }
+    }
+
+    /**
+     * Intenta inferir qué columnas corresponden a qué dato basado en nombres comunes,
+     * procesa los datos y dibuja los gráficos de Chart.js
+     */
+    function processAndRenderCharts(headers, data) {
+      // 1. Identificar columnas (Ignora mayúsculas/minúsculas y acentos)
+      const normHeaders = headers.map(h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+
+      let colArchetype = headers.find((h, i) => normHeaders[i].includes('arquetipo'));
+      let colAffinity = headers.find((h, i) => normHeaders[i].includes('afinidad'));
+      let colAverage = headers.find((h, i) => normHeaders[i].includes('promedio'));
+
+      // Habilidades: Asumimos que son las columnas numéricas que NO son promedio, id, etc.
+      let colSkills = headers.filter(h => {
+        const n = h.toLowerCase();
+        return !n.includes('nombre') && !n.includes('id') && !n.includes('promedio') &&
+               !n.includes('arquetipo') && !n.includes('afinidad') && !n.includes('fecha');
+      });
+
+      // -- GRAFICO 1: Distribución de Arquetipos (Dona) --
+      if (colArchetype) {
+        const counts = {};
+        data.forEach(row => {
+          let val = row[colArchetype] || 'No definido';
+          counts[val] = (counts[val] || 0) + 1;
+        });
+        renderArchetypeChart(Object.keys(counts), Object.values(counts));
+      } else {
+        document.getElementById('archetypeChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontró columna "Arquetipo".</p>';
+      }
+
+      // -- GRAFICO 2: Promedio por Afinidad (Barras) --
+      if (colAffinity && colAverage) {
+        const sumAndCount = {};
+        data.forEach(row => {
+          let valAff = row[colAffinity] || 'No definido';
+          let valAvg = parseFloat(row[colAverage]);
+          if (!isNaN(valAvg)) {
+            if (!sumAndCount[valAff]) sumAndCount[valAff] = { sum: 0, count: 0 };
+            sumAndCount[valAff].sum += valAvg;
+            sumAndCount[valAff].count += 1;
+          }
+        });
+
+        const labels = [];
+        const averages = [];
+        for (const [key, value] of Object.entries(sumAndCount)) {
+          labels.push(key);
+          averages.push((value.sum / value.count).toFixed(2));
+        }
+        renderAverageChart(labels, averages, 'Promedio por Afinidad');
+      } else if (colAverage) {
+         // Fallback si no hay afinidad pero si promedio general
+         document.getElementById('averageChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Se encontró Promedio pero no "Afinidad" para agrupar.</p>';
+      } else {
+        document.getElementById('averageChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">No se encontraron columnas "Afinidad" o "Promedio".</p>';
+      }
+
+      // -- GRAFICO 3: Mapa de Habilidades (Radar) --
+      // Filtramos las columnas numéricas para las habilidades (chequeando la primera fila válida)
+      let numericSkills = [];
+      if (data.length > 0) {
+         numericSkills = colSkills.filter(col => {
+             // Buscar el primer valor no vacío de esa columna
+             const sample = data.find(r => r[col] !== '' && r[col] !== undefined && r[col] !== null);
+             return sample && !isNaN(parseFloat(sample[col]));
+         });
+      }
+
+      if (numericSkills.length >= 3) {
+        // Solo tomaremos las primeras 8 habilidades para no saturar el radar
+        const radarSkills = numericSkills.slice(0, 8);
+        const skillAverages = radarSkills.map(skill => {
+            let sum = 0, count = 0;
+            data.forEach(row => {
+                let val = parseFloat(row[skill]);
+                if (!isNaN(val)) {
+                    sum += val;
+                    count++;
+                }
+            });
+            return count > 0 ? (sum / count).toFixed(2) : 0;
+        });
+
+        renderSkillsChart(radarSkills, skillAverages);
+      } else {
+         document.getElementById('skillsChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:100px;">Se requieren al menos 3 columnas numéricas de "Habilidades" para este gráfico.</p>';
+      }
+    }
+
+    /**
+     * Dibuja el gráfico de Dona para Arquetipos
+     */
+    function renderArchetypeChart(labels, data) {
+      const ctx = document.getElementById('archetypeChart').getContext('2d');
+      if (archetypeChartInst) archetypeChartInst.destroy();
+
+      archetypeChartInst = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: chartPalette,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+    }
+
+    /**
+     * Dibuja el gráfico de Barras para Promedios
+     */
+    function renderAverageChart(labels, data, title) {
+      const ctx = document.getElementById('averageChart').getContext('2d');
+      if (averageChartInst) averageChartInst.destroy();
+
+      averageChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: title,
+            data: data,
+            backgroundColor: colors.vinoClaro,
+            borderColor: colors.vinoOscuro,
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: colors.beigeOscuro }
+            },
+            x: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    /**
+     * Dibuja el gráfico de Radar (Telaraña) para Habilidades
+     */
+    function renderSkillsChart(labels, data) {
+      const ctx = document.getElementById('skillsChart').getContext('2d');
+      if (skillsChartInst) skillsChartInst.destroy();
+
+      // Cortamos labels largos si existen
+      const shortLabels = labels.map(l => l.length > 15 ? l.substring(0,15)+'...' : l);
+
+      skillsChartInst = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: shortLabels,
+          datasets: [{
+            label: 'Puntaje Promedio',
+            data: data,
+            backgroundColor: 'rgba(188, 149, 91, 0.4)', // Dorado transparente
+            borderColor: colors.dorado,
+            pointBackgroundColor: colors.vinoOscuro,
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: colors.vinoOscuro,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: colors.beigeOscuro },
+              grid: { color: colors.beigeOscuro },
+              pointLabels: {
+                font: { size: 12, family: "'Segoe UI', sans-serif" },
+                color: '#333333'
+              },
+              ticks: {
+                  backdropColor: 'transparent',
+                  color: colors.vinoOscuro,
+                  z: 10
+              }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

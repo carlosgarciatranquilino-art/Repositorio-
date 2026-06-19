@@ -40,3 +40,23 @@ Para que puedas ver la app en tu celular o computadora:
 5. *Google puede pedirte que des permisos ("Revisar permisos"). Si sale una advertencia, haz clic en "Avanzado" y luego en "Ir a [Nombre de tu proyecto] (no seguro)".*
 6. Te dará una **URL de la aplicación web**. Cópiala.
 7. ¡Abre esa URL en el navegador de tu celular o computadora y listo! Tu app de apuestas está lista para usar.
+
+
+---
+
+# Dashboard Educativo Institucional (Nuevo Proyecto)
+
+Si deseas instalar el **Dashboard Educativo Institucional** en Google Apps Script, debes crear un **NUEVO PROYECTO** separado del de las apuestas de fútbol para que no haya conflictos (ambos usan la función `doGet`).
+
+## Instrucciones de Instalación del Dashboard
+
+1. Abre [Google Apps Script](https://script.google.com/) e inicia sesión.
+2. Haz clic en **"Nuevo proyecto"**.
+3. Cambia el nombre a "Dashboard Institucional" (o el nombre que prefieras).
+4. En el archivo por defecto `Código.gs` (o `Code.gs`), pega todo el contenido del archivo **`EduDashboard.gs`**.
+   - **IMPORTANTE:** Cambia el valor de `SPREADSHEET_ID` en el código por el ID de tu hoja de Google Sheets.
+5. Haz clic en el ícono de `+` al lado de "Archivos" y selecciona **"HTML"**.
+6. **Nombra este archivo exactamente como:** `EduDashboard` (sin la extensión `.html` porque Google se la agrega).
+7. Pega en ese nuevo archivo todo el contenido de **`EduDashboard.html`**.
+8. Guarda el proyecto (ícono de disquete).
+9. Implementa la aplicación web siguiendo los mismos pasos de la sección "3. Publicar la Aplicación" descritos arriba. En la ventana de permisos, asegúrate de autorizar el script para que pueda leer tu hoja de cálculo (`SpreadsheetApp`).
