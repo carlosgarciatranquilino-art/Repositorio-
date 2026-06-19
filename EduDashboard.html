@@ -237,6 +237,12 @@
   </div>
 
   <script>
+    // Se ejecuta al cargar la página para intentar cargar los datos automáticamente
+    window.onload = function() {
+      // Opcional: cargar automáticamente
+      // loadData();
+    };
+
     // Variables globales para las instancias de Chart.js y evitar que se superpongan si se recarga
     let archetypeChartInst = null;
     let averageChartInst = null;
@@ -266,16 +272,28 @@
       const loadBtn = document.getElementById('loadBtn');
       const dashboard = document.getElementById('dashboard-content');
 
-      statusDiv.textContent = 'Cargando datos desde Google Sheets...';
-      statusDiv.className = '';
-      loadBtn.disabled = true;
-      dashboard.style.display = 'none';
+      try {
+        statusDiv.textContent = 'Iniciando conexión con Google Sheets... Por favor espera.';
+        statusDiv.className = '';
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'Cargando...';
+        dashboard.style.display = 'none';
 
-      // Llamada asíncrona al backend (EduDashboard.gs)
-      google.script.run
-        .withSuccessHandler(onDataSuccess)
-        .withFailureHandler(onDataError)
-        .getSheetData();
+        if (typeof google === 'undefined' || typeof google.script === 'undefined') {
+          throw new Error('La API de Google Script no está disponible. Asegúrate de estar ejecutando esto dentro del entorno de Apps Script y no como un archivo HTML local.');
+        }
+
+        // Llamada asíncrona al backend (EduDashboard.gs)
+        google.script.run
+          .withSuccessHandler(onDataSuccess)
+          .withFailureHandler(onDataError)
+          .getSheetData();
+      } catch (e) {
+        statusDiv.textContent = 'Error al iniciar: ' + e.message;
+        statusDiv.className = 'error';
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Cargar / Actualizar Datos';
+      }
     }
 
     /**
@@ -285,6 +303,7 @@
       const loadBtn = document.getElementById('loadBtn');
       const statusDiv = document.getElementById('status');
       loadBtn.disabled = false;
+      loadBtn.textContent = 'Cargar / Actualizar Datos';
 
       try {
         const response = JSON.parse(responseStr);
@@ -304,7 +323,7 @@
            return;
         }
 
-        statusDiv.textContent = \`Datos cargados: \${data.length} registros encontrados.\`;
+        statusDiv.textContent = `Datos cargados: ${data.length} registros encontrados.`;
         statusDiv.className = '';
 
         // Mostrar el dashboard
@@ -329,7 +348,8 @@
       const loadBtn = document.getElementById('loadBtn');
       const statusDiv = document.getElementById('status');
       loadBtn.disabled = false;
-      statusDiv.textContent = 'Error de comunicación: ' + error.message;
+      loadBtn.textContent = 'Cargar / Actualizar Datos';
+      statusDiv.textContent = 'Error de comunicación con el servidor: ' + (error.message || error);
       statusDiv.className = 'error';
     }
 
