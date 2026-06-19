@@ -233,6 +233,40 @@
         </div>
       </div>
 
+      <!-- NUEVA SECCIÓN: Grupos de Élite -->
+      <div class="card card-full" style="background-color: transparent; box-shadow: none; border: none; padding-bottom: 0;">
+        <h2 style="color: var(--vino-oscuro); font-size: 1.8rem; border-bottom: 3px solid var(--dorado); margin-bottom: 5px;">Grupos de Élite (Top Talent)</h2>
+        <p style="text-align: center; color: var(--text-main); margin-bottom: 20px;">Top de participantes según sus habilidades desarrolladas por dimensión.</p>
+      </div>
+
+      <div class="card">
+        <h2>1. Creadores de Clima</h2>
+        <div class="chart-container">
+          <canvas id="eliteClimaChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Comunicadores</h2>
+        <div class="chart-container">
+          <canvas id="eliteComChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Innovadores</h2>
+        <div class="chart-container">
+          <canvas id="eliteInnChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Pensadores Críticos</h2>
+        <div class="chart-container">
+          <canvas id="eliteCritChart"></canvas>
+        </div>
+      </div>
+
       <!-- Tabla de Datos Originales -->
       <div class="card card-full">
         <h2>Base de Datos Principal</h2>
@@ -261,6 +295,10 @@
     let averageTopInst = null;
     let averageBottomInst = null;
     let skillsChartInst = null;
+    let eliteClimaInst = null;
+    let eliteComInst = null;
+    let eliteInnInst = null;
+    let eliteCritInst = null;
 
     // Colores institucionales para usar en Chart.js
     const colors = {
@@ -520,6 +558,79 @@
       } else {
          document.getElementById('skillsChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:100px;">Se requieren al menos 3 columnas numéricas de "Habilidades" para este gráfico.</p>';
       }
+
+      // -- NUEVO: GRUPOS DE ÉLITE --
+      if (colName && numericSkills.length > 0) {
+
+        // Función auxiliar para buscar el nombre real de la columna usando palabras clave
+        function findColumn(keywords) {
+            for (let k of keywords) {
+                let found = headers.find((h, i) => normHeaders[i].includes(k));
+                if (found) return found;
+            }
+            return null;
+        }
+
+        // Definición de las habilidades por dimensión (usamos palabras clave sin acentos)
+        const dims = {
+            clima: ['autocontrol', 'equipo', 'colaboracion', 'colaborativo'], // Creadores de clima
+            com: ['autocontrol', 'comunicacion', 'retroalimentacion', 'vocacion', 'calidad'], // Comunicadores
+            inn: ['tecnologia', 'seguimiento', 'reflexionar', 'critico', 'analisis'], // Innovadores
+            crit: ['normativa', 'colaborar', 'vocacion', 'calidad'] // Pensadores críticos
+        };
+
+        // Identificar las columnas reales en el sheet y asegurar que no haya duplicados (Set)
+        const cols = {
+            clima: [...new Set(dims.clima.map(k => findColumn([k])).filter(c => c))],
+            com: [...new Set(dims.com.map(k => findColumn([k])).filter(c => c))],
+            inn: [...new Set(dims.inn.map(k => findColumn([k])).filter(c => c))],
+            crit: [...new Set(dims.crit.map(k => findColumn([k])).filter(c => c))]
+        };
+
+        // Función para calcular y ordenar el Top para un grupo específico
+        function getTopElite(columnsToAvg, topN = 10) {
+            if (columnsToAvg.length === 0) return [];
+
+            const scores = [];
+            data.forEach((row, idx) => {
+                let valName = row[colName] || `Participante ${idx + 1}`;
+                let sum = 0;
+                let count = 0;
+
+                columnsToAvg.forEach(col => {
+                    let val = parseFloat(row[col]);
+                    if (!isNaN(val)) {
+                        sum += val;
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    scores.push({ name: valName, score: sum / count });
+                }
+            });
+
+            return scores.sort((a, b) => b.score - a.score).slice(0, topN);
+        }
+
+        const topClima = getTopElite(cols.clima);
+        const topCom = getTopElite(cols.com);
+        const topInn = getTopElite(cols.inn);
+        const topCrit = getTopElite(cols.crit);
+
+        // Renderizar los nuevos gráficos de barras horizontales (Top 10 max)
+        renderEliteChart('eliteClimaChart', topClima, 'Score Clima', colors.vinoClaro, eliteClimaInst);
+        renderEliteChart('eliteComChart', topCom, 'Score Com.', colors.dorado, eliteComInst);
+        renderEliteChart('eliteInnChart', topInn, 'Score Inn.', colors.ocreOscuro, eliteInnInst);
+        renderEliteChart('eliteCritChart', topCrit, 'Score Crítico', colors.beigeOscuro, eliteCritInst);
+
+      } else {
+        document.getElementById('eliteClimaChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+        document.getElementById('eliteComChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+        document.getElementById('eliteInnChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+        document.getElementById('eliteCritChart').parentElement.innerHTML = '<p style="text-align:center; padding-top:40px;">Faltan datos de Nombre o Habilidades.</p>';
+      }
+
     }
 
     /**
@@ -665,6 +776,52 @@
           }
         }
       });
+    }
+
+    /**
+     * Dibuja los gráficos de Barras Horizontales para los Grupos de Élite
+     */
+    function renderEliteChart(elementId, eliteData, labelTitle, barColor, chartInst) {
+      const ctx = document.getElementById(elementId).getContext('2d');
+      if (chartInst) chartInst.destroy();
+
+      const labels = eliteData.map(d => d.name.length > 20 ? d.name.substring(0, 20) + '...' : d.name);
+      const data = eliteData.map(d => d.score.toFixed(2));
+
+      chartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: labelTitle,
+            data: data,
+            backgroundColor: barColor,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y', // Convertir a barras horizontales
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: colors.beigeOscuro }
+            },
+            y: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      if (elementId === 'eliteClimaChart') eliteClimaInst = chartInst;
+      if (elementId === 'eliteComChart') eliteComInst = chartInst;
+      if (elementId === 'eliteInnChart') eliteInnInst = chartInst;
+      if (elementId === 'eliteCritChart') eliteCritInst = chartInst;
     }
   </script>
 
