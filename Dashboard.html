@@ -255,12 +255,67 @@
       margin-bottom: 5px;
     }
 
+    /* Estilos de Impresión / Exportación a PDF */
+    @media print {
+      body {
+        background-color: var(--white);
+        color: black;
+      }
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      header {
+        background-color: var(--white) !important;
+        color: var(--wine-red) !important;
+        border-bottom: 3px solid var(--wine-red-light);
+        padding: 10px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        border-top: 4px solid var(--wine-red-light);
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+      }
+      /* Ocultar UI interactiva */
+      button, select, label[for="qualSelect"], #loading, #ai-loading, .error-msg, .no-print {
+        display: none !important;
+      }
+      .kpi-box {
+        background-color: #f9f9f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border: 1px solid #bbb;
+      }
+      .tag {
+        border: 1px solid var(--ochre);
+        color: black;
+        background-color: transparent !important;
+      }
+      .synthesis-box {
+        background-color: transparent !important;
+        border: 1px solid #ccc;
+        border-left: 5px solid var(--ochre);
+      }
+      canvas {
+        max-width: 100% !important;
+        page-break-inside: avoid;
+      }
+    }
+
   </style>
 </head>
 <body>
 
   <header>
     <h1>Análisis de Encuestas</h1>
+    <button class="no-print" onclick="window.print()" style="margin-top: 10px; background-color: var(--ochre); padding: 8px 16px; border-radius: 4px; border: none; color: white; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
+      📄 Guardar como PDF / Imprimir
+    </button>
   </header>
 
   <div class="container">
