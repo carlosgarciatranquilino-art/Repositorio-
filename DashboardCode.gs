@@ -91,9 +91,16 @@ Respuestas:
 ${joinedTexts}
 
 Analiza estas respuestas y devuelve la información solicitada estrictamente en formato JSON válido. No incluyas backticks (\`\`\`) ni texto adicional, solo el objeto JSON puro.
+
+Instrucciones Críticas:
+1. "synthesis": Escribe un párrafo analizando e interpretando la tendencia general de las respuestas basándote en las palabras clave y el contexto.
+2. "sentiment": Deben ser valores numéricos (porcentajes) donde la suma EXACTA de positivo, neutral y negativo sea 100.
+3. "categories": Categoriza los temas e incluye un nivel de atención (Alta, Media, Baja) indicando la prioridad o urgencia con la que se debe atender dicho tema.
+
 Estructura del JSON esperada:
 {
   "keywords": ["palabra1", "frase 2", "palabra 3", "frase 4", "palabra 5"],
+  "synthesis": "Párrafo de resumen de tendencias...",
   "sentiment": {
     "positivo": 40,
     "neutral": 30,
@@ -102,14 +109,15 @@ Estructura del JSON esperada:
   "categories": [
     {
       "name": "Nombre Categoría",
-      "description": "Breve descripción de lo que trata esta categoría."
+      "description": "Breve descripción de lo que trata esta categoría.",
+      "attention_level": "Alta"
     }
   ]
 }
 `;
 
-  // Usando el modelo gemini-2.5-flash para rapidez y buen manejo de JSON
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  // Usando el modelo gemini-1.5-flash-latest para rapidez y buen manejo de JSON (actualizado a versión válida)
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
 
   const payload = {
     contents: [{

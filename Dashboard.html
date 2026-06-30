@@ -72,8 +72,15 @@
       gap: 20px;
     }
 
+    .grid-multi {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
     @media (max-width: 768px) {
-      .grid-2 {
+      .grid-2, .grid-multi {
         grid-template-columns: 1fr;
       }
     }
@@ -94,6 +101,32 @@
       min-width: 150px;
       margin: 10px;
       border: 1px solid var(--ochre);
+      flex: 1;
+    }
+
+    .kpi-chart-box {
+      background-color: #fcfcfc;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .kpi-chart-title {
+      font-size: 1rem;
+      color: var(--wine-red);
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 2.4rem;
+    }
+    .kpi-chart-stats {
+      font-size: 0.85rem;
+      color: #555;
+      text-align: center;
+      margin-bottom: 10px;
+      background: var(--beige);
+      padding: 5px;
+      border-radius: 4px;
     }
 
     .kpi-title {
@@ -168,6 +201,26 @@
       font-weight: bold;
     }
 
+    .synthesis-box {
+      background-color: var(--beige);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 5px solid var(--ochre);
+      font-style: italic;
+      margin-top: 15px;
+      font-size: 1rem;
+      color: var(--text-dark);
+    }
+
+    .sentiment-explainer {
+      font-size: 0.8rem;
+      color: #666;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+
     .category-list {
       list-style-type: none;
       padding: 0;
@@ -179,7 +232,22 @@
       padding: 10px;
       border-left: 4px solid var(--wine-red);
       border-radius: 0 4px 4px 0;
+      position: relative;
     }
+
+    .attention-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: white;
+    }
+    .att-alta { background-color: var(--wine-red-light); }
+    .att-media { background-color: var(--ochre-light); }
+    .att-baja { background-color: #757575; }
 
     .category-list strong {
       color: var(--wine-red);
@@ -204,28 +272,21 @@
     <div id="dashboard-content" style="display: none;">
 
       <div class="card">
-        <h2>Métricas Generales</h2>
+        <h2>Métricas y Análisis Cuantitativo</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 15px;">Vista general de respuestas y tendencias de las preguntas de opción múltiple y escalas numéricas.</p>
         <div class="kpi-container">
           <div class="kpi-box">
-            <div class="kpi-title">Total de Respuestas</div>
+            <div class="kpi-title">Total de Encuestas Respondidas</div>
             <div class="kpi-value" id="kpi-total">-</div>
           </div>
           <div class="kpi-box">
-            <div class="kpi-title">Preguntas Analizadas</div>
+            <div class="kpi-title">Total de Preguntas Procesadas</div>
             <div class="kpi-value" id="kpi-questions">-</div>
           </div>
         </div>
-      </div>
 
-      <div class="card">
-        <h2>Datos Cuantitativos (Distribución por Columna)</h2>
-        <p style="font-size: 0.9rem; margin-bottom: 15px;">Selecciona una pregunta cerrada (opción múltiple, escalas numéricas, etc.) para visualizar las tendencias.</p>
-
-        <label for="quantSelect">Selecciona una pregunta:</label><br>
-        <select id="quantSelect" onchange="renderQuantitativeChart()"></select>
-
-        <div style="margin-top: 20px; position: relative; height: 300px;">
-          <canvas id="quantChart"></canvas>
+        <div id="quantitative-charts-container" class="grid-multi">
+          <!-- Gráficos cuantitativos dinámicos irán aquí -->
         </div>
       </div>
 
@@ -254,13 +315,18 @@
               </div>
             </div>
 
-            <!-- Palabras Clave -->
+            <!-- Palabras Clave y Síntesis -->
             <div>
-              <h3 style="color: var(--wine-red-light); font-size: 1.1rem; margin-top:0;">Palabras Clave Destacadas</h3>
-              <div id="keywords-container" style="margin-top: 20px;">
+              <h3 style="color: var(--wine-red-light); font-size: 1.1rem; margin-top:0;">Síntesis y Palabras Clave</h3>
+              <div id="keywords-container" style="margin-top: 15px;">
                 <!-- Tags dinámicos aquí -->
               </div>
+              <div id="synthesis-container" class="synthesis-box" style="display:none;"></div>
             </div>
+          </div>
+
+          <div class="sentiment-explainer">
+             <strong>Interpretación del Sentimiento:</strong> El modelo de Inteligencia Artificial clasifica el tono emocional general de todas las respuestas. Se ajusta la suma al 100% para mostrar la proporción relativa entre percepciones Positivas (aprobación), Neutrales (objetivas o sin carga emocional fuerte) y Negativas (quejas o áreas de mejora).
           </div>
 
           <!-- Categorías -->
@@ -280,8 +346,8 @@
   <script>
     // Variables globales
     let sheetData = null;
-    let quantChartInstance = null;
     let sentimentChartInstance = null;
+    let quantitativeChartInstances = [];
 
     // Inicialización al cargar la página
     window.onload = function() {
@@ -319,84 +385,128 @@
       document.getElementById('kpi-total').innerText = sheetData.rows.length;
       document.getElementById('kpi-questions').innerText = sheetData.headers.length;
 
-      // Llenar los Selects (Dropdowns)
-      const quantSelect = document.getElementById('quantSelect');
+      // Llenar el Dropdown de Cualitativas (IA)
       const qualSelect = document.getElementById('qualSelect');
-
       sheetData.headers.forEach((header, index) => {
-        // Opción para cuantitativos
-        let opt1 = document.createElement('option');
-        opt1.value = index;
-        opt1.text = header;
-        quantSelect.appendChild(opt1);
-
-        // Opción para cualitativos
-        let opt2 = document.createElement('option');
-        opt2.value = index;
-        opt2.text = header;
-        qualSelect.appendChild(opt2);
+        let opt = document.createElement('option');
+        opt.value = index;
+        opt.text = header;
+        qualSelect.appendChild(opt);
       });
 
-      // Renderizar gráfico inicial para la primera pregunta
-      renderQuantitativeChart();
+      // Autodetectar y renderizar gráficos cuantitativos
+      renderAllQuantitativeCharts();
     }
 
     // ==========================================
-    // LÓGICA CUANTITATIVA (GRÁFICA LOCAL)
+    // LÓGICA CUANTITATIVA AUTO-GENERADA
     // ==========================================
-    function renderQuantitativeChart() {
-      const colIndex = document.getElementById('quantSelect').value;
-      const questionTitle = sheetData.headers[colIndex];
+    function renderAllQuantitativeCharts() {
+      const container = document.getElementById('quantitative-charts-container');
+      container.innerHTML = '';
 
-      // Contar frecuencias
-      const counts = {};
-      sheetData.rows.forEach(row => {
-        let val = row[colIndex];
-        if (val === undefined || val === null || val.toString().trim() === '') {
-            val = "(En blanco)";
-        }
-        val = val.toString().trim();
-        counts[val] = (counts[val] || 0) + 1;
-      });
+      // Limpiar instancias previas
+      quantitativeChartInstances.forEach(chart => chart.destroy());
+      quantitativeChartInstances = [];
 
-      const labels = Object.keys(counts);
-      const dataValues = Object.values(counts);
+      sheetData.headers.forEach((header, colIndex) => {
+        // Ignorar la primera columna si parece ser 'Marca temporal'
+        if (colIndex === 0 && header.toLowerCase().includes('marca temporal')) return;
 
-      // Destruir chart previo si existe
-      if (quantChartInstance) {
-        quantChartInstance.destroy();
-      }
+        // Contar frecuencias y detectar si es pregunta cerrada/numérica (cuantitativa)
+        let counts = {};
+        let totalValids = 0;
+        let sum = 0;
+        let isNumeric = true;
+        let totalTextLength = 0;
 
-      const ctx = document.getElementById('quantChart').getContext('2d');
-      quantChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Número de Respuestas',
-            data: dataValues,
-            backgroundColor: '#9F2241', // wine-red-light
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            title: {
-              display: true,
-              text: 'Frecuencia de Respuestas'
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1 }
-            }
+        sheetData.rows.forEach(row => {
+          let val = row[colIndex];
+          if (val === undefined || val === null || val.toString().trim() === '') return;
+
+          val = val.toString().trim();
+          counts[val] = (counts[val] || 0) + 1;
+          totalValids++;
+          totalTextLength += val.length;
+
+          let numVal = parseFloat(val);
+          if (isNaN(numVal)) {
+            isNumeric = false;
+          } else {
+            sum += numVal;
           }
+        });
+
+        // Heurística para decidir si graficamos
+        const uniqueAnswers = Object.keys(counts).length;
+        if (uniqueAnswers === 0 || uniqueAnswers > 15) return; // Probablemente texto libre muy variado
+
+        // Si no son números, revisar si las cadenas son muy largas (probablemente comentarios libres aunque haya pocos encuestados)
+        if (!isNumeric && totalValids > 0) {
+            const avgLength = totalTextLength / totalValids;
+            if (avgLength > 20) return; // Si la respuesta promedio tiene más de 20 caracteres, asumimos que es texto abierto, no cuantitativo
         }
+
+        // Preparar DOM
+        const boxId = `quant-box-${colIndex}`;
+        const canvasId = `quant-canvas-${colIndex}`;
+
+        const box = document.createElement('div');
+        box.className = 'kpi-chart-box';
+
+        // Si son numéricos (ej 1 al 4, del 1 al 10), calcular promedio
+        let statsHtml = `Respuestas válidas: <strong>${totalValids}</strong>`;
+        if (isNumeric && totalValids > 0) {
+            const avg = (sum / totalValids).toFixed(2);
+            statsHtml += ` | Promedio: <strong>${avg}</strong>`;
+        }
+
+        box.innerHTML = `
+          <div class="kpi-chart-title">${header}</div>
+          <div class="kpi-chart-stats">${statsHtml}</div>
+          <div style="position: relative; height: 200px;">
+            <canvas id="${canvasId}"></canvas>
+          </div>
+        `;
+        container.appendChild(box);
+
+        // Dibujar Chart
+        const labels = Object.keys(counts);
+        const dataValues = Object.values(counts);
+        const ctx = document.getElementById(canvasId).getContext('2d');
+
+        // Usar pie para pocas opciones (ej Si/No), bar para escalas (ej 1,2,3,4,5)
+        const chartType = uniqueAnswers <= 3 && !isNumeric ? 'pie' : 'bar';
+
+        const chart = new Chart(ctx, {
+          type: chartType,
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Frecuencia',
+              data: dataValues,
+              backgroundColor: ['#9F2241', '#BC955B', '#56212F', '#977E5B', '#DDC8A4', '#D6D1CA', '#333333'],
+              borderRadius: chartType === 'bar' ? 4 : 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: chartType === 'pie' }
+            },
+            scales: chartType === 'bar' ? {
+              y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            } : {}
+          }
+        });
+
+        quantitativeChartInstances.push(chart);
       });
+
+      if (quantitativeChartInstances.length === 0) {
+         container.innerHTML = '<p style="text-align:center; width:100%; color:#666;">No se detectaron preguntas de opción múltiple o escalas numéricas (todas tienen más de 15 respuestas únicas).</p>';
+      }
     }
 
     // ==========================================
@@ -446,7 +556,7 @@
       const aiData = response.result;
       document.getElementById('ai-results').style.display = 'block';
 
-      // 1. Palabras Clave
+      // 1. Palabras Clave y Síntesis
       const kwContainer = document.getElementById('keywords-container');
       kwContainer.innerHTML = '';
       if (aiData.keywords && Array.isArray(aiData.keywords)) {
@@ -458,19 +568,36 @@
          });
       }
 
-      // 2. Gráfica de Sentimiento
+      const synthContainer = document.getElementById('synthesis-container');
+      if (aiData.synthesis) {
+         synthContainer.style.display = 'block';
+         synthContainer.innerText = aiData.synthesis;
+      } else {
+         synthContainer.style.display = 'none';
+      }
+
+      // 2. Gráfica de Sentimiento (Normalizada a 100%)
       if (sentimentChartInstance) {
           sentimentChartInstance.destroy();
       }
       const ctxSent = document.getElementById('sentimentChart').getContext('2d');
-      const sentData = aiData.sentiment || {positivo: 0, neutral: 0, negativo: 0};
+      const rawSent = aiData.sentiment || {positivo: 0, neutral: 0, negativo: 0};
+
+      // Normalizar para forzar 100% en caso de fallos menores del LLM
+      const totalSent = (rawSent.positivo || 0) + (rawSent.neutral || 0) + (rawSent.negativo || 0);
+      let normPos = 0, normNeu = 0, normNeg = 0;
+      if (totalSent > 0) {
+          normPos = Math.round((rawSent.positivo / totalSent) * 100);
+          normNeu = Math.round((rawSent.neutral / totalSent) * 100);
+          normNeg = 100 - normPos - normNeu; // Ajustar el último para forzar el 100% exacto
+      }
 
       sentimentChartInstance = new Chart(ctxSent, {
         type: 'doughnut',
         data: {
-          labels: ['Positivo', 'Neutral', 'Negativo'],
+          labels: ['Positivo (%)', 'Neutral (%)', 'Negativo (%)'],
           datasets: [{
-            data: [sentData.positivo, sentData.neutral, sentData.negativo],
+            data: [normPos, normNeu, normNeg],
             backgroundColor: [
               '#2e7d32', // Verde
               '#DDC8A4', // Beige
@@ -487,13 +614,22 @@
         }
       });
 
-      // 3. Categorías
+      // 3. Categorías con Nivel de Atención
       const catContainer = document.getElementById('categories-container');
       catContainer.innerHTML = '';
       if (aiData.categories && Array.isArray(aiData.categories)) {
          aiData.categories.forEach(cat => {
             let li = document.createElement('li');
-            li.innerHTML = `<strong>${cat.name}</strong> ${cat.description}`;
+            let attLevel = (cat.attention_level || 'Media').toLowerCase();
+            let attClass = 'att-media';
+            if (attLevel.includes('alta')) attClass = 'att-alta';
+            if (attLevel.includes('baja')) attClass = 'att-baja';
+
+            li.innerHTML = `
+              <strong>${cat.name}</strong>
+              <span>${cat.description}</span>
+              <span class="attention-badge ${attClass}">Atención: ${cat.attention_level || 'Media'}</span>
+            `;
             catContainer.appendChild(li);
          });
       }
