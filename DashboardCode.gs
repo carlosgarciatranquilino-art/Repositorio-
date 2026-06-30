@@ -82,17 +82,17 @@ function getAvailableGeminiModel() {
     ).map(m => m.name.replace('models/', ''));
 
     // Preferir en este orden
+    if (validModels.includes('gemini-3.5-flash')) return 'gemini-3.5-flash';
     if (validModels.includes('gemini-1.5-flash')) return 'gemini-1.5-flash';
     if (validModels.includes('gemini-1.5-pro')) return 'gemini-1.5-pro';
     if (validModels.includes('gemini-pro')) return 'gemini-pro';
-    if (validModels.includes('gemini-1.0-pro')) return 'gemini-1.0-pro';
 
     // Si no está ninguno de nuestros favoritos, devolver el primero válido que encontremos
     if (validModels.length > 0) return validModels[0];
 
-    return 'gemini-1.5-flash';
+    return 'gemini-3.5-flash';
   } catch (e) {
-    return 'gemini-1.5-flash';
+    return 'gemini-3.5-flash';
   }
 }
 
