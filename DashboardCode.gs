@@ -64,6 +64,39 @@ function getSurveyData() {
 }
 
 /**
+ * Busca un modelo de Gemini válido y disponible para la cuenta actual.
+ */
+function getAvailableGeminiModel() {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`;
+  try {
+    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const json = JSON.parse(response.getContentText());
+
+    if (response.getResponseCode() !== 200 || !json.models) {
+       return 'gemini-1.5-flash'; // Fallback por defecto si falla la lista
+    }
+
+    // Buscar modelos que soporten "generateContent"
+    const validModels = json.models.filter(m =>
+      m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")
+    ).map(m => m.name.replace('models/', ''));
+
+    // Preferir en este orden
+    if (validModels.includes('gemini-1.5-flash')) return 'gemini-1.5-flash';
+    if (validModels.includes('gemini-1.5-pro')) return 'gemini-1.5-pro';
+    if (validModels.includes('gemini-pro')) return 'gemini-pro';
+    if (validModels.includes('gemini-1.0-pro')) return 'gemini-1.0-pro';
+
+    // Si no está ninguno de nuestros favoritos, devolver el primero válido que encontremos
+    if (validModels.length > 0) return validModels[0];
+
+    return 'gemini-1.5-flash';
+  } catch (e) {
+    return 'gemini-1.5-flash';
+  }
+}
+
+/**
  * Llama a la API de Google Gemini para analizar un conjunto de respuestas de una pregunta abierta.
  * Extrae: Palabras Clave, Sentimiento y Categorización.
  */
@@ -116,8 +149,9 @@ Estructura del JSON esperada:
 }
 `;
 
-  // Usando el modelo gemini-pro (el modelo con mayor disponibilidad regional y soporte para todas las cuentas)
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+  // Descubrir el mejor modelo disponible dinámicamente para evitar errores "not found"
+  const bestModelName = getAvailableGeminiModel();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${bestModelName}:generateContent?key=${GEMINI_API_KEY}`;
 
   const payload = {
     contents: [{
