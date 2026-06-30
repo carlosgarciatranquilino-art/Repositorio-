@@ -4,7 +4,7 @@ Este proyecto es una Web App de Google Apps Script diseñada para conectarse dir
 
 ## Prerrequisitos
 1. Una cuenta de Google con acceso al Google Sheet que contiene las respuestas de tu formulario.
-2. Una cuenta en [OpenAI](https://platform.openai.com/) y una **API Key**. OpenAI es el motor detrás de ChatGPT y requiere algo de saldo en la plataforma para procesar el análisis de texto.
+2. Una cuenta en Google y una **API Key de Google Gemini**. Puedes obtenerla gratuitamente ingresando a [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ---
 
@@ -19,7 +19,7 @@ Este proyecto es una Web App de Google Apps Script diseñada para conectarse dir
 1. En el editor de Apps Script, verás un archivo llamado `Código.gs` (o `Code.gs`). Borra todo su contenido.
 2. Copia todo el texto de nuestro archivo `DashboardCode.gs` y pégalo ahí.
 3. **Configuraciones importantes en el código:**
-   - Busca la línea: `const OPENAI_API_KEY = 'TU_API_KEY_DE_OPENAI_AQUI';` y reemplaza el texto con tu verdadera API Key de OpenAI.
+   - Busca la línea: `const GEMINI_API_KEY = 'TU_API_KEY_DE_GEMINI_AQUI';` y reemplaza el texto con tu verdadera API Key de Gemini.
    - Busca la línea: `const SHEET_NAME = 'Respuestas de formulario 1';`. Asegúrate de que el texto entre comillas coincida **exactamente** con el nombre de la pestaña (la solapa en la parte inferior de tu hoja de cálculo) donde están los datos.
 
 ## Paso 3: Agregar la Interfaz Gráfica (HTML)

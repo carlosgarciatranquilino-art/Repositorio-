@@ -231,7 +231,7 @@
 
       <!-- SECCIÓN CUALITATIVA (IA) -->
       <div class="card">
-        <h2>Análisis Cualitativo con IA (OpenAI)</h2>
+        <h2>Análisis Cualitativo con IA (Google Gemini)</h2>
         <p style="font-size: 0.9rem; margin-bottom: 15px;">Selecciona una pregunta abierta (texto libre) para extraer palabras clave, categorizar respuestas y analizar el sentimiento general usando Inteligencia Artificial.</p>
 
         <label for="qualSelect">Selecciona una pregunta abierta:</label><br>
@@ -417,7 +417,7 @@
       google.script.run
         .withSuccessHandler(onAILoaded)
         .withFailureHandler(onAIError)
-        .analyzeTextWithOpenAI(textResponses, questionTitle);
+        .analyzeTextWithGemini(textResponses, questionTitle);
     }
 
     function onAIError(error) {

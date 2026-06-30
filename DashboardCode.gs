@@ -1,8 +1,8 @@
 // ==========================================
 // CONFIGURACIÓN PRINCIPAL
 // ==========================================
-// Registrate en https://platform.openai.com/ para obtener tu API Key
-const OPENAI_API_KEY = 'TU_API_KEY_DE_OPENAI_AQUI';
+// Ve a https://aistudio.google.com/app/apikey para obtener tu API Key de Gemini
+const GEMINI_API_KEY = 'TU_API_KEY_DE_GEMINI_AQUI';
 
 // Puedes poner el ID de tu Google Sheet aquí, o si creas este script
 // directamente "vinculado" a tu Google Sheet (Extensiones > Apps Script),
@@ -64,12 +64,12 @@ function getSurveyData() {
 }
 
 /**
- * Llama a la API de OpenAI para analizar un conjunto de respuestas de una pregunta abierta.
+ * Llama a la API de Google Gemini para analizar un conjunto de respuestas de una pregunta abierta.
  * Extrae: Palabras Clave, Sentimiento y Categorización.
  */
-function analyzeTextWithOpenAI(texts, questionHeader) {
-  if (OPENAI_API_KEY === 'TU_API_KEY_DE_OPENAI_AQUI' || OPENAI_API_KEY === '') {
-    return { error: 'Por favor, configura tu API Key de OpenAI (OPENAI_API_KEY) en el archivo DashboardCode.gs.' };
+function analyzeTextWithGemini(texts, questionHeader) {
+  if (GEMINI_API_KEY === 'TU_API_KEY_DE_GEMINI_AQUI' || GEMINI_API_KEY === '') {
+    return { error: 'Por favor, configura tu API Key de Gemini (GEMINI_API_KEY) en el archivo DashboardCode.gs.' };
   }
 
   // Filtramos textos vacíos y tomamos una muestra de hasta 50 respuestas para evitar
@@ -84,22 +84,22 @@ function analyzeTextWithOpenAI(texts, questionHeader) {
   const joinedTexts = sampleTexts.map((t, i) => `Respuesta ${i+1}: ${t}`).join('\n');
 
   const prompt = `
-Eres un analista de datos experto. A continuación te presento una serie de respuestas recopiladas de un formulario.
+Eres un analista de datos experto que responde única y exclusivamente en formato JSON. A continuación te presento una serie de respuestas recopiladas de un formulario.
 La pregunta que respondieron es: "${questionHeader}".
 
 Respuestas:
 ${joinedTexts}
 
-Analiza estas respuestas y devuelve la información solicitada estrictamente en formato JSON válido. No devuelvas ningún otro texto, solo el JSON.
-Estructura del JSON:
+Analiza estas respuestas y devuelve la información solicitada estrictamente en formato JSON válido. No incluyas backticks (\`\`\`) ni texto adicional, solo el objeto JSON puro.
+Estructura del JSON esperada:
 {
-  "keywords": ["palabra1", "frase 2", "palabra 3", "frase 4", "palabra 5"], // 5 palabras clave o frases más importantes
+  "keywords": ["palabra1", "frase 2", "palabra 3", "frase 4", "palabra 5"],
   "sentiment": {
-    "positivo": 40, // porcentaje numérico
-    "neutral": 30, // porcentaje numérico
-    "negativo": 30 // porcentaje numérico (la suma debe ser 100)
+    "positivo": 40,
+    "neutral": 30,
+    "negativo": 30
   },
-  "categories": [ // Agrupa las respuestas en 3 a 5 categorías principales
+  "categories": [
     {
       "name": "Nombre Categoría",
       "description": "Breve descripción de lo que trata esta categoría."
@@ -108,20 +108,24 @@ Estructura del JSON:
 }
 `;
 
-  const url = 'https://api.openai.com/v1/chat/completions';
+  // Usando el modelo gemini-1.5-flash para rapidez y buen manejo de JSON
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
   const payload = {
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: "Eres un asistente útil que responde única y exclusivamente en formato JSON." },
-      { role: "user", content: prompt }
-    ],
-    temperature: 0.2
+    contents: [{
+      parts: [{
+        text: prompt
+      }]
+    }],
+    generationConfig: {
+      temperature: 0.2,
+      responseMimeType: "application/json" // Obliga a Gemini a devolver JSON válido
+    }
   };
 
   const options = {
     method: 'post',
     headers: {
-      'Authorization': 'Bearer ' + OPENAI_API_KEY,
       'Content-Type': 'application/json'
     },
     payload: JSON.stringify(payload),
@@ -134,13 +138,14 @@ Estructura del JSON:
     const json = JSON.parse(responseText);
 
     if (response.getResponseCode() !== 200) {
-      return { error: `Error de OpenAI: ${json.error?.message || response.getResponseCode()}` };
+      return { error: `Error de Gemini: ${json.error?.message || response.getResponseCode()}` };
     }
 
-    const aiContent = json.choices[0].message.content;
+    // Extraer el texto generado por Gemini
+    const aiContent = json.candidates[0].content.parts[0].text;
     return { result: JSON.parse(aiContent) };
 
   } catch (e) {
-    return { error: 'Error al procesar el análisis con OpenAI. Revisa tu saldo de API o conexión: ' + e.toString() };
+    return { error: 'Error al procesar el análisis con Gemini. Revisa tu API Key o conexión: ' + e.toString() };
   }
 }
