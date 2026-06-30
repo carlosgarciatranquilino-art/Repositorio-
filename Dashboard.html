@@ -388,6 +388,9 @@
       // Llenar el Dropdown de Cualitativas (IA)
       const qualSelect = document.getElementById('qualSelect');
       sheetData.headers.forEach((header, index) => {
+        // Ignorar Marca temporal (0) y las primeras 4 preguntas cerradas (1 a 4)
+        if (index < 5) return;
+
         let opt = document.createElement('option');
         opt.value = index;
         opt.text = header;

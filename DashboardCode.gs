@@ -116,8 +116,8 @@ Estructura del JSON esperada:
 }
 `;
 
-  // Usando el modelo gemini-1.5-flash-latest para rapidez y buen manejo de JSON (actualizado a versión válida)
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+  // Usando el modelo gemini-1.5-flash (el modelo base más estable y compatible para cuentas gratuitas/Google AI Studio)
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   const payload = {
     contents: [{
@@ -149,11 +149,26 @@ Estructura del JSON esperada:
       return { error: `Error de Gemini: ${json.error?.message || response.getResponseCode()}` };
     }
 
+    // Verificar si Gemini bloqueó la respuesta por seguridad
+    if (json.promptFeedback && json.promptFeedback.blockReason) {
+       return { error: `Gemini bloqueó la solicitud por motivos de seguridad: ${json.promptFeedback.blockReason}` };
+    }
+
+    if (!json.candidates || json.candidates.length === 0 || !json.candidates[0].content) {
+       return { error: 'Gemini no devolvió ninguna respuesta válida. Es posible que el contenido haya sido filtrado.' };
+    }
+
     // Extraer el texto generado por Gemini
-    const aiContent = json.candidates[0].content.parts[0].text;
+    let aiContent = json.candidates[0].content.parts[0].text;
+
+    // Limpieza de formato (a veces Gemini devuelve bloques de código markdown como ```json ... ```)
+    aiContent = aiContent.replace(/^```json/i, '').replace(/^```/i, '');
+    aiContent = aiContent.replace(/```$/i, '');
+    aiContent = aiContent.trim();
+
     return { result: JSON.parse(aiContent) };
 
   } catch (e) {
-    return { error: 'Error al procesar el análisis con Gemini. Revisa tu API Key o conexión: ' + e.toString() };
+    return { error: 'Error al procesar el análisis con Gemini. Asegúrate de que tu API Key sea correcta o intenta nuevamente: ' + e.toString() };
   }
 }
