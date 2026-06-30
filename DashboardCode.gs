@@ -116,8 +116,8 @@ Estructura del JSON esperada:
 }
 `;
 
-  // Usando el modelo gemini-1.5-flash (el modelo base más estable y compatible para cuentas gratuitas/Google AI Studio)
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  // Usando el modelo gemini-pro (el modelo con mayor disponibilidad regional y soporte para todas las cuentas)
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
   const payload = {
     contents: [{
@@ -146,7 +146,9 @@ Estructura del JSON esperada:
     const json = JSON.parse(responseText);
 
     if (response.getResponseCode() !== 200) {
-      return { error: `Error de Gemini: ${json.error?.message || response.getResponseCode()}` };
+      // Si da error de modelo no encontrado, sugerir una alternativa estable antigua para cuentas restringidas
+      let errorMsg = json.error?.message || response.getResponseCode();
+      return { error: `Error de Gemini: ${errorMsg}` };
     }
 
     // Verificar si Gemini bloqueó la respuesta por seguridad
