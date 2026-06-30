@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Educativo y Análisis de Encuestas</title>
+  <!-- Chart.js para las gráficas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Paleta Institucional */
+    :root {
+      --wine-red: #56212F;
+      --wine-red-light: #9F2241;
+      --ochre: #977E5B;
+      --ochre-light: #BC955B;
+      --beige: #DDC8A4;
+      --warm-gray: #D6D1CA;
+      --white: #FFFFFF;
+      --text-dark: #333333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--warm-gray);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: var(--wine-red);
+      color: var(--white);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 5px solid var(--ochre-light);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    /* Tarjetas (Cards) */
+    .card {
+      background-color: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 25px;
+      border-top: 4px solid var(--wine-red-light);
+    }
+
+    .card h2 {
+      color: var(--wine-red);
+      margin-top: 0;
+      border-bottom: 2px solid var(--beige);
+      padding-bottom: 10px;
+    }
+
+    /* Cuadrícula (Grid) para métricas y gráficos */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* KPIs */
+    .kpi-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .kpi-box {
+      background-color: var(--beige);
+      padding: 15px 25px;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 150px;
+      margin: 10px;
+      border: 1px solid var(--ochre);
+    }
+
+    .kpi-title {
+      font-size: 0.9rem;
+      color: var(--wine-red);
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text-dark);
+      margin-top: 5px;
+    }
+
+    /* Controles */
+    select, button {
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid var(--ochre);
+      font-size: 1rem;
+    }
+
+    select {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    button {
+      background-color: var(--wine-red-light);
+      color: var(--white);
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--wine-red);
+    }
+
+    /* Estados de carga */
+    #loading, #ai-loading {
+      text-align: center;
+      font-weight: bold;
+      color: var(--wine-red);
+      padding: 20px;
+      display: none;
+    }
+
+    .error-msg {
+      color: #D8000C;
+      background-color: #FFD2D2;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    /* Resultados Cualitativos IA */
+    .tag {
+      display: inline-block;
+      background-color: var(--ochre-light);
+      color: var(--white);
+      padding: 5px 12px;
+      border-radius: 15px;
+      margin: 3px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .category-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .category-list li {
+      background-color: #f9f9f9;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-left: 4px solid var(--wine-red);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .category-list strong {
+      color: var(--wine-red);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Análisis de Encuestas</h1>
+  </header>
+
+  <div class="container">
+
+    <div id="main-error" class="error-msg"></div>
+    <div id="loading">Cargando datos desde Google Sheets... Por favor espera.</div>
+
+    <!-- SECCIÓN CUANTITATIVA -->
+    <div id="dashboard-content" style="display: none;">
+
+      <div class="card">
+        <h2>Métricas Generales</h2>
+        <div class="kpi-container">
+          <div class="kpi-box">
+            <div class="kpi-title">Total de Respuestas</div>
+            <div class="kpi-value" id="kpi-total">-</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-title">Preguntas Analizadas</div>
+            <div class="kpi-value" id="kpi-questions">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Datos Cuantitativos (Distribución por Columna)</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 15px;">Selecciona una pregunta cerrada (opción múltiple, escalas numéricas, etc.) para visualizar las tendencias.</p>
+
+        <label for="quantSelect">Selecciona una pregunta:</label><br>
+        <select id="quantSelect" onchange="renderQuantitativeChart()"></select>
+
+        <div style="margin-top: 20px; position: relative; height: 300px;">
+          <canvas id="quantChart"></canvas>
+        </div>
+      </div>
+
+      <!-- SECCIÓN CUALITATIVA (IA) -->
+      <div class="card">
+        <h2>Análisis Cualitativo con IA (OpenAI)</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 15px;">Selecciona una pregunta abierta (texto libre) para extraer palabras clave, categorizar respuestas y analizar el sentimiento general usando Inteligencia Artificial.</p>
+
+        <label for="qualSelect">Selecciona una pregunta abierta:</label><br>
+        <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+            <select id="qualSelect"></select>
+            <button onclick="runAIAnalysis()">Analizar con IA</button>
+        </div>
+
+        <div id="ai-loading">La IA está leyendo y procesando las respuestas... 🧠 (Puede tomar unos segundos)</div>
+        <div id="ai-error" class="error-msg" style="margin-top: 15px;"></div>
+
+        <div id="ai-results" style="display: none; margin-top: 25px;">
+
+          <div class="grid-2">
+            <!-- Sentimiento -->
+            <div>
+              <h3 style="color: var(--wine-red-light); font-size: 1.1rem; margin-top:0;">Análisis de Sentimiento</h3>
+              <div style="position: relative; height: 200px;">
+                <canvas id="sentimentChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Palabras Clave -->
+            <div>
+              <h3 style="color: var(--wine-red-light); font-size: 1.1rem; margin-top:0;">Palabras Clave Destacadas</h3>
+              <div id="keywords-container" style="margin-top: 20px;">
+                <!-- Tags dinámicos aquí -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Categorías -->
+          <div style="margin-top: 30px;">
+            <h3 style="color: var(--wine-red-light); font-size: 1.1rem;">Categorización de Temas</h3>
+            <ul id="categories-container" class="category-list">
+               <!-- Categorías dinámicas aquí -->
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let sheetData = null;
+    let quantChartInstance = null;
+    let sentimentChartInstance = null;
+
+    // Inicialización al cargar la página
+    window.onload = function() {
+      document.getElementById('loading').style.display = 'block';
+      // Llamada al backend de Apps Script
+      google.script.run
+        .withSuccessHandler(onDataLoaded)
+        .withFailureHandler(onError)
+        .getSurveyData();
+    };
+
+    function onError(error) {
+      document.getElementById('loading').style.display = 'none';
+      const errorDiv = document.getElementById('main-error');
+      errorDiv.style.display = 'block';
+      errorDiv.innerText = 'Error de conexión: ' + error.message;
+    }
+
+    function onDataLoaded(data) {
+      document.getElementById('loading').style.display = 'none';
+      const errorDiv = document.getElementById('main-error');
+
+      if (data && data.error) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = data.error;
+        return;
+      }
+
+      sheetData = data;
+
+      // Mostrar el panel de control
+      document.getElementById('dashboard-content').style.display = 'block';
+
+      // Llenar KPIs
+      document.getElementById('kpi-total').innerText = sheetData.rows.length;
+      document.getElementById('kpi-questions').innerText = sheetData.headers.length;
+
+      // Llenar los Selects (Dropdowns)
+      const quantSelect = document.getElementById('quantSelect');
+      const qualSelect = document.getElementById('qualSelect');
+
+      sheetData.headers.forEach((header, index) => {
+        // Opción para cuantitativos
+        let opt1 = document.createElement('option');
+        opt1.value = index;
+        opt1.text = header;
+        quantSelect.appendChild(opt1);
+
+        // Opción para cualitativos
+        let opt2 = document.createElement('option');
+        opt2.value = index;
+        opt2.text = header;
+        qualSelect.appendChild(opt2);
+      });
+
+      // Renderizar gráfico inicial para la primera pregunta
+      renderQuantitativeChart();
+    }
+
+    // ==========================================
+    // LÓGICA CUANTITATIVA (GRÁFICA LOCAL)
+    // ==========================================
+    function renderQuantitativeChart() {
+      const colIndex = document.getElementById('quantSelect').value;
+      const questionTitle = sheetData.headers[colIndex];
+
+      // Contar frecuencias
+      const counts = {};
+      sheetData.rows.forEach(row => {
+        let val = row[colIndex];
+        if (val === undefined || val === null || val.toString().trim() === '') {
+            val = "(En blanco)";
+        }
+        val = val.toString().trim();
+        counts[val] = (counts[val] || 0) + 1;
+      });
+
+      const labels = Object.keys(counts);
+      const dataValues = Object.values(counts);
+
+      // Destruir chart previo si existe
+      if (quantChartInstance) {
+        quantChartInstance.destroy();
+      }
+
+      const ctx = document.getElementById('quantChart').getContext('2d');
+      quantChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Número de Respuestas',
+            data: dataValues,
+            backgroundColor: '#9F2241', // wine-red-light
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: 'Frecuencia de Respuestas'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    // ==========================================
+    // LÓGICA CUALITATIVA (LLAMADA A IA)
+    // ==========================================
+    function runAIAnalysis() {
+      const colIndex = document.getElementById('qualSelect').value;
+      const questionTitle = sheetData.headers[colIndex];
+
+      // Extraer todas las respuestas de texto para esta columna
+      const textResponses = sheetData.rows.map(row => row[colIndex]);
+
+      // UI
+      document.getElementById('ai-results').style.display = 'none';
+      document.getElementById('ai-error').style.display = 'none';
+      document.getElementById('ai-loading').style.display = 'block';
+
+      google.script.run
+        .withSuccessHandler(onAILoaded)
+        .withFailureHandler(onAIError)
+        .analyzeTextWithOpenAI(textResponses, questionTitle);
+    }
+
+    function onAIError(error) {
+      document.getElementById('ai-loading').style.display = 'none';
+      const errDiv = document.getElementById('ai-error');
+      errDiv.style.display = 'block';
+      errDiv.innerText = 'Error al contactar con la IA: ' + error.message;
+    }
+
+    function onAILoaded(response) {
+      document.getElementById('ai-loading').style.display = 'none';
+      const errDiv = document.getElementById('ai-error');
+
+      if (response && response.error) {
+        errDiv.style.display = 'block';
+        errDiv.innerText = response.error;
+        return;
+      }
+
+      if (!response.result) {
+         errDiv.style.display = 'block';
+         errDiv.innerText = "La IA no devolvió un formato válido.";
+         return;
+      }
+
+      const aiData = response.result;
+      document.getElementById('ai-results').style.display = 'block';
+
+      // 1. Palabras Clave
+      const kwContainer = document.getElementById('keywords-container');
+      kwContainer.innerHTML = '';
+      if (aiData.keywords && Array.isArray(aiData.keywords)) {
+         aiData.keywords.forEach(kw => {
+            let span = document.createElement('span');
+            span.className = 'tag';
+            span.innerText = kw;
+            kwContainer.appendChild(span);
+         });
+      }
+
+      // 2. Gráfica de Sentimiento
+      if (sentimentChartInstance) {
+          sentimentChartInstance.destroy();
+      }
+      const ctxSent = document.getElementById('sentimentChart').getContext('2d');
+      const sentData = aiData.sentiment || {positivo: 0, neutral: 0, negativo: 0};
+
+      sentimentChartInstance = new Chart(ctxSent, {
+        type: 'doughnut',
+        data: {
+          labels: ['Positivo', 'Neutral', 'Negativo'],
+          datasets: [{
+            data: [sentData.positivo, sentData.neutral, sentData.negativo],
+            backgroundColor: [
+              '#2e7d32', // Verde
+              '#DDC8A4', // Beige
+              '#D8000C'  // Rojo
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+
+      // 3. Categorías
+      const catContainer = document.getElementById('categories-container');
+      catContainer.innerHTML = '';
+      if (aiData.categories && Array.isArray(aiData.categories)) {
+         aiData.categories.forEach(cat => {
+            let li = document.createElement('li');
+            li.innerHTML = `<strong>${cat.name}</strong> ${cat.description}`;
+            catContainer.appendChild(li);
+         });
+      }
+    }
+  </script>
+</body>
+</html>
