@@ -274,23 +274,22 @@
         margin-top: 0 !important;
       }
       header {
-        background-color: var(--white) !important;
-        color: var(--wine-red) !important;
-        border-bottom: 3px solid var(--wine-red-light);
-        padding: 10px;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        display: none !important;
       }
       .card {
         box-shadow: none;
         border: 1px solid #ccc;
         border-top: 4px solid var(--wine-red-light);
-        page-break-inside: avoid;
+        page-break-inside: auto;
         margin-bottom: 20px;
+        margin-top: 0 !important;
       }
       /* Ocultar UI interactiva */
       button, select, label[for="qualSelect"], #loading, #ai-loading, .error-msg, .no-print {
         display: none !important;
+      }
+      .kpi-box, .kpi-chart-box, .synthesis-box, .grid-2 > div {
+        page-break-inside: avoid;
       }
       .kpi-box {
         background-color: #f9f9f9 !important;
