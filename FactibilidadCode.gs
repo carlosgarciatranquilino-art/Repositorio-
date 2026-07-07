@@ -81,7 +81,6 @@ function submitForm(formData) {
     nuevaHoja.appendRow(["II. Programa de Estudios:", formData.programaEstudios || ""]);
     nuevaHoja.appendRow(["III. Modalidad educativa:", formData.modalidad || ""]);
     nuevaHoja.appendRow(["IV. Opción educativa:", formData.opcionEducativa || ""]);
-    nuevaHoja.appendRow(["VI. Región de influencia (macro):", formData.regionMacro || ""]);
     nuevaHoja.appendRow([""]);
 
     // Desglosar Tabla V
@@ -94,6 +93,10 @@ function submitForm(formData) {
     } else {
       nuevaHoja.appendRow(["Sin datos"]);
     }
+    nuevaHoja.appendRow([""]);
+
+    // Escribir Pregunta VI (después de la V)
+    nuevaHoja.appendRow(["VI. Región de influencia (macro):", formData.regionMacro || ""]);
     nuevaHoja.appendRow([""]);
 
     // Desglosar Tabla VII
