@@ -196,12 +196,7 @@
       <div class="question-desc">Seleccione el subsistema al que pertenece el plantel.</div>
       <select id="subsistema" name="subsistema" required>
         <option value="">Seleccione una opción...</option>
-        <option value="EPOEM">EPOEM</option>
         <option value="CBT">CBT</option>
-        <option value="TBC">TBC</option>
-        <option value="CECYTEM">CECYTEM</option>
-        <option value="COBAEM">COBAEM</option>
-        <option value="CONALEP">CONALEP</option>
       </select>
     </div>
 
@@ -217,9 +212,7 @@
       <div class="question-title">III. Modalidad educativa</div>
       <div class="question-desc">Selecciona la modalidad en la que se imparte o impartirá el programa.</div>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="Escolarizada" required> Escolarizada</label>
-        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="No escolarizada"> No escolarizada</label>
-        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="Mixta"> Mixta</label>
+        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="Escolarizada" required checked> Escolarizada</label>
       </div>
     </div>
 
@@ -228,12 +221,7 @@
       <div class="question-title">IV. Selecciona la opción educativa</div>
       <div class="question-desc">Selecciona una opción.</div>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Presencial" required> Presencial</label>
-        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Intensiva"> Intensiva</label>
-        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Virtual"> Virtual</label>
-        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Dual"> Dual</label>
-        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Auto planeada"> Auto planeada</label>
-        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Mixta"> Mixta</label>
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Presencial" required checked> Presencial</label>
       </div>
     </div>
 
@@ -262,17 +250,17 @@
     <!-- PREGUNTA VI -->
     <div class="question-group">
       <div class="question-title">VI. Región de influencia (macro)</div>
-      <div class="question-desc">Selecciona tu región de influencia macro.</div>
-      <select id="region-macro" name="regionMacro">
+      <div class="question-desc" style="border: 1px solid var(--border-color); padding: 10px; background-color: #f9f9f9; border-left: 4px solid var(--secondary); margin-bottom: 15px;">
+        <strong>Escriba la región que comprende, de acuerdo con la ubicación de los planteles educativos que implementan o implementarán el Programa</strong>
+      </div>
+      <select id="region-macro" name="regionMacro" required>
         <option value="">Seleccione una opción...</option>
-        <option value="Noroeste (Baja California, Baja California Sur, Chihuahua, Durango, Sinaloa y Sonora)">Noroeste (Baja California, Baja California Sur, Chihuahua, Durango, Sinaloa y Sonora)</option>
-        <option value="Noreste (Coahuila, Nuevo León y Tamaulipas)">Noreste (Coahuila, Nuevo León y Tamaulipas)</option>
-        <option value="Occidente (Colima, Jalisco, Michoacán y Nayarit)">Occidente (Colima, Jalisco, Michoacán y Nayarit)</option>
-        <option value="Oriente (Hidalgo, Puebla, Tlaxcala y Veracruz)">Oriente (Hidalgo, Puebla, Tlaxcala y Veracruz)</option>
-        <option value="Centronorte (Aguascalientes, Guanajuato, Querétaro, San Luis Potosí y Zacatecas)">Centronorte (Aguascalientes, Guanajuato, Querétaro, San Luis Potosí y Zacatecas)</option>
-        <option value="Centrosur (Ciudad de México, Estado de México y Morelos)">Centrosur (Ciudad de México, Estado de México y Morelos)</option>
-        <option value="Suroeste (Chiapas, Guerrero y Oaxaca)">Suroeste (Chiapas, Guerrero y Oaxaca)</option>
-        <option value="Sureste (Campeche, Quintana Roo, Tabasco y Yucatán)">Sureste (Campeche, Quintana Roo, Tabasco y Yucatán)</option>
+        <option value="Noroeste">Noroeste: Baja California, Baja California Sur, Chihuahua, Durango, Sinaloa y Sonora</option>
+        <option value="Noreste">Noreste: Coahuila, Nuevo León, San Luis Potosí y Tamaulipas</option>
+        <option value="Occidente y Bajío">Occidente y Bajío: Aguascalientes, Guanajuato, Jalisco, Michoacán, Nayarit, Querétaro, Zacatecas y Colima</option>
+        <option value="Ciudad de México">Ciudad de México: Ciudad de México</option>
+        <option value="Centro Sur y Oriente">Centro Sur y Oriente: Estado de México, Hidalgo, Morelos, Puebla, Tlaxcala y Veracruz</option>
+        <option value="Sur">Sur: Campeche, Chiapas, Guerrero, Quintana Roo, Tabasco, Yucatán y Oaxaca</option>
       </select>
     </div>
 
