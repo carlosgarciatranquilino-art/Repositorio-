@@ -32,19 +32,25 @@ function submitForm(formData) {
     let registrosSheet = spreadsheet.getSheetByName("Registros");
     if (!registrosSheet) {
       registrosSheet = spreadsheet.insertSheet("Registros");
-      // Configurar encabezados si es nueva
-      registrosSheet.appendRow([
-        "Marca temporal",
-        "Nombre del capturista y CCT",
-        "I. Subsistema",
-        "II. Programa de Estudios",
-        "III. Modalidad educativa",
-        "IV. Opción educativa",
-        "V. Región Micro",
-        "VI. Región Macro",
-        "VII. Escuelas"
-      ]);
     }
+
+    // Forzar siempre los encabezados correctos en la primera fila para evitar desorden de versiones previas
+    const encabezadosRegistros = [
+      "Marca temporal",
+      "Nombre del capturista y CCT",
+      "I. Subsistema",
+      "II. Programa de Estudios",
+      "III. Modalidad educativa",
+      "IV. Opción educativa",
+      "V. Región Micro",
+      "VI. Región Macro",
+      "VII. Escuelas"
+    ];
+    registrosSheet.getRange(1, 1, 1, encabezadosRegistros.length)
+      .setValues([encabezadosRegistros])
+      .setFontWeight("bold")
+      .setBackground("#56212F")
+      .setFontColor("white");
 
     // Preparar el string consolidado para las tablas
     const consolidadoMicro = consolidarTablaMicro(formData.regionMicro);
