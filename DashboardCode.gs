@@ -1,0 +1,210 @@
+// ==========================================
+// CONFIGURACIÓN PRINCIPAL
+// ==========================================
+// Ve a https://aistudio.google.com/app/apikey para obtener tu API Key de Gemini
+const GEMINI_API_KEY = 'TU_API_KEY_DE_GEMINI_AQUI';
+
+// Puedes poner el ID de tu Google Sheet aquí, o si creas este script
+// directamente "vinculado" a tu Google Sheet (Extensiones > Apps Script),
+// puedes dejarlo vacío y el script detectará la hoja automáticamente.
+const SPREADSHEET_ID = '';
+const SHEET_NAME = 'Respuestas de formulario 1'; // Nombre de la pestaña inferior
+
+// ==========================================
+// FUNCIÓN PRINCIPAL DE INTERFAZ WEB
+// ==========================================
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Dashboard')
+      .setTitle('Dashboard Educativo y Análisis de Encuestas')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// ==========================================
+// FUNCIONES PARA OBTENER Y ANALIZAR DATOS
+// ==========================================
+
+/**
+ * Obtiene los datos crudos desde Google Sheets.
+ */
+function getSurveyData() {
+  let sheet;
+  if (SPREADSHEET_ID === '') {
+    try {
+      // Si el script está asociado al Sheets
+      sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME) || SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    } catch (e) {
+      return { error: 'No se pudo acceder a la hoja activa. Si tu script no está creado desde el Google Sheet, por favor configura el SPREADSHEET_ID.' };
+    }
+  } else {
+    try {
+      const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+      sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+    } catch (e) {
+      return { error: 'No se pudo encontrar el Google Sheet. Verifica que el ID sea correcto y tengas permisos.' };
+    }
+  }
+
+  if (!sheet) {
+    return { error: 'No se encontró la pestaña con los datos. Verifica el nombre (SHEET_NAME).' };
+  }
+
+  const data = sheet.getDataRange().getDisplayValues(); // getDisplayValues trae como texto lo que se ve en la celda
+  if (data.length < 2) {
+    return { error: 'La hoja de cálculo no tiene suficientes datos (se requieren al menos encabezados y una fila de respuesta).' };
+  }
+
+  const headers = data[0];
+  const rows = data.slice(1);
+
+  return {
+    headers: headers,
+    rows: rows
+  };
+}
+
+/**
+ * Busca un modelo de Gemini válido y disponible para la cuenta actual.
+ */
+function getAvailableGeminiModel() {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`;
+  try {
+    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const json = JSON.parse(response.getContentText());
+
+    if (response.getResponseCode() !== 200 || !json.models) {
+       return 'gemini-1.5-flash'; // Fallback por defecto si falla la lista
+    }
+
+    // Buscar modelos que soporten "generateContent"
+    const validModels = json.models.filter(m =>
+      m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")
+    ).map(m => m.name.replace('models/', ''));
+
+    // Preferir en este orden
+    if (validModels.includes('gemini-3.5-flash')) return 'gemini-3.5-flash';
+    if (validModels.includes('gemini-1.5-flash')) return 'gemini-1.5-flash';
+    if (validModels.includes('gemini-1.5-pro')) return 'gemini-1.5-pro';
+    if (validModels.includes('gemini-pro')) return 'gemini-pro';
+
+    // Si no está ninguno de nuestros favoritos, devolver el primero válido que encontremos
+    if (validModels.length > 0) return validModels[0];
+
+    return 'gemini-3.5-flash';
+  } catch (e) {
+    return 'gemini-3.5-flash';
+  }
+}
+
+/**
+ * Llama a la API de Google Gemini para analizar un conjunto de respuestas de una pregunta abierta.
+ * Extrae: Palabras Clave, Sentimiento y Categorización.
+ */
+function analyzeTextWithGemini(texts, questionHeader) {
+  if (GEMINI_API_KEY === 'TU_API_KEY_DE_GEMINI_AQUI' || GEMINI_API_KEY === '') {
+    return { error: 'Por favor, configura tu API Key de Gemini (GEMINI_API_KEY) en el archivo DashboardCode.gs.' };
+  }
+
+  // Filtramos textos vacíos y tomamos una muestra de hasta 50 respuestas para evitar
+  // usar demasiados tokens de una sola vez y mantener la llamada rápida.
+  const validTexts = texts.filter(t => t && t.toString().trim() !== '');
+  const sampleTexts = validTexts.slice(0, 50);
+
+  if (sampleTexts.length === 0) {
+     return { error: 'No hay respuestas de texto válidas para analizar en esta columna.' };
+  }
+
+  const joinedTexts = sampleTexts.map((t, i) => `Respuesta ${i+1}: ${t}`).join('\n');
+
+  const prompt = `
+Eres un analista de datos experto que responde única y exclusivamente en formato JSON. A continuación te presento una serie de respuestas recopiladas de un formulario.
+La pregunta que respondieron es: "${questionHeader}".
+
+Respuestas:
+${joinedTexts}
+
+Analiza estas respuestas y devuelve la información solicitada estrictamente en formato JSON válido. No incluyas backticks (\`\`\`) ni texto adicional, solo el objeto JSON puro.
+
+Instrucciones Críticas:
+1. "synthesis": Escribe un párrafo analizando e interpretando la tendencia general de las respuestas basándote en las palabras clave y el contexto.
+2. "sentiment": Deben ser valores numéricos (porcentajes) donde la suma EXACTA de positivo, neutral y negativo sea 100.
+3. "categories": Categoriza los temas e incluye un nivel de atención (Alta, Media, Baja) indicando la prioridad o urgencia con la que se debe atender dicho tema.
+
+Estructura del JSON esperada:
+{
+  "keywords": ["palabra1", "frase 2", "palabra 3", "frase 4", "palabra 5"],
+  "synthesis": "Párrafo de resumen de tendencias...",
+  "sentiment": {
+    "positivo": 40,
+    "neutral": 30,
+    "negativo": 30
+  },
+  "categories": [
+    {
+      "name": "Nombre Categoría",
+      "description": "Breve descripción de lo que trata esta categoría.",
+      "attention_level": "Alta"
+    }
+  ]
+}
+`;
+
+  // Descubrir el mejor modelo disponible dinámicamente para evitar errores "not found"
+  const bestModelName = getAvailableGeminiModel();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${bestModelName}:generateContent?key=${GEMINI_API_KEY}`;
+
+  const payload = {
+    contents: [{
+      parts: [{
+        text: prompt
+      }]
+    }],
+    generationConfig: {
+      temperature: 0.2,
+      responseMimeType: "application/json" // Obliga a Gemini a devolver JSON válido
+    }
+  };
+
+  const options = {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const responseText = response.getContentText();
+    const json = JSON.parse(responseText);
+
+    if (response.getResponseCode() !== 200) {
+      // Si da error de modelo no encontrado, sugerir una alternativa estable antigua para cuentas restringidas
+      let errorMsg = json.error?.message || response.getResponseCode();
+      return { error: `Error de Gemini: ${errorMsg}` };
+    }
+
+    // Verificar si Gemini bloqueó la respuesta por seguridad
+    if (json.promptFeedback && json.promptFeedback.blockReason) {
+       return { error: `Gemini bloqueó la solicitud por motivos de seguridad: ${json.promptFeedback.blockReason}` };
+    }
+
+    if (!json.candidates || json.candidates.length === 0 || !json.candidates[0].content) {
+       return { error: 'Gemini no devolvió ninguna respuesta válida. Es posible que el contenido haya sido filtrado.' };
+    }
+
+    // Extraer el texto generado por Gemini
+    let aiContent = json.candidates[0].content.parts[0].text;
+
+    // Limpieza de formato (a veces Gemini devuelve bloques de código markdown como ```json ... ```)
+    aiContent = aiContent.replace(/^```json/i, '').replace(/^```/i, '');
+    aiContent = aiContent.replace(/```$/i, '');
+    aiContent = aiContent.trim();
+
+    return { result: JSON.parse(aiContent) };
+
+  } catch (e) {
+    return { error: 'Error al procesar el análisis con Gemini. Asegúrate de que tu API Key sea correcta o intenta nuevamente: ' + e.toString() };
+  }
+}

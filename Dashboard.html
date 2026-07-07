@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Educativo y Análisis de Encuestas</title>
+  <!-- Chart.js para las gráficas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Paleta Institucional */
+    :root {
+      --wine-red: #56212F;
+      --wine-red-light: #9F2241;
+      --ochre: #977E5B;
+      --ochre-light: #BC955B;
+      --beige: #DDC8A4;
+      --warm-gray: #D6D1CA;
+      --white: #FFFFFF;
+      --text-dark: #333333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--warm-gray);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: var(--wine-red);
+      color: var(--white);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 5px solid var(--ochre-light);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    /* Tarjetas (Cards) */
+    .card {
+      background-color: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 25px;
+      border-top: 4px solid var(--wine-red-light);
+    }
+
+    .card h2 {
+      color: var(--wine-red);
+      margin-top: 0;
+      border-bottom: 2px solid var(--beige);
+      padding-bottom: 10px;
+    }
+
+    /* Cuadrícula (Grid) para métricas y gráficos */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-multi {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-multi {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* KPIs */
+    .kpi-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .kpi-box {
+      background-color: var(--beige);
+      padding: 15px 25px;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 150px;
+      margin: 10px;
+      border: 1px solid var(--ochre);
+      flex: 1;
+    }
+
+    .kpi-chart-box {
+      background-color: #fcfcfc;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .kpi-chart-title {
+      font-size: 1rem;
+      color: var(--wine-red);
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 2.4rem;
+    }
+    .kpi-chart-stats {
+      font-size: 0.85rem;
+      color: #555;
+      text-align: center;
+      margin-bottom: 10px;
+      background: var(--beige);
+      padding: 5px;
+      border-radius: 4px;
+    }
+
+    .kpi-title {
+      font-size: 0.9rem;
+      color: var(--wine-red);
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text-dark);
+      margin-top: 5px;
+    }
+
+    /* Controles */
+    select, button {
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid var(--ochre);
+      font-size: 1rem;
+    }
+
+    select {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    button {
+      background-color: var(--wine-red-light);
+      color: var(--white);
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--wine-red);
+    }
+
+    /* Estados de carga */
+    #loading, #ai-loading {
+      text-align: center;
+      font-weight: bold;
+      color: var(--wine-red);
+      padding: 20px;
+      display: none;
+    }
+
+    .error-msg {
+      color: #D8000C;
+      background-color: #FFD2D2;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    /* Resultados Cualitativos IA */
+    .tag {
+      display: inline-block;
+      background-color: var(--ochre-light);
+      color: var(--white);
+      padding: 5px 12px;
+      border-radius: 15px;
+      margin: 3px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .synthesis-box {
+      background-color: var(--beige);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 5px solid var(--ochre);
+      font-style: italic;
+      margin-top: 15px;
+      font-size: 1rem;
+      color: var(--text-dark);
+    }
+
+    .sentiment-explainer {
+      font-size: 0.8rem;
+      color: #666;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+
+    .category-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .category-list li {
+      background-color: #f9f9f9;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-left: 4px solid var(--wine-red);
+      border-radius: 0 4px 4px 0;
+      position: relative;
+    }
+
+    .attention-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: white;
+    }
+    .att-alta { background-color: var(--wine-red-light); }
+    .att-media { background-color: var(--ochre-light); }
+    .att-baja { background-color: #757575; }
+
+    .category-list strong {
+      color: var(--wine-red);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* Estilos de Impresión / Exportación a PDF */
+    @media print {
+      @page {
+        margin: 1cm;
+      }
+      body {
+        background-color: var(--white);
+        color: black;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        /* Evita que un margen superior empuje el contenido a una nueva página */
+        margin-top: 0 !important;
+      }
+      header {
+        display: none !important;
+      }
+      .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        border-top: 4px solid var(--wine-red-light);
+        page-break-inside: auto;
+        margin-bottom: 20px;
+        margin-top: 0 !important;
+      }
+      /* Ocultar UI interactiva */
+      button, select, label[for="qualSelect"], #loading, #ai-loading, .error-msg, .no-print {
+        display: none !important;
+      }
+      .kpi-box, .kpi-chart-box, .synthesis-box, .grid-2 > div {
+        page-break-inside: avoid;
+      }
+      .kpi-box {
+        background-color: #f9f9f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border: 1px solid #bbb;
+      }
+      .tag {
+        border: 1px solid var(--ochre);
+        color: black;
+        background-color: transparent !important;
+      }
+      .synthesis-box {
+        background-color: transparent !important;
+        border: 1px solid #ccc;
+        border-left: 5px solid var(--ochre);
+      }
+      canvas {
+        max-width: 100% !important;
+        page-break-inside: avoid;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Análisis de Encuestas</h1>
+    <button class="no-print" onclick="window.print()" style="margin-top: 10px; background-color: var(--ochre); padding: 8px 16px; border-radius: 4px; border: none; color: white; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
+      📄 Guardar como PDF / Imprimir
+    </button>
+  </header>
+
+  <div class="container">
+
+    <div id="main-error" class="error-msg"></div>
+    <div id="loading">Cargando datos desde Google Sheets... Por favor espera.</div>
+
+    <!-- SECCIÓN CUANTITATIVA -->
+    <div id="dashboard-content" style="display: none;">
+
+      <div class="card">
+        <h2>Métricas y Análisis Cuantitativo</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 15px;">Vista general de respuestas y tendencias de las preguntas de opción múltiple y escalas numéricas.</p>
+        <div class="kpi-container">
+          <div class="kpi-box">
+            <div class="kpi-title">Total de Encuestas Respondidas</div>
+            <div class="kpi-value" id="kpi-total">-</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-title">Total de Preguntas Procesadas</div>
+            <div class="kpi-value" id="kpi-questions">-</div>
+          </div>
+        </div>
+
+        <div id="quantitative-charts-container" class="grid-multi">
+          <!-- Gráficos cuantitativos dinámicos irán aquí -->
+        </div>
+      </div>
+
+      <!-- SECCIÓN CUALITATIVA (IA) -->
+      <div class="card">
+        <h2>Análisis Cualitativo con IA (Google Gemini)</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 15px;">Selecciona una pregunta abierta (texto libre) para extraer palabras clave, categorizar respuestas y analizar el sentimiento general usando Inteligencia Artificial.</p>
+
+        <label for="qualSelect">Selecciona una pregunta abierta:</label><br>
+        <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+            <select id="qualSelect"></select>
+            <button onclick="runAIAnalysis()">Analizar con IA</button>
+        </div>
+
+        <div id="ai-loading">La IA está leyendo y procesando las respuestas... 🧠 (Puede tomar unos segundos)</div>
+        <div id="ai-error" class="error-msg" style="margin-top: 15px;"></div>
+
+        <div id="ai-results" style="display: none; margin-top: 25px;">
+
+          <div class="grid-2">
+            <!-- Sentimiento -->
+            <div>
+              <h3 style="color: var(--wine-red-light); font-size: 1.1rem; margin-top:0;">Análisis de Sentimiento</h3>
+              <div style="position: relative; height: 200px;">
+                <canvas id="sentimentChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Palabras Clave y Síntesis -->
+            <div>
+              <h3 style="color: var(--wine-red-light); font-size: 1.1rem; margin-top:0;">Síntesis y Palabras Clave</h3>
+              <div id="keywords-container" style="margin-top: 15px;">
+                <!-- Tags dinámicos aquí -->
+              </div>
+              <div id="synthesis-container" class="synthesis-box" style="display:none;"></div>
+            </div>
+          </div>
+
+          <div class="sentiment-explainer">
+             <strong>Interpretación del Sentimiento:</strong> El modelo de Inteligencia Artificial clasifica el tono emocional general de todas las respuestas. Se ajusta la suma al 100% para mostrar la proporción relativa entre percepciones Positivas (aprobación), Neutrales (objetivas o sin carga emocional fuerte) y Negativas (quejas o áreas de mejora).
+          </div>
+
+          <!-- Categorías -->
+          <div style="margin-top: 30px;">
+            <h3 style="color: var(--wine-red-light); font-size: 1.1rem;">Categorización de Temas</h3>
+            <ul id="categories-container" class="category-list">
+               <!-- Categorías dinámicas aquí -->
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let sheetData = null;
+    let sentimentChartInstance = null;
+    let quantitativeChartInstances = [];
+
+    // Inicialización al cargar la página
+    window.onload = function() {
+      document.getElementById('loading').style.display = 'block';
+      // Llamada al backend de Apps Script
+      google.script.run
+        .withSuccessHandler(onDataLoaded)
+        .withFailureHandler(onError)
+        .getSurveyData();
+    };
+
+    function onError(error) {
+      document.getElementById('loading').style.display = 'none';
+      const errorDiv = document.getElementById('main-error');
+      errorDiv.style.display = 'block';
+      errorDiv.innerText = 'Error de conexión: ' + error.message;
+    }
+
+    function onDataLoaded(data) {
+      document.getElementById('loading').style.display = 'none';
+      const errorDiv = document.getElementById('main-error');
+
+      if (data && data.error) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerText = data.error;
+        return;
+      }
+
+      sheetData = data;
+
+      // Mostrar el panel de control
+      document.getElementById('dashboard-content').style.display = 'block';
+
+      // Llenar KPIs
+      document.getElementById('kpi-total').innerText = sheetData.rows.length;
+      document.getElementById('kpi-questions').innerText = sheetData.headers.length;
+
+      // Llenar el Dropdown de Cualitativas (IA)
+      const qualSelect = document.getElementById('qualSelect');
+      sheetData.headers.forEach((header, index) => {
+        // Ignorar columnas anteriores, empezar a partir de la pregunta 10
+        if (index < 10) return;
+
+        let opt = document.createElement('option');
+        opt.value = index;
+        opt.text = header;
+        qualSelect.appendChild(opt);
+      });
+
+      // Autodetectar y renderizar gráficos cuantitativos
+      renderAllQuantitativeCharts();
+    }
+
+    // ==========================================
+    // LÓGICA CUANTITATIVA AUTO-GENERADA
+    // ==========================================
+    function renderAllQuantitativeCharts() {
+      const container = document.getElementById('quantitative-charts-container');
+      container.innerHTML = '';
+
+      // Limpiar instancias previas
+      quantitativeChartInstances.forEach(chart => chart.destroy());
+      quantitativeChartInstances = [];
+
+      sheetData.headers.forEach((header, colIndex) => {
+        // Ignorar la primera columna si parece ser 'Marca temporal'
+        if (colIndex === 0 && header.toLowerCase().includes('marca temporal')) return;
+
+        // Contar frecuencias y detectar si es pregunta cerrada/numérica (cuantitativa)
+        let counts = {};
+        let totalValids = 0;
+        let sum = 0;
+        let isNumeric = true;
+        let totalTextLength = 0;
+
+        sheetData.rows.forEach(row => {
+          let val = row[colIndex];
+          if (val === undefined || val === null || val.toString().trim() === '') return;
+
+          val = val.toString().trim();
+          counts[val] = (counts[val] || 0) + 1;
+          totalValids++;
+          totalTextLength += val.length;
+
+          let numVal = parseFloat(val);
+          if (isNaN(numVal)) {
+            isNumeric = false;
+          } else {
+            sum += numVal;
+          }
+        });
+
+        // Heurística para decidir si graficamos
+        const uniqueAnswers = Object.keys(counts).length;
+        if (uniqueAnswers === 0 || uniqueAnswers > 15) return; // Probablemente texto libre muy variado
+
+        // Si no son números, revisar si las cadenas son muy largas (probablemente comentarios libres aunque haya pocos encuestados)
+        if (!isNumeric && totalValids > 0) {
+            const avgLength = totalTextLength / totalValids;
+            if (avgLength > 20) return; // Si la respuesta promedio tiene más de 20 caracteres, asumimos que es texto abierto, no cuantitativo
+        }
+
+        // Preparar DOM
+        const boxId = `quant-box-${colIndex}`;
+        const canvasId = `quant-canvas-${colIndex}`;
+
+        const box = document.createElement('div');
+        box.className = 'kpi-chart-box';
+
+        // Si son numéricos (ej 1 al 4, del 1 al 10), calcular promedio
+        let statsHtml = `Respuestas válidas: <strong>${totalValids}</strong>`;
+        if (isNumeric && totalValids > 0) {
+            const avg = (sum / totalValids).toFixed(2);
+            statsHtml += ` | Promedio: <strong>${avg}</strong>`;
+        }
+
+        box.innerHTML = `
+          <div class="kpi-chart-title">${header}</div>
+          <div class="kpi-chart-stats">${statsHtml}</div>
+          <div style="position: relative; height: 200px;">
+            <canvas id="${canvasId}"></canvas>
+          </div>
+        `;
+        container.appendChild(box);
+
+        // Dibujar Chart
+        const labels = Object.keys(counts);
+        const dataValues = Object.values(counts);
+        const ctx = document.getElementById(canvasId).getContext('2d');
+
+        // Usar pie para pocas opciones (ej Si/No), bar para escalas (ej 1,2,3,4,5)
+        const chartType = uniqueAnswers <= 3 && !isNumeric ? 'pie' : 'bar';
+
+        const chart = new Chart(ctx, {
+          type: chartType,
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Frecuencia',
+              data: dataValues,
+              backgroundColor: ['#9F2241', '#BC955B', '#56212F', '#977E5B', '#DDC8A4', '#D6D1CA', '#333333'],
+              borderRadius: chartType === 'bar' ? 4 : 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: chartType === 'pie' }
+            },
+            scales: chartType === 'bar' ? {
+              y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            } : {}
+          }
+        });
+
+        quantitativeChartInstances.push(chart);
+      });
+
+      if (quantitativeChartInstances.length === 0) {
+         container.innerHTML = '<p style="text-align:center; width:100%; color:#666;">No se detectaron preguntas de opción múltiple o escalas numéricas (todas tienen más de 15 respuestas únicas).</p>';
+      }
+    }
+
+    // ==========================================
+    // LÓGICA CUALITATIVA (LLAMADA A IA)
+    // ==========================================
+    function runAIAnalysis() {
+      const colIndex = document.getElementById('qualSelect').value;
+      const questionTitle = sheetData.headers[colIndex];
+
+      // Extraer todas las respuestas de texto para esta columna
+      const textResponses = sheetData.rows.map(row => row[colIndex]);
+
+      // UI
+      document.getElementById('ai-results').style.display = 'none';
+      document.getElementById('ai-error').style.display = 'none';
+      document.getElementById('ai-loading').style.display = 'block';
+
+      google.script.run
+        .withSuccessHandler(onAILoaded)
+        .withFailureHandler(onAIError)
+        .analyzeTextWithGemini(textResponses, questionTitle);
+    }
+
+    function onAIError(error) {
+      document.getElementById('ai-loading').style.display = 'none';
+      const errDiv = document.getElementById('ai-error');
+      errDiv.style.display = 'block';
+      errDiv.innerText = 'Error al contactar con la IA: ' + error.message;
+    }
+
+    function onAILoaded(response) {
+      document.getElementById('ai-loading').style.display = 'none';
+      const errDiv = document.getElementById('ai-error');
+
+      if (response && response.error) {
+        errDiv.style.display = 'block';
+        errDiv.innerText = response.error;
+        return;
+      }
+
+      if (!response.result) {
+         errDiv.style.display = 'block';
+         errDiv.innerText = "La IA no devolvió un formato válido.";
+         return;
+      }
+
+      const aiData = response.result;
+      document.getElementById('ai-results').style.display = 'block';
+
+      // 1. Palabras Clave y Síntesis
+      const kwContainer = document.getElementById('keywords-container');
+      kwContainer.innerHTML = '';
+      if (aiData.keywords && Array.isArray(aiData.keywords)) {
+         aiData.keywords.forEach(kw => {
+            let span = document.createElement('span');
+            span.className = 'tag';
+            span.innerText = kw;
+            kwContainer.appendChild(span);
+         });
+      }
+
+      const synthContainer = document.getElementById('synthesis-container');
+      if (aiData.synthesis) {
+         synthContainer.style.display = 'block';
+         synthContainer.innerText = aiData.synthesis;
+      } else {
+         synthContainer.style.display = 'none';
+      }
+
+      // 2. Gráfica de Sentimiento (Normalizada a 100%)
+      if (sentimentChartInstance) {
+          sentimentChartInstance.destroy();
+      }
+      const ctxSent = document.getElementById('sentimentChart').getContext('2d');
+      const rawSent = aiData.sentiment || {positivo: 0, neutral: 0, negativo: 0};
+
+      // Normalizar para forzar 100% en caso de fallos menores del LLM
+      const totalSent = (rawSent.positivo || 0) + (rawSent.neutral || 0) + (rawSent.negativo || 0);
+      let normPos = 0, normNeu = 0, normNeg = 0;
+      if (totalSent > 0) {
+          normPos = Math.round((rawSent.positivo / totalSent) * 100);
+          normNeu = Math.round((rawSent.neutral / totalSent) * 100);
+          normNeg = 100 - normPos - normNeu; // Ajustar el último para forzar el 100% exacto
+      }
+
+      sentimentChartInstance = new Chart(ctxSent, {
+        type: 'doughnut',
+        data: {
+          labels: ['Positivo (%)', 'Neutral (%)', 'Negativo (%)'],
+          datasets: [{
+            data: [normPos, normNeu, normNeg],
+            backgroundColor: [
+              '#2e7d32', // Verde
+              '#DDC8A4', // Beige
+              '#D8000C'  // Rojo
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+
+      // 3. Categorías con Nivel de Atención
+      const catContainer = document.getElementById('categories-container');
+      catContainer.innerHTML = '';
+      if (aiData.categories && Array.isArray(aiData.categories)) {
+         aiData.categories.forEach(cat => {
+            let li = document.createElement('li');
+            let attLevel = (cat.attention_level || 'Media').toLowerCase();
+            let attClass = 'att-media';
+            if (attLevel.includes('alta')) attClass = 'att-alta';
+            if (attLevel.includes('baja')) attClass = 'att-baja';
+
+            li.innerHTML = `
+              <strong>${cat.name}</strong>
+              <span>${cat.description}</span>
+              <span class="attention-badge ${attClass}">Atención: ${cat.attention_level || 'Media'}</span>
+            `;
+            catContainer.appendChild(li);
+         });
+      }
+    }
+  </script>
+</body>
+</html>
