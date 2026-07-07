@@ -33,7 +33,17 @@ function submitForm(formData) {
     if (!registrosSheet) {
       registrosSheet = spreadsheet.insertSheet("Registros");
       // Configurar encabezados si es nueva
-      registrosSheet.appendRow(["Marca temporal", "Nombre del capturista y CCT", "V. Región Micro", "VI. Región Macro", "VII. Escuelas"]);
+      registrosSheet.appendRow([
+        "Marca temporal",
+        "Nombre del capturista y CCT",
+        "I. Subsistema",
+        "II. Programa de Estudios",
+        "III. Modalidad educativa",
+        "IV. Opción educativa",
+        "V. Región Micro",
+        "VI. Región Macro",
+        "VII. Escuelas"
+      ]);
     }
 
     // Preparar el string consolidado para las tablas
@@ -43,6 +53,10 @@ function submitForm(formData) {
     registrosSheet.appendRow([
       timestamp,
       capturista,
+      formData.subsistema || "",
+      formData.programaEstudios || "",
+      formData.modalidad || "",
+      formData.opcionEducativa || "",
       consolidadoMicro,
       formData.regionMacro || "",
       consolidadoEscuelas
@@ -57,6 +71,10 @@ function submitForm(formData) {
     nuevaHoja.appendRow(["ESTUDIO DE FACTIBILIDAD"]);
     nuevaHoja.appendRow(["Fecha de captura:", timestamp]);
     nuevaHoja.appendRow(["Nombre de quien captura y CCT:", capturista]);
+    nuevaHoja.appendRow(["I. Subsistema:", formData.subsistema || ""]);
+    nuevaHoja.appendRow(["II. Programa de Estudios:", formData.programaEstudios || ""]);
+    nuevaHoja.appendRow(["III. Modalidad educativa:", formData.modalidad || ""]);
+    nuevaHoja.appendRow(["IV. Opción educativa:", formData.opcionEducativa || ""]);
     nuevaHoja.appendRow(["VI. Región de influencia (macro):", formData.regionMacro || ""]);
     nuevaHoja.appendRow([""]);
 

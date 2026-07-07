@@ -190,6 +190,53 @@
       <input type="text" id="capturista" name="capturista" required placeholder="Ej. Juan Pérez - 15DPR1234X">
     </div>
 
+    <!-- PREGUNTA I -->
+    <div class="question-group">
+      <div class="question-title">I. Subsistema</div>
+      <div class="question-desc">Seleccione el subsistema al que pertenece el plantel.</div>
+      <select id="subsistema" name="subsistema" required>
+        <option value="">Seleccione una opción...</option>
+        <option value="EPOEM">EPOEM</option>
+        <option value="CBT">CBT</option>
+        <option value="TBC">TBC</option>
+        <option value="CECYTEM">CECYTEM</option>
+        <option value="COBAEM">COBAEM</option>
+        <option value="CONALEP">CONALEP</option>
+      </select>
+    </div>
+
+    <!-- PREGUNTA II -->
+    <div class="question-group">
+      <div class="question-title">II. Programa de Estudios</div>
+      <div class="question-desc">Escriba el Programa de Estudios de la formación laboral.</div>
+      <input type="text" id="programa-estudios" name="programa-estudios" required placeholder="Ej. Técnico en Informática">
+    </div>
+
+    <!-- PREGUNTA III -->
+    <div class="question-group">
+      <div class="question-title">III. Modalidad educativa</div>
+      <div class="question-desc">Selecciona la modalidad en la que se imparte o impartirá el programa.</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="Escolarizada" required> Escolarizada</label>
+        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="No escolarizada"> No escolarizada</label>
+        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="Mixta"> Mixta</label>
+      </div>
+    </div>
+
+    <!-- PREGUNTA IV -->
+    <div class="question-group">
+      <div class="question-title">IV. Selecciona la opción educativa</div>
+      <div class="question-desc">Selecciona una opción.</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Presencial" required> Presencial</label>
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Intensiva"> Intensiva</label>
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Virtual"> Virtual</label>
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Dual"> Dual</label>
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Auto planeada"> Auto planeada</label>
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Mixta"> Mixta</label>
+      </div>
+    </div>
+
     <!-- PREGUNTA V -->
     <div class="question-group">
       <div class="question-title">V. Región o regiones de influencia micro</div>
@@ -372,18 +419,29 @@
 
   function enviarFormulario() {
     const statusMsg = document.getElementById('status-msg');
-    const capturista = document.getElementById('capturista').value;
-    const regionMacro = document.getElementById('region-macro').value;
 
-    if (!capturista) {
-      alert("Por favor, ingrese el nombre del capturista y CCT.");
+    // Validar formulario (HMTL5 validation)
+    const form = document.getElementById('factibilidadForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
       return;
     }
+
+    const capturista = document.getElementById('capturista').value;
+    const subsistema = document.getElementById('subsistema').value;
+    const programaEstudios = document.getElementById('programa-estudios').value;
+    const modalidad = document.querySelector('input[name="modalidad"]:checked')?.value || "";
+    const opcionEducativa = document.querySelector('input[name="opcion-educativa"]:checked')?.value || "";
+    const regionMacro = document.getElementById('region-macro').value;
 
     const { regionMicro, escuelas } = recolectarDatosTablas();
 
     const formData = {
       capturista: capturista,
+      subsistema: subsistema,
+      programaEstudios: programaEstudios,
+      modalidad: modalidad,
+      opcionEducativa: opcionEducativa,
       regionMacro: regionMacro,
       regionMicro: regionMicro,
       escuelas: escuelas
