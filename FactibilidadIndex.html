@@ -288,6 +288,86 @@
       <button type="button" class="btn-add" onclick="agregarFilaEscuelas()">+ Agregar fila</button>
     </div>
 
+    <!-- PREGUNTA VIII -->
+    <div class="question-group">
+      <div class="question-title">VIII. Planta académica</div>
+      <div class="question-desc">
+        Registre la información del personal académico.
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="dynamic-table" id="tabla-planta-academica">
+          <thead>
+            <tr>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">CCT</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Módulo</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Submódulo</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Perfil académico</th>
+              <th colspan="3" style="text-align: center; border-bottom: 1px solid var(--border-color);">Tipo de contratación</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Total</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle; width: 5%;">Acción</th>
+            </tr>
+            <tr>
+              <th style="text-align: center; font-size: 0.9em; background-color: var(--primary-light);">Tiempo completo</th>
+              <th style="text-align: center; font-size: 0.9em; background-color: var(--primary-light);">Medio tiempo</th>
+              <th style="text-align: center; font-size: 0.9em; background-color: var(--primary-light);">Otra situación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas se insertan aquí vía JS -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add" onclick="agregarFilaPlantaAcademica()">+ Agregar fila</button>
+    </div>
+
+    <!-- PREGUNTA IX -->
+    <div class="question-group">
+      <div class="question-title">IX. Infraestructura Física</div>
+      <div class="question-desc" style="border: 1px solid var(--border-color); padding: 10px; background-color: #f9f9f9; border-left: 4px solid var(--secondary); margin-bottom: 15px;">
+        Coloque por cada CCT la Infraestructura física con la que se cuenta para atender los requerimientos de aplicación del Programa.
+      </div>
+
+      <h3 style="color: var(--primary-light); font-size: 1rem; margin-top: 20px;">Infraestructura general</h3>
+      <div style="overflow-x: auto;">
+        <table class="dynamic-table" id="tabla-infraestructura">
+          <thead>
+            <tr>
+              <th>CCT</th>
+              <th>Población Escolar P</th>
+              <th>Total de grupos G</th>
+              <th>Total de Aulas A</th>
+              <th>Índice de balance de Atención (%)</th>
+              <th>Uso de aulas</th>
+              <th style="width: 5%;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas se insertan aquí vía JS -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add" onclick="agregarFilaInfraestructura()">+ Agregar fila</button>
+
+      <h3 style="color: var(--primary-light); font-size: 1rem; margin-top: 30px;">Laboratorios</h3>
+      <div style="overflow-x: auto;">
+        <table class="dynamic-table" id="tabla-laboratorios">
+          <thead>
+            <tr>
+              <th>CCT</th>
+              <th>Nombre del Laboratorio o taller</th>
+              <th>Capacidad de Estudiantes</th>
+              <th style="width: 5%;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas se insertan aquí vía JS -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add" onclick="agregarFilaLaboratorios()">+ Agregar fila</button>
+    </div>
+
     <button type="button" class="btn-submit" onclick="enviarFormulario()">Guardar y Enviar</button>
 
     <div id="status-msg"></div>
@@ -369,10 +449,80 @@
     tbody.appendChild(tr);
   }
 
+  // ----------------------------------------------------
+  // LÓGICA PARA LA TABLA PLANTA ACADÉMICA (PREGUNTA VIII)
+  // ----------------------------------------------------
+  function agregarFilaPlantaAcademica() {
+    const tbody = document.querySelector('#tabla-planta-academica tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="pa-cct" required></td>
+      <td><input type="text" class="pa-modulo" required></td>
+      <td><input type="text" class="pa-submodulo" required></td>
+      <td><input type="text" class="pa-perfil" required></td>
+      <td><input type="number" class="pa-tc" min="0" value="0" onchange="calcularTotalPlantaAcademica(this)" required></td>
+      <td><input type="number" class="pa-mt" min="0" value="0" onchange="calcularTotalPlantaAcademica(this)" required></td>
+      <td><input type="number" class="pa-os" min="0" value="0" onchange="calcularTotalPlantaAcademica(this)" required></td>
+      <td><input type="number" class="pa-total" value="0" readonly style="background-color: #f0f0f0; font-weight: bold; text-align: center;"></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function calcularTotalPlantaAcademica(element) {
+    const tr = element.closest('tr');
+    const tc = parseInt(tr.querySelector('.pa-tc').value) || 0;
+    const mt = parseInt(tr.querySelector('.pa-mt').value) || 0;
+    const os = parseInt(tr.querySelector('.pa-os').value) || 0;
+    tr.querySelector('.pa-total').value = tc + mt + os;
+  }
+
+  // ----------------------------------------------------
+  // LÓGICA PARA LA TABLA INFRAESTRUCTURA Y LABORATORIOS (PREGUNTA IX)
+  // ----------------------------------------------------
+  function agregarFilaInfraestructura() {
+    const tbody = document.querySelector('#tabla-infraestructura tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="inf-cct" required></td>
+      <td><input type="number" class="inf-p" min="0" required></td>
+      <td><input type="number" class="inf-g" min="0" required></td>
+      <td><input type="number" class="inf-a" min="0" required></td>
+      <td><input type="text" class="inf-indice" required></td>
+      <td><input type="text" class="inf-uso" required></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function agregarFilaLaboratorios() {
+    const tbody = document.querySelector('#tabla-laboratorios tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="lab-cct" required></td>
+      <td><input type="text" class="lab-nombre" required></td>
+      <td><input type="number" class="lab-capacidad" min="0" required></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
   // Inicializar tablas con una fila por defecto
   window.onload = function() {
     agregarFilaMicro();
     agregarFilaEscuelas();
+    agregarFilaPlantaAcademica();
+    agregarFilaInfraestructura();
+    agregarFilaLaboratorios();
   };
 
   // ----------------------------------------------------
@@ -402,7 +552,64 @@
       }
     });
 
-    return { regionMicro, escuelas };
+    // Recolectar Planta Académica
+    const plantaAcademica = [];
+    document.querySelectorAll('#tabla-planta-academica tbody tr').forEach(row => {
+      const cct = row.querySelector('.pa-cct').value;
+      const modulo = row.querySelector('.pa-modulo').value;
+      const submodulo = row.querySelector('.pa-submodulo').value;
+      const perfil = row.querySelector('.pa-perfil').value;
+      const tc = parseInt(row.querySelector('.pa-tc').value) || 0;
+      const mt = parseInt(row.querySelector('.pa-mt').value) || 0;
+      const os = parseInt(row.querySelector('.pa-os').value) || 0;
+      const total = parseInt(row.querySelector('.pa-total').value) || 0;
+
+      if (cct || modulo || submodulo || perfil) {
+        plantaAcademica.push({
+          cct: cct,
+          modulo: modulo,
+          submodulo: submodulo,
+          perfil: perfil,
+          tiempoCompleto: tc,
+          medioTiempo: mt,
+          otraSituacion: os,
+          total: total
+        });
+      }
+    });
+
+    // Recolectar Infraestructura
+    const infraestructura = [];
+    document.querySelectorAll('#tabla-infraestructura tbody tr').forEach(row => {
+      const cct = row.querySelector('.inf-cct').value;
+      const p = row.querySelector('.inf-p').value;
+      const g = row.querySelector('.inf-g').value;
+      const a = row.querySelector('.inf-a').value;
+      const indice = row.querySelector('.inf-indice').value;
+      const uso = row.querySelector('.inf-uso').value;
+
+      if (cct || p || g || a) {
+        infraestructura.push({
+          cct: cct, poblacionP: p, gruposG: g, aulasA: a, indice: indice, uso: uso
+        });
+      }
+    });
+
+    // Recolectar Laboratorios
+    const laboratorios = [];
+    document.querySelectorAll('#tabla-laboratorios tbody tr').forEach(row => {
+      const cct = row.querySelector('.lab-cct').value;
+      const nombre = row.querySelector('.lab-nombre').value;
+      const capacidad = row.querySelector('.lab-capacidad').value;
+
+      if (cct || nombre || capacidad) {
+        laboratorios.push({
+          cct: cct, nombre: nombre, capacidad: capacidad
+        });
+      }
+    });
+
+    return { regionMicro, escuelas, plantaAcademica, infraestructura, laboratorios };
   }
 
   function enviarFormulario() {
@@ -422,7 +629,7 @@
     const opcionEducativa = document.querySelector('input[name="opcion-educativa"]:checked')?.value || "";
     const regionMacro = document.getElementById('region-macro').value;
 
-    const { regionMicro, escuelas } = recolectarDatosTablas();
+    const { regionMicro, escuelas, plantaAcademica, infraestructura, laboratorios } = recolectarDatosTablas();
 
     const formData = {
       capturista: capturista,
@@ -432,7 +639,10 @@
       opcionEducativa: opcionEducativa,
       regionMacro: regionMacro,
       regionMicro: regionMicro,
-      escuelas: escuelas
+      escuelas: escuelas,
+      plantaAcademica: plantaAcademica,
+      infraestructura: infraestructura,
+      laboratorios: laboratorios
     };
 
     // Mostrar mensaje de carga
