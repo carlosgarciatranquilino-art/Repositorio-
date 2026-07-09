@@ -13,6 +13,7 @@ function submitFactibilidadForm(dataObj) {
 
   try {
     // 0. Validaciones de Seguridad en Backend
+    const respName = String(dataObj.contacto_nombre || '').trim();
     const emailStr = String(dataObj.contacto_correo || '').trim();
     const phoneStr = String(dataObj.contacto_telefono || '').trim();
 
@@ -69,29 +70,65 @@ function submitFactibilidadForm(dataObj) {
       ss = SpreadsheetApp.create(ssName);
     }
 
-    // --- Hoja Maestra (Resumen) ---
+    // --- Helper para aplanar arrays dinámicos ---
+    function flattenDynamic(names, details, label) {
+      if (!names) return "Sin datos";
+      let nArr = Array.isArray(names) ? names : [names];
+      let dArr = Array.isArray(details) ? details : [details];
+      let res = [];
+      for(let i=0; i<nArr.length; i++) {
+        res.push(`${nArr[i]} (${label}: ${dArr[i] || 'N/A'})`);
+      }
+      return res.join(" | ");
+    }
+
+    function flattenPersonal(nombres, funciones, perfiles, asignaturas) {
+      if (!nombres) return "Sin datos";
+      let nArr = Array.isArray(nombres) ? nombres : [nombres];
+      let fArr = Array.isArray(funciones) ? funciones : [funciones];
+      let pArr = Array.isArray(perfiles) ? perfiles : [perfiles];
+      let aArr = Array.isArray(asignaturas) ? asignaturas : [asignaturas];
+      let res = [];
+      for(let i=0; i<nArr.length; i++) {
+        res.push(`${nArr[i]} [Función: ${fArr[i] || 'N/A'}, Perfil: ${pArr[i] || 'N/A'}, Asig: ${aArr[i] || 'N/A'}]`);
+      }
+      return res.join(" | ");
+    }
+
+    // --- Hoja Maestra (Resumen Completo) ---
     let masterSheet = ss.getSheetByName("Registros");
     if (!masterSheet) {
       masterSheet = ss.insertSheet("Registros");
       masterSheet.appendRow([
-        "Fecha", "Correo Responsable", "Teléfono Responsable", "Subsistema", "Nombre EPO", "CCT", "Asignatura",
-        "Total Estudiantes", "Total Aulas", "Urls Evidencias", "Conclusión"
+        "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
+        "Subsistema", "Nombre EPO", "Modalidad", "Región", "Zona", "Turnos", "CCT", "Asignatura FOB",
+        "Domicilio", "Tot. Estudiantes", "Tot. Grupos", "Promedio Grupo",
+        "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)",
+        "Aulas: Pob/Gpos/Total/Def/Sup/Nec", "Laboratorios", "Espacios Aprendizaje",
+        "Aula Cómputo (Pob/Req/Eq/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
+        "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
+        "Plantilla Personal", "Municipios Procedencia", "Objetivos Mejora", "Área Influencia",
+        "Campo Laboral", "Conclusión EPO", "Dictamen DDC", "Evidencias URL"
       ]);
-      masterSheet.getRange("A1:K1").setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
+      masterSheet.getRange("A1:AI1").setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
     }
 
     masterSheet.appendRow([
       new Date(),
-      emailStr,
-      phoneStr,
-      dataObj.id_subsistema,
-      epoName,
-      dataObj.id_cct,
-      dataObj.id_asignatura,
-      dataObj.mat_actual_estudiantes,
-      dataObj.aulas_total,
-      fileUrls.join(" | "),
-      dataObj.conclusion_epo
+      respName, emailStr, phoneStr,
+      dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_region, dataObj.id_zona, dataObj.id_turno, dataObj.id_cct, dataObj.id_asignatura,
+      dataObj.loc_domicilio, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, dataObj.mat_actual_promedio,
+      "Ver detalle en hoja ind.", "Ver detalle en hoja ind.", // Simplifying dense matrix tables for master sheet
+      `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}/${dataObj.aulas_deficit}/${dataObj.aulas_superavit}/${dataObj.aulas_necesidad}`,
+      flattenDynamic(dataObj.lab_nombre, dataObj.lab_capacidad, "Cap"),
+      flattenDynamic(dataObj.esp_nombre, dataObj.esp_capacidad, "Cap"),
+      `${dataObj.comp_pob}/${dataObj.comp_horas_req}/${dataObj.comp_equipos}/${dataObj.comp_horas_disp}/${dataObj.comp_horas_falt}/${dataObj.comp_equipo_falt}`,
+      "Ver detalle en hoja ind.",
+      dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
+      flattenPersonal(dataObj.pers_nombre, dataObj.pers_funcion, dataObj.pers_perfil, dataObj.pers_asignatura),
+      dataObj.municipios_procedencia, dataObj.objetivos_mejora, dataObj.area_influencia, dataObj.campo_laboral,
+      dataObj.conclusion_epo, dataObj.dictamen_ddc,
+      fileUrls.join(" | ")
     ]);
 
     // --- Hoja Dinámica Específica para la EPO ---
@@ -125,6 +162,7 @@ function submitFactibilidadForm(dataObj) {
 
     // Datos del Responsable
     addSectionTitle("Datos del Responsable de la Información");
+    addRowData("Nombre completo", respName);
     addRowData("Correo electrónico oficial", emailStr);
     addRowData("Teléfono de contacto", phoneStr);
     currentRow++;
@@ -250,8 +288,14 @@ function submitFactibilidadForm(dataObj) {
       epoSheet.getRange(currentRow, 1).setValue("No se adjuntaron archivos.");
     }
 
-    // Auto-ajustar columnas
-    epoSheet.autoResizeColumns(1, 4);
+    // Formato final de las columnas para evitar expansión excesiva
+    epoSheet.setColumnWidth(1, 300);
+    epoSheet.setColumnWidth(2, 200);
+    epoSheet.setColumnWidth(3, 200);
+    epoSheet.setColumnWidth(4, 200);
+
+    // Activar ajuste de texto (Wrap Text) y alineación superior para toda la hoja
+    epoSheet.getDataRange().setWrap(true).setVerticalAlignment("top");
 
     return { success: true, message: "Guardado correctamente en Drive y Sheets." };
   } catch (error) {
