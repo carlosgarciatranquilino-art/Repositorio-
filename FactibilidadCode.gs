@@ -1,10 +1,29 @@
 /**
- * Procesar el formulario de Pertinencia y Factibilidad
+ * Procesar el formulario de Pertinencia y Factibilidad de manera segura
  * @param {Object} dataObj - El objeto JSON con todos los datos del formulario y los archivos en base64
  */
 function submitFactibilidadForm(dataObj) {
+  // Inicializamos el LockService para evitar colisiones de escritura (concurrencia)
+  const lock = LockService.getScriptLock();
+
+  // Intentamos obtener el bloqueo por hasta 30 segundos
+  if (!lock.tryLock(30000)) {
+    throw new Error("El sistema está muy ocupado procesando otras solicitudes. Por favor, intente enviar de nuevo en unos segundos.");
+  }
+
   try {
-    const epoName = dataObj.id_nombre_epo || 'EPO_Desconocida';
+    // 0. Validaciones de Seguridad en Backend
+    const emailStr = String(dataObj.contacto_correo || '').trim();
+    const phoneStr = String(dataObj.contacto_telefono || '').trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
+      throw new Error("Validación de seguridad fallida: Correo electrónico inválido.");
+    }
+    if (!/^[0-9]{10}$/.test(phoneStr)) {
+      throw new Error("Validación de seguridad fallida: Teléfono inválido (debe tener 10 dígitos).");
+    }
+
+    const epoName = (dataObj.id_nombre_epo || 'EPO_Desconocida').trim();
 
     // 1. Manejo de Archivos en Google Drive
     const parentFolderName = "Evidencias_Factibilidad";
@@ -55,16 +74,18 @@ function submitFactibilidadForm(dataObj) {
     if (!masterSheet) {
       masterSheet = ss.insertSheet("Registros");
       masterSheet.appendRow([
-        "Fecha", "Subsistema", "Nombre EPO", "CCT", "Asignatura",
+        "Fecha", "Correo Responsable", "Teléfono Responsable", "Subsistema", "Nombre EPO", "CCT", "Asignatura",
         "Total Estudiantes", "Total Aulas", "Urls Evidencias", "Conclusión"
       ]);
-      masterSheet.getRange("A1:I1").setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
+      masterSheet.getRange("A1:K1").setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
     }
 
     masterSheet.appendRow([
       new Date(),
+      emailStr,
+      phoneStr,
       dataObj.id_subsistema,
-      dataObj.id_nombre_epo,
+      epoName,
       dataObj.id_cct,
       dataObj.id_asignatura,
       dataObj.mat_actual_estudiantes,
@@ -102,10 +123,16 @@ function submitFactibilidadForm(dataObj) {
       currentRow++;
     }
 
+    // Datos del Responsable
+    addSectionTitle("Datos del Responsable de la Información");
+    addRowData("Correo electrónico oficial", emailStr);
+    addRowData("Teléfono de contacto", phoneStr);
+    currentRow++;
+
     // A. Datos Generales
     addSectionTitle("I. Datos de identificación de la EPO");
     addRowData("Subsistema", dataObj.id_subsistema);
-    addRowData("Nombre de la EPO", dataObj.id_nombre_epo);
+    addRowData("Nombre de la EPO", epoName);
     addRowData("Modalidad Educativa", dataObj.id_modalidad);
     addRowData("Región", dataObj.id_region);
     addRowData("Zona Escolar", dataObj.id_zona);
@@ -229,6 +256,9 @@ function submitFactibilidadForm(dataObj) {
     return { success: true, message: "Guardado correctamente en Drive y Sheets." };
   } catch (error) {
     Logger.log("Error en submitFactibilidadForm: " + error.toString());
-    throw new Error("Error interno al guardar: " + error.toString());
+    throw new Error("Error interno al guardar: " + error.message);
+  } finally {
+    // Siempre liberar el bloqueo cuando se termine, exitoso o no
+    lock.releaseLock();
   }
 }
