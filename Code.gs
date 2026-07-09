@@ -5,13 +5,22 @@
 const API_KEY = 'TU_API_KEY_AQUI';
 
 // ==========================================
-// FUNCIÓN PRINCIPAL DE INTERFAZ WEB
+// FUNCIÓN PRINCIPAL DE INTERFAZ WEB (ENRUTADOR)
 // ==========================================
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
-      .setTitle('Calculadora de Value Bets y Kelly')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+function doGet(e) {
+  // Si se envía el parámetro ?app=apuestas, carga la app de apuestas.
+  // De lo contrario, carga el formulario de Factibilidad por defecto.
+  if (e && e.parameter && e.parameter.app === 'apuestas') {
+    return HtmlService.createHtmlOutputFromFile('index')
+        .setTitle('Calculadora de Value Bets y Kelly')
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } else {
+    return HtmlService.createHtmlOutputFromFile('FactibilidadIndex')
+        .setTitle('Formulario de Pertinencia y Factibilidad')
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
 }
 
 // ==========================================

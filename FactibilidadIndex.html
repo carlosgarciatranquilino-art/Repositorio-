@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pertinencia y Factibilidad</title>
+  <style>
+    :root {
+      --vino-oscuro: #56212F;
+      --vino-claro: #9F2241;
+      --ocre-oscuro: #977E5B;
+      --ocre-claro: #BC955B;
+      --beige-oscuro: #D6D1CA;
+      --beige-claro: #DDC8A4;
+      --blanco: #FFFFFF;
+      --texto: #333333;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: var(--texto);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: var(--blanco);
+      padding: 40px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-top: 10px solid var(--vino-oscuro);
+    }
+
+    h1 {
+      color: var(--vino-oscuro);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: var(--vino-oscuro);
+      border-bottom: 2px solid var(--ocre-claro);
+      padding-bottom: 5px;
+      margin-top: 40px;
+    }
+
+    h3 {
+      color: var(--vino-claro);
+      margin-top: 30px;
+    }
+
+    .indicacion {
+      color: #cc0000;
+      font-size: 0.9em;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--vino-oscuro);
+      color: var(--blanco);
+      text-align: center;
+    }
+
+    .th-sub {
+      background-color: var(--vino-claro);
+      font-size: 0.9em;
+    }
+
+    .label-col {
+      background-color: var(--vino-oscuro);
+      color: var(--blanco);
+      font-weight: bold;
+      width: 30%;
+    }
+
+    input[type="text"], input[type="number"], textarea, select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn-add {
+      background-color: var(--ocre-oscuro);
+      color: var(--blanco);
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .btn-add:hover {
+      background-color: var(--ocre-claro);
+    }
+
+    .btn-remove {
+      background-color: #cc0000;
+      color: var(--blanco);
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .btn-submit {
+      background-color: var(--vino-oscuro);
+      color: var(--blanco);
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border-radius: 5px;
+      display: block;
+      width: 100%;
+      margin-top: 40px;
+      font-weight: bold;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--vino-claro);
+    }
+
+    .file-input-container {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: var(--beige-claro);
+      border: 1px dashed var(--ocre-oscuro);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      z-index: 1000;
+      color: white;
+      text-align: center;
+      padding-top: 20%;
+      font-size: 1.5em;
+    }
+
+    .spinner {
+      margin: 20px auto;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--vino-claro);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <div>Enviando formulario, por favor espere...</div>
+    <div class="spinner"></div>
+  </div>
+
+  <div class="container">
+    <h1>Pertinencia y Factibilidad</h1>
+
+    <form id="factibilidadForm" onsubmit="handleFormSubmit(event)">
+      <!-- a) Datos generales -->
+      <h2>a) Datos generales</h2>
+      <p class="indicacion">Indicación: Presentar un panorama general de la Escuela Preparatoria Oficial (EPO), considerando sus características institucionales.</p>
+
+      <h3>I. Datos de identificación de la EPO</h3>
+      <p class="indicacion">Indicación: Proporcionar de manera precisa, pero suficiente la información solicitada a través del siguiente cuadro:</p>
+
+      <table>
+        <tr>
+          <td class="label-col">Subsistema</td>
+          <td><input type="text" name="id_subsistema" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Nombre de la EPO</td>
+          <td><input type="text" name="id_nombre_epo" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Modalidad Educativa</td>
+          <td><input type="text" name="id_modalidad" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Región</td>
+          <td><input type="text" name="id_region" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Zona Escolar</td>
+          <td><input type="text" name="id_zona" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Turno (s)</td>
+          <td><input type="text" name="id_turno" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">CCT</td>
+          <td><input type="text" name="id_cct" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Nombre de la Asignatura de Formación Ocupacional Básica</td>
+          <td><input type="text" name="id_asignatura" required></td>
+        </tr>
+      </table>
+
+      <!-- b) Descripción de la EPO -->
+      <h2>b) Descripción de la EPO</h2>
+
+      <h3>I. Localización de la Escuela Preparatoria Oficial</h3>
+      <p class="indicacion">Indicación: Colocar el domicilio completo del plantel educativo e integrar una imagen satelital que permita identificar claramente su ubicación geográfica.</p>
+      <div class="form-group">
+        <label><b>Domicilio completo:</b></label>
+        <textarea name="loc_domicilio" required></textarea>
+      </div>
+      <div class="file-input-container">
+        <label><b>Imagen Satelital:</b></label><br>
+        <input type="file" id="file_satelite" accept="image/*" required>
+      </div>
+
+      <h3>II. Matrícula</h3>
+      <p class="indicacion">Indicación: Presentar la matrícula total actual del plantel correspondiente al ciclo escolar vigente...</p>
+
+      <h4>Matrícula total actual (ciclo escolar 2025-2026)</h4>
+      <table>
+        <tr>
+          <th>Indicador</th>
+          <th>Total general</th>
+        </tr>
+        <tr>
+          <td>Total de estudiantes inscritos</td>
+          <td><input type="number" name="mat_actual_estudiantes" required></td>
+        </tr>
+        <tr>
+          <td>Total de grupos</td>
+          <td><input type="number" name="mat_actual_grupos" required></td>
+        </tr>
+        <tr>
+          <td>Promedio de estudiantado por grupo</td>
+          <td><input type="number" step="0.1" name="mat_actual_promedio" required></td>
+        </tr>
+      </table>
+
+      <h4>Histórico de matrícula por grupos y por turno</h4>
+      <table>
+        <tr>
+          <th colspan="4" class="th-sub">2025-2026</th>
+          <th colspan="4" class="th-sub">2024-2025</th>
+          <th colspan="4" class="th-sub">2023-2024</th>
+        </tr>
+        <tr>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="h_2526_h"></td><td><input type="number" name="h_2526_m"></td><td><input type="number" name="h_2526_g"></td><td><input type="text" name="h_2526_t"></td>
+          <td><input type="number" name="h_2425_h"></td><td><input type="number" name="h_2425_m"></td><td><input type="number" name="h_2425_g"></td><td><input type="text" name="h_2425_t"></td>
+          <td><input type="number" name="h_2324_h"></td><td><input type="number" name="h_2324_m"></td><td><input type="number" name="h_2324_g"></td><td><input type="text" name="h_2324_t"></td>
+        </tr>
+      </table>
+
+      <h4>Proyección de matrícula por grupos y por turnos</h4>
+      <table>
+        <tr>
+          <th colspan="4" class="th-sub">2026-2027</th>
+          <th colspan="4" class="th-sub">2027-2028</th>
+          <th colspan="4" class="th-sub">2028-2029</th>
+        </tr>
+        <tr>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="p_2627_h"></td><td><input type="number" name="p_2627_m"></td><td><input type="number" name="p_2627_g"></td><td><input type="text" name="p_2627_t"></td>
+          <td><input type="number" name="p_2728_h"></td><td><input type="number" name="p_2728_m"></td><td><input type="number" name="p_2728_g"></td><td><input type="text" name="p_2728_t"></td>
+          <td><input type="number" name="p_2829_h"></td><td><input type="number" name="p_2829_m"></td><td><input type="number" name="p_2829_g"></td><td><input type="text" name="p_2829_t"></td>
+        </tr>
+      </table>
+
+      <h3>III. Descripción general de instalaciones y equipamiento</h3>
+      <p class="indicacion">Indicación: Presentar una descripción detallada de la infraestructura física del plantel... Incorporar de tres a cinco fotografías representativas...</p>
+
+      <div class="file-input-container">
+        <label><b>Fotografías de instalaciones (seleccione de 3 a 5 imágenes):</b></label><br>
+        <input type="file" id="files_instalaciones" accept="image/*" multiple required>
+      </div>
+
+      <h4>Aulas</h4>
+      <table>
+        <tr>
+          <th>Población Escolar</th>
+          <th>Total de grupos</th>
+          <th>Total de aulas</th>
+          <th>Déficit de atención (%)</th>
+          <th>Superávit de atención (%)</th>
+          <th>Necesidad de aulas</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="aulas_pob"></td>
+          <td><input type="number" name="aulas_gpos"></td>
+          <td><input type="number" name="aulas_total"></td>
+          <td><input type="number" step="0.1" name="aulas_deficit"></td>
+          <td><input type="number" step="0.1" name="aulas_superavit"></td>
+          <td><input type="number" name="aulas_necesidad"></td>
+        </tr>
+      </table>
+
+      <h4>Laboratorios</h4>
+      <button type="button" class="btn-add" onclick="addRow('tblLaboratorios')">+ Agregar Laboratorio</button>
+      <table id="tblLaboratorios">
+        <tr>
+          <th>Nombre del laboratorio o taller</th>
+          <th>Capacidad de estudiantes</th>
+          <th>Acción</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="lab_nombre[]"></td>
+          <td><input type="number" name="lab_capacidad[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <h4>Espacios de Aprendizaje</h4>
+      <button type="button" class="btn-add" onclick="addRow('tblEspacios')">+ Agregar Espacio</button>
+      <table id="tblEspacios">
+        <tr>
+          <th>Nombre del espacio de aprendizaje</th>
+          <th>Capacidad de estudiantes</th>
+          <th>Acción</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="esp_nombre[]"></td>
+          <td><input type="number" name="esp_capacidad[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <h4>Centro o Aula de Cómputo</h4>
+      <table>
+        <tr>
+          <th>Población escolar</th>
+          <th>Horas de uso requeridas</th>
+          <th>Número de equipos</th>
+          <th>Horas de uso gral. disp.</th>
+          <th>Horas de uso gral. faltante</th>
+          <th>Equipo faltante</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="comp_pob"></td>
+          <td><input type="number" name="comp_horas_req"></td>
+          <td><input type="number" name="comp_equipos"></td>
+          <td><input type="number" name="comp_horas_disp"></td>
+          <td><input type="number" name="comp_horas_falt"></td>
+          <td><input type="number" name="comp_equipo_falt"></td>
+        </tr>
+      </table>
+
+      <h4>Fondo Bibliográfico</h4>
+      <table>
+        <tr>
+          <th colspan="2" class="th-sub">Libros</th>
+          <th colspan="2" class="th-sub">Revistas</th>
+          <th colspan="2" class="th-sub">Periódicos</th>
+          <th colspan="2" class="th-sub">Otros</th>
+        </tr>
+        <tr>
+          <th>Impresos</th><th>Electrónicos</th>
+          <th>Impresas</th><th>Electrónicas</th>
+          <th>Impresos</th><th>Electrónicos</th>
+          <th>Impresos</th><th>Electrónicos</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="bib_lib_imp"></td><td><input type="number" name="bib_lib_elec"></td>
+          <td><input type="number" name="bib_rev_imp"></td><td><input type="number" name="bib_rev_elec"></td>
+          <td><input type="number" name="bib_per_imp"></td><td><input type="number" name="bib_per_elec"></td>
+          <td><input type="number" name="bib_otr_imp"></td><td><input type="number" name="bib_otr_elec"></td>
+        </tr>
+      </table>
+
+      <div class="form-group">
+        <label><b>Descripción de espacios administrativos:</b></label>
+        <textarea name="desc_admin"></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Descripción de áreas de servicios:</b></label>
+        <textarea name="desc_servicios"></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Descripción de espacios deportivos:</b></label>
+        <textarea name="desc_deportivos"></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Demás instalaciones destinadas al desarrollo:</b></label>
+        <textarea name="desc_demas"></textarea>
+      </div>
+
+
+      <!-- IV. Personal directivo, docente y administrativo -->
+      <h2>IV. Personal directivo, docente y administrativo</h2>
+      <p class="indicacion">Indicación: Presentar, mediante tablas, la plantilla de personal...</p>
+
+      <button type="button" class="btn-add" onclick="addRow('tblPersonal')">+ Agregar Personal</button>
+      <table id="tblPersonal">
+        <tr>
+          <th>Nombre</th>
+          <th>Función/Categoría/Puesto</th>
+          <th>Perfil Académico</th>
+          <th>Asignatura que imparte</th>
+          <th>Acción</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="pers_nombre[]"></td>
+          <td><input type="text" name="pers_funcion[]"></td>
+          <td><input type="text" name="pers_perfil[]"></td>
+          <td><input type="text" name="pers_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <h2>V. Municipios dentro y fuera del Estado de México</h2>
+      <p class="indicacion">Indicación: Identificar el lugar de procedencia...</p>
+      <div class="form-group">
+        <textarea name="municipios_procedencia" required></textarea>
+      </div>
+
+      <h2>VI. Objetivos del Plan de Mejora Continua</h2>
+      <div class="form-group">
+        <textarea name="objetivos_mejora" required></textarea>
+      </div>
+
+      <h2>c) Área de influencia y contexto regional</h2>
+      <div class="form-group">
+        <textarea name="area_influencia" required></textarea>
+      </div>
+
+      <h2>d) Estructura curricular de la asignatura</h2>
+      <p class="indicacion">Indicación: Presentar la imagen de la estructura curricular de la asignatura...</p>
+      <div class="file-input-container">
+        <label><b>Imagen de Estructura Curricular:</b></label><br>
+        <input type="file" id="file_curricular" accept="image/*" required>
+      </div>
+
+      <h2>e) Existencia de campo laboral</h2>
+      <div class="form-group">
+        <textarea name="campo_laboral" required></textarea>
+      </div>
+
+      <h2>f) Conclusión y dictamen</h2>
+      <div class="form-group">
+        <label><b>CONCLUSIÓN POR PARTE DE LA EPO:</b></label>
+        <textarea name="conclusion_epo" required></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>DICTAMEN POR PARTE DE LA DDC:</b></label>
+        <textarea name="dictamen_ddc" required></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit">Enviar Formulario</button>
+    </form>
+  </div>
+
+  <script>
+    function addRow(tableId) {
+      const table = document.getElementById(tableId);
+      const newRow = table.insertRow(-1);
+
+      let html = '';
+      if(tableId === 'tblLaboratorios' || tableId === 'tblEspacios') {
+        const prefix = tableId === 'tblLaboratorios' ? 'lab' : 'esp';
+        html = `
+          <td><input type="text" name="${prefix}_nombre[]"></td>
+          <td><input type="number" name="${prefix}_capacidad[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      } else if (tableId === 'tblPersonal') {
+        html = `
+          <td><input type="text" name="pers_nombre[]"></td>
+          <td><input type="text" name="pers_funcion[]"></td>
+          <td><input type="text" name="pers_perfil[]"></td>
+          <td><input type="text" name="pers_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      }
+      newRow.innerHTML = html;
+    }
+
+    function removeRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+    }
+
+    // Convert file to base64
+    function getBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve({
+          filename: file.name,
+          mimeType: file.type,
+          bytes: reader.result.split(',')[1] // remove data:image/png;base64,
+        });
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+      document.getElementById('overlay').style.display = 'block';
+
+      try {
+        const form = document.getElementById('factibilidadForm');
+        const formData = new FormData(form);
+        const dataObj = {};
+
+        // Normal inputs
+        for (let [key, value] of formData.entries()) {
+          if(key.endsWith('[]')) {
+            const cleanKey = key.slice(0, -2);
+            if(!dataObj[cleanKey]) dataObj[cleanKey] = [];
+            dataObj[cleanKey].push(value);
+          } else {
+            dataObj[key] = value;
+          }
+        }
+
+        // Handle files
+        dataObj.files = [];
+
+        // file_satelite
+        const fileSatelite = document.getElementById('file_satelite').files[0];
+        if(fileSatelite) {
+          const b64 = await getBase64(fileSatelite);
+          b64.tag = 'Satelite';
+          dataObj.files.push(b64);
+        }
+
+        // file_curricular
+        const fileCurricular = document.getElementById('file_curricular').files[0];
+        if(fileCurricular) {
+          const b64 = await getBase64(fileCurricular);
+          b64.tag = 'Curricular';
+          dataObj.files.push(b64);
+        }
+
+        // files_instalaciones (multiple)
+        const filesInst = document.getElementById('files_instalaciones').files;
+        for(let i=0; i<filesInst.length; i++) {
+          const b64 = await getBase64(filesInst[i]);
+          b64.tag = 'Instalacion_' + (i+1);
+          dataObj.files.push(b64);
+        }
+
+        // Send to backend
+        google.script.run
+          .withSuccessHandler(function(response) {
+            document.getElementById('overlay').style.display = 'none';
+            alert('Formulario enviado y guardado exitosamente.');
+            form.reset();
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById('overlay').style.display = 'none';
+            alert('Error al enviar: ' + error.message);
+          })
+          .submitFactibilidadForm(dataObj);
+
+      } catch (error) {
+        document.getElementById('overlay').style.display = 'none';
+        alert('Error procesando archivos: ' + error);
+      }
+    }
+  </script>
+</body>
+</html>
