@@ -16,14 +16,19 @@ function submitFactibilidadForm(dataObj) {
       parentFolder = DriveApp.createFolder(parentFolderName);
     }
 
-    // Carpeta específica para la EPO actual
-    let epoFolder;
-    const epoFolders = parentFolder.getFoldersByName(epoName);
-    if (epoFolders.hasNext()) {
-      epoFolder = epoFolders.next();
-    } else {
-      epoFolder = parentFolder.createFolder(epoName);
-    }
+    // Carpeta específica para la EPO actual y la fecha/hora del envío
+    const now = new Date();
+    // Formatear fecha: YYYY-MM-DD HH:mm
+    const dateStr = now.getFullYear() + "-" +
+                    ("0" + (now.getMonth()+1)).slice(-2) + "-" +
+                    ("0" + now.getDate()).slice(-2) + " " +
+                    ("0" + now.getHours()).slice(-2) + ":" +
+                    ("0" + now.getMinutes()).slice(-2);
+
+    const folderName = epoName + " - " + dateStr;
+
+    // Siempre creamos una nueva subcarpeta para cada envío para no mezclar archivos
+    const epoFolder = parentFolder.createFolder(folderName);
 
     // Guardar archivos
     let fileUrls = [];
