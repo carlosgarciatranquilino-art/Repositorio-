@@ -99,21 +99,10 @@ function submitFactibilidadForm(dataObj) {
     let masterSheet = ss.getSheetByName("Registros");
     if (!masterSheet) {
       masterSheet = ss.insertSheet("Registros");
-      masterSheet.appendRow([
-        "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
-        "Subsistema", "Nombre EPO", "Modalidad", "Región", "Zona", "Turnos", "CCT", "Asignatura FOB",
-        "Domicilio", "Tot. Estudiantes", "Tot. Grupos", "Promedio Grupo",
-        "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)",
-        "Aulas: Pob/Gpos/Total/Def/Sup/Nec", "Laboratorios", "Espacios Aprendizaje",
-        "Aula Cómputo (Pob/Req/Eq/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
-        "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
-        "Plantilla Personal", "Municipios Procedencia", "Objetivos Mejora", "Área Influencia",
-        "Campo Laboral", "Conclusión EPO", "Dictamen DDC", "Evidencias URL"
-      ]);
-      masterSheet.getRange("A1:AI1").setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
     }
 
-    masterSheet.appendRow([
+    // Construimos la fila de datos
+    const rowData = [
       new Date(),
       respName, emailStr, phoneStr,
       dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_region, dataObj.id_zona, dataObj.id_turno, dataObj.id_cct, dataObj.id_asignatura,
@@ -129,7 +118,27 @@ function submitFactibilidadForm(dataObj) {
       dataObj.municipios_procedencia, dataObj.objetivos_mejora, dataObj.area_influencia, dataObj.campo_laboral,
       dataObj.conclusion_epo, dataObj.dictamen_ddc,
       fileUrls.join(" | ")
-    ]);
+    ];
+
+    // Primero agregamos la fila de datos. appendRow() automáticamente expande el número
+    // de columnas en la hoja si no hay suficientes, previniendo el error "Out of bounds".
+    masterSheet.appendRow(rowData);
+
+    // Ahora que la hoja tiene aseguradas las columnas necesarias, forzamos la reescritura
+    // de los encabezados en la fila 1 para actualizar hojas creadas en versiones anteriores.
+    const headers = [[
+      "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
+      "Subsistema", "Nombre EPO", "Modalidad", "Región", "Zona", "Turnos", "CCT", "Asignatura FOB",
+      "Domicilio", "Tot. Estudiantes", "Tot. Grupos", "Promedio Grupo",
+      "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)",
+      "Aulas: Pob/Gpos/Total/Def/Sup/Nec", "Laboratorios", "Espacios Aprendizaje",
+      "Aula Cómputo (Pob/Req/Eq/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
+      "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
+      "Plantilla Personal", "Municipios Procedencia", "Objetivos Mejora", "Área Influencia",
+      "Campo Laboral", "Conclusión EPO", "Dictamen DDC", "Evidencias URL"
+    ]];
+    masterSheet.getRange(1, 1, 1, headers[0].length).setValues(headers)
+      .setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
 
     // --- Hoja Dinámica Específica para la EPO ---
     // Si ya existe una hoja con ese nombre, le agregamos un timestamp
