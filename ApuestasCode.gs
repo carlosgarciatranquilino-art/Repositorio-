@@ -7,8 +7,8 @@ const API_KEY = 'TU_API_KEY_AQUI';
 // ==========================================
 // FUNCIÓN PRINCIPAL DE INTERFAZ WEB
 // ==========================================
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
+function doGetApuestas() {
+  return HtmlService.createHtmlOutputFromFile('ApuestasIndex')
       .setTitle('Calculadora de Value Bets y Kelly')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);

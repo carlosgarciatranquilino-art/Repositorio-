@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudio de Factibilidad</title>
+  <style>
+    /* Colores Institucionales:
+       Wine Red (#56212F, #9F2241), Ochre/Gold (#977E5B, #BC955B), Beige/Warm Gray (#D6D1CA, #DDC8A4)
+    */
+    :root {
+      --primary: #56212F;
+      --primary-light: #9F2241;
+      --secondary: #977E5B;
+      --secondary-light: #BC955B;
+      --bg-color: #f8f6f4;
+      --card-bg: #ffffff;
+      --border-color: #D6D1CA;
+      --text-color: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-top: 6px solid var(--primary);
+    }
+
+    h1 {
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--secondary);
+    }
+
+    .question-group {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .question-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--primary-light);
+      margin-bottom: 8px;
+    }
+
+    .question-desc {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 2px rgba(188, 149, 91, 0.2);
+    }
+
+    /* Estilos para Tablas Dinámicas */
+    .dynamic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+
+    .dynamic-table th {
+      background-color: var(--primary);
+      color: white;
+      text-align: left;
+      padding: 10px;
+      font-weight: normal;
+    }
+
+    .dynamic-table td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+    }
+
+    .dynamic-table input,
+    .dynamic-table select {
+      border: 1px solid transparent;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .dynamic-table input:focus,
+    .dynamic-table select:focus {
+      border: 1px solid var(--secondary);
+      background-color: #fff;
+    }
+
+    .btn-add {
+      background-color: var(--secondary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.2s;
+    }
+
+    .btn-add:hover {
+      background-color: var(--secondary-light);
+    }
+
+    .btn-remove {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-submit {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: bold;
+      width: 100%;
+      margin-top: 20px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--primary-light);
+    }
+
+    #status-msg {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      display: none;
+    }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .loading { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Estudio de Factibilidad</h1>
+
+  <form id="factibilidadForm">
+
+    <!-- PREGUNTA INICIAL -->
+    <div class="question-group">
+      <div class="question-title">Identificación</div>
+      <label for="capturista">Escribe el nombre de quien captura y tu CCT:</label>
+      <input type="text" id="capturista" name="capturista" required placeholder="Ej. Juan Pérez - 15DPR1234X">
+    </div>
+
+    <!-- PREGUNTA I -->
+    <div class="question-group">
+      <div class="question-title">I. Subsistema</div>
+      <div class="question-desc">Seleccione el subsistema al que pertenece el plantel.</div>
+      <select id="subsistema" name="subsistema" required>
+        <option value="">Seleccione una opción...</option>
+        <option value="CBT">CBT</option>
+      </select>
+    </div>
+
+    <!-- PREGUNTA II -->
+    <div class="question-group">
+      <div class="question-title">II. Programa de Estudios</div>
+      <div class="question-desc">Escriba el Programa de Estudios de la formación laboral.</div>
+      <input type="text" id="programa-estudios" name="programa-estudios" required placeholder="Ej. Técnico en Informática">
+    </div>
+
+    <!-- PREGUNTA III -->
+    <div class="question-group">
+      <div class="question-title">III. Modalidad educativa</div>
+      <div class="question-desc">Selecciona la modalidad en la que se imparte o impartirá el programa.</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: normal;"><input type="radio" name="modalidad" value="Escolarizada" required checked> Escolarizada</label>
+      </div>
+    </div>
+
+    <!-- PREGUNTA IV -->
+    <div class="question-group">
+      <div class="question-title">IV. Selecciona la opción educativa</div>
+      <div class="question-desc">Selecciona una opción.</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: normal;"><input type="radio" name="opcion-educativa" value="Presencial" required checked> Presencial</label>
+      </div>
+    </div>
+
+    <!-- PREGUNTA V -->
+    <div class="question-group">
+      <div class="question-title">V. Región o regiones de influencia micro</div>
+      <div class="question-desc">
+        Escribe el municipio y la entidad donde se ubican los planteles educativos que implementan o implementarán el Programa y los municipios de colindancia.
+      </div>
+
+      <table class="dynamic-table" id="tabla-micro">
+        <thead>
+          <tr>
+            <th style="width: 50%;">Municipio</th>
+            <th style="width: 40%;">Entidad</th>
+            <th style="width: 10%;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Las filas se insertan aquí vía JS -->
+        </tbody>
+      </table>
+      <button type="button" class="btn-add" onclick="agregarFilaMicro()">+ Agregar fila</button>
+    </div>
+
+    <!-- PREGUNTA VI -->
+    <div class="question-group">
+      <div class="question-title">VI. Región de influencia (macro)</div>
+      <div class="question-desc" style="border: 1px solid var(--border-color); padding: 10px; background-color: #f9f9f9; border-left: 4px solid var(--secondary); margin-bottom: 15px;">
+        <strong>Escriba la región que comprende, de acuerdo con la ubicación de los planteles educativos que implementan o implementarán el Programa</strong>
+      </div>
+      <select id="region-macro" name="regionMacro" required>
+        <option value="">Seleccione una opción...</option>
+        <option value="Noroeste">Noroeste: Baja California, Baja California Sur, Chihuahua, Durango, Sinaloa y Sonora</option>
+        <option value="Noreste">Noreste: Coahuila, Nuevo León, San Luis Potosí y Tamaulipas</option>
+        <option value="Occidente y Bajío">Occidente y Bajío: Aguascalientes, Guanajuato, Jalisco, Michoacán, Nayarit, Querétaro, Zacatecas y Colima</option>
+        <option value="Ciudad de México">Ciudad de México: Ciudad de México</option>
+        <option value="Centro Sur y Oriente">Centro Sur y Oriente: Estado de México, Hidalgo, Morelos, Puebla, Tlaxcala y Veracruz</option>
+        <option value="Sur">Sur: Campeche, Chiapas, Guerrero, Quintana Roo, Tabasco, Yucatán y Oaxaca</option>
+      </select>
+    </div>
+
+    <!-- PREGUNTA VII -->
+    <div class="question-group">
+      <div class="question-title">VII. Escuelas</div>
+      <div class="question-desc">
+        Especifique las escuelas que se atienden o se atenderán con el Programa.
+      </div>
+
+      <table class="dynamic-table" id="tabla-escuelas">
+        <thead>
+          <tr>
+            <th>Entidad</th>
+            <th>Subsistema</th>
+            <th>Nombre de la Escuela</th>
+            <th>CCT</th>
+            <th style="width: 10%;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Las filas se insertan aquí vía JS -->
+        </tbody>
+      </table>
+      <button type="button" class="btn-add" onclick="agregarFilaEscuelas()">+ Agregar fila</button>
+    </div>
+
+    <!-- PREGUNTA VIII -->
+    <div class="question-group">
+      <div class="question-title">VIII. Planta académica</div>
+      <div class="question-desc">
+        Registre la información del personal académico.
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="dynamic-table" id="tabla-planta-academica">
+          <thead>
+            <tr>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">CCT</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Módulo</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Submódulo</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Perfil académico</th>
+              <th colspan="3" style="text-align: center; border-bottom: 1px solid var(--border-color);">Tipo de contratación</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle;">Total</th>
+              <th rowspan="2" style="text-align: center; vertical-align: middle; width: 5%;">Acción</th>
+            </tr>
+            <tr>
+              <th style="text-align: center; font-size: 0.9em; background-color: var(--primary-light);">Tiempo completo</th>
+              <th style="text-align: center; font-size: 0.9em; background-color: var(--primary-light);">Medio tiempo</th>
+              <th style="text-align: center; font-size: 0.9em; background-color: var(--primary-light);">Otra situación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas se insertan aquí vía JS -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add" onclick="agregarFilaPlantaAcademica()">+ Agregar fila</button>
+    </div>
+
+    <!-- PREGUNTA IX -->
+    <div class="question-group">
+      <div class="question-title">IX. Infraestructura Física</div>
+      <div class="question-desc" style="border: 1px solid var(--border-color); padding: 10px; background-color: #f9f9f9; border-left: 4px solid var(--secondary); margin-bottom: 15px;">
+        Coloque por cada CCT la Infraestructura física con la que se cuenta para atender los requerimientos de aplicación del Programa.
+      </div>
+
+      <h3 style="color: var(--primary-light); font-size: 1rem; margin-top: 20px;">Infraestructura general</h3>
+      <div style="overflow-x: auto;">
+        <table class="dynamic-table" id="tabla-infraestructura">
+          <thead>
+            <tr>
+              <th>CCT</th>
+              <th>Población Escolar P</th>
+              <th>Total de grupos G</th>
+              <th>Total de Aulas A</th>
+              <th>Índice de balance de Atención (%)</th>
+              <th>Uso de aulas</th>
+              <th style="width: 5%;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas se insertan aquí vía JS -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add" onclick="agregarFilaInfraestructura()">+ Agregar fila</button>
+
+      <h3 style="color: var(--primary-light); font-size: 1rem; margin-top: 30px;">Laboratorios</h3>
+      <div style="overflow-x: auto;">
+        <table class="dynamic-table" id="tabla-laboratorios">
+          <thead>
+            <tr>
+              <th>CCT</th>
+              <th>Nombre del Laboratorio o taller</th>
+              <th>Capacidad de Estudiantes</th>
+              <th style="width: 5%;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Las filas se insertan aquí vía JS -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add" onclick="agregarFilaLaboratorios()">+ Agregar fila</button>
+    </div>
+
+    <button type="button" class="btn-submit" onclick="enviarFormulario()">Guardar y Enviar</button>
+
+    <div id="status-msg"></div>
+  </form>
+</div>
+
+<script>
+  // Catálogo de Municipios del Estado de México (125)
+  const municipiosEdomex = [
+    "Acambay de Ruíz Castañeda", "Acolman", "Aculco", "Almoloya de Alquisiras", "Almoloya de Juárez",
+    "Almoloya del Río", "Amanalco", "Amatepec", "Amecameca", "Apaxco", "Atenco", "Atizapán",
+    "Atizapán de Zaragoza", "Atlacomulco", "Atlautla", "Axapusco", "Ayapango", "Calimaya",
+    "Capulhuac", "Coacalco de Berriozábal", "Coatepec Harinas", "Cocotitlán", "Coyotepec",
+    "Cuautitlán", "Chalco", "Chapa de Mota", "Chapultepec", "Chiautla", "Chicoloapan",
+    "Chiconcuac", "Chimalhuacán", "Donato Guerra", "Ecatepec de Morelos", "Ecatzingo",
+    "Huehuetoca", "Hueypoxtla", "Huixquilucan", "Isidro Fabela", "Ixtapaluca", "Ixtapan de la Sal",
+    "Ixtapan del Oro", "Ixtlahuaca", "Xalatlaco", "Jaltenco", "Jilotepec", "Jilotzingo",
+    "Jiquipilco", "Jocotitlán", "Joquicingo", "Juárez", "Juchitepec", "Lerma", "Malinalco",
+    "Melchor Ocampo", "Metepec", "Mexicaltzingo", "Morelos", "Naucalpan de Juárez",
+    "Nezahualcóyotl", "Nextlalpan", "Nicolás Romero", "Nopaltepec", "Ocoyoacac", "Ocuilan",
+    "El Oro", "Otumba", "Otzoloapan", "Otzolotepec", "Ozumba", "Papalotla", "La Paz",
+    "Polotitlán", "Rayón", "San Antonio la Isla", "San Felipe del Progreso", "San Martín de las Pirámides",
+    "San Mateo Atenco", "San Simón de Guerrero", "Santo Tomás", "Soyaniquilpan de Juárez",
+    "Sultepec", "Tecámac", "Tejupilco", "Temamatla", "Temascalapa", "Temascalcingo",
+    "Temascaltepec", "Temoaya", "Tenancingo", "Tenango del Aire", "Tenango del Valle",
+    "Teoloyucan", "Teotihuacán", "Tepetlaoxtoc", "Tepetlixpa", "Tepotzotlán", "Tequixquiac",
+    "Texcaltitlán", "Texcalyacac", "Texcoco", "Tezoyuca", "Tianguistenco", "Timilpan",
+    "Tlalmanalco", "Tlalnepantla de Baz", "Tlatlaya", "Toluca", "Tonatico", "Tultepec",
+    "Tultitlán", "Valle de Bravo", "Villa de Allende", "Villa del Carbón", "Villa Guerrero",
+    "Villa Victoria", "Xonacatlán", "Zacazonapan", "Zacualpan", "Zinacantepec", "Zumpahuacán",
+    "Zumpango", "Cuautitlán Izcalli", "Valle de Chalco Solidaridad", "Luvianos", "San José del Rincón", "Tonanitla"
+  ];
+
+  // Generar opciones de municipios
+  const municipiosOptions = municipiosEdomex.map(m => `<option value="${m}">${m}</option>`).join('');
+
+  // ----------------------------------------------------
+  // LÓGICA PARA LA TABLA MICRO (PREGUNTA V)
+  // ----------------------------------------------------
+  function agregarFilaMicro() {
+    const tbody = document.querySelector('#tabla-micro tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>
+        <select class="micro-municipio" required>
+          <option value="">Selecciona un municipio...</option>
+          ${municipiosOptions}
+        </select>
+      </td>
+      <td>
+        <select class="micro-entidad" required>
+          <option value="Estado de México" selected>Estado de México</option>
+        </select>
+      </td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // ----------------------------------------------------
+  // LÓGICA PARA LA TABLA ESCUELAS (PREGUNTA VII)
+  // ----------------------------------------------------
+  function agregarFilaEscuelas() {
+    const tbody = document.querySelector('#tabla-escuelas tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="esc-entidad" placeholder="Entidad" required></td>
+      <td><input type="text" class="esc-subsistema" placeholder="Subsistema" required></td>
+      <td><input type="text" class="esc-nombre" placeholder="Nombre de la Escuela" required></td>
+      <td><input type="text" class="esc-cct" placeholder="CCT" required></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // ----------------------------------------------------
+  // LÓGICA PARA LA TABLA PLANTA ACADÉMICA (PREGUNTA VIII)
+  // ----------------------------------------------------
+  function agregarFilaPlantaAcademica() {
+    const tbody = document.querySelector('#tabla-planta-academica tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="pa-cct" required></td>
+      <td><input type="text" class="pa-modulo" required></td>
+      <td><input type="text" class="pa-submodulo" required></td>
+      <td><input type="text" class="pa-perfil" required></td>
+      <td><input type="number" class="pa-tc" min="0" value="0" onchange="calcularTotalPlantaAcademica(this)" required></td>
+      <td><input type="number" class="pa-mt" min="0" value="0" onchange="calcularTotalPlantaAcademica(this)" required></td>
+      <td><input type="number" class="pa-os" min="0" value="0" onchange="calcularTotalPlantaAcademica(this)" required></td>
+      <td><input type="number" class="pa-total" value="0" readonly style="background-color: #f0f0f0; font-weight: bold; text-align: center;"></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function calcularTotalPlantaAcademica(element) {
+    const tr = element.closest('tr');
+    const tc = parseInt(tr.querySelector('.pa-tc').value) || 0;
+    const mt = parseInt(tr.querySelector('.pa-mt').value) || 0;
+    const os = parseInt(tr.querySelector('.pa-os').value) || 0;
+    tr.querySelector('.pa-total').value = tc + mt + os;
+  }
+
+  // ----------------------------------------------------
+  // LÓGICA PARA LA TABLA INFRAESTRUCTURA Y LABORATORIOS (PREGUNTA IX)
+  // ----------------------------------------------------
+  function agregarFilaInfraestructura() {
+    const tbody = document.querySelector('#tabla-infraestructura tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="inf-cct" required></td>
+      <td><input type="number" class="inf-p" min="0" required></td>
+      <td><input type="number" class="inf-g" min="0" required></td>
+      <td><input type="number" class="inf-a" min="0" required></td>
+      <td><input type="text" class="inf-indice" required></td>
+      <td><input type="text" class="inf-uso" required></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function agregarFilaLaboratorios() {
+    const tbody = document.querySelector('#tabla-laboratorios tbody');
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="text" class="lab-cct" required></td>
+      <td><input type="text" class="lab-nombre" required></td>
+      <td><input type="number" class="lab-capacidad" min="0" required></td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-remove" onclick="this.closest('tr').remove()">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Inicializar tablas con una fila por defecto
+  window.onload = function() {
+    agregarFilaMicro();
+    agregarFilaEscuelas();
+    agregarFilaPlantaAcademica();
+    agregarFilaInfraestructura();
+    agregarFilaLaboratorios();
+  };
+
+  // ----------------------------------------------------
+  // RECOLECCIÓN Y ENVÍO DE DATOS
+  // ----------------------------------------------------
+  function recolectarDatosTablas() {
+    // Recolectar Micro
+    const regionMicro = [];
+    document.querySelectorAll('#tabla-micro tbody tr').forEach(row => {
+      const muni = row.querySelector('.micro-municipio').value;
+      const enti = row.querySelector('.micro-entidad').value;
+      if (muni) {
+        regionMicro.push({ municipio: muni, entidad: enti });
+      }
+    });
+
+    // Recolectar Escuelas
+    const escuelas = [];
+    document.querySelectorAll('#tabla-escuelas tbody tr').forEach(row => {
+      const enti = row.querySelector('.esc-entidad').value;
+      const subs = row.querySelector('.esc-subsistema').value;
+      const nomb = row.querySelector('.esc-nombre').value;
+      const cct = row.querySelector('.esc-cct').value;
+
+      if (enti || subs || nomb || cct) { // Solo si al menos un campo tiene algo
+        escuelas.push({ entidad: enti, subsistema: subs, nombre: nomb, cct: cct });
+      }
+    });
+
+    // Recolectar Planta Académica
+    const plantaAcademica = [];
+    document.querySelectorAll('#tabla-planta-academica tbody tr').forEach(row => {
+      const cct = row.querySelector('.pa-cct').value;
+      const modulo = row.querySelector('.pa-modulo').value;
+      const submodulo = row.querySelector('.pa-submodulo').value;
+      const perfil = row.querySelector('.pa-perfil').value;
+      const tc = parseInt(row.querySelector('.pa-tc').value) || 0;
+      const mt = parseInt(row.querySelector('.pa-mt').value) || 0;
+      const os = parseInt(row.querySelector('.pa-os').value) || 0;
+      const total = parseInt(row.querySelector('.pa-total').value) || 0;
+
+      if (cct || modulo || submodulo || perfil) {
+        plantaAcademica.push({
+          cct: cct,
+          modulo: modulo,
+          submodulo: submodulo,
+          perfil: perfil,
+          tiempoCompleto: tc,
+          medioTiempo: mt,
+          otraSituacion: os,
+          total: total
+        });
+      }
+    });
+
+    // Recolectar Infraestructura
+    const infraestructura = [];
+    document.querySelectorAll('#tabla-infraestructura tbody tr').forEach(row => {
+      const cct = row.querySelector('.inf-cct').value;
+      const p = row.querySelector('.inf-p').value;
+      const g = row.querySelector('.inf-g').value;
+      const a = row.querySelector('.inf-a').value;
+      const indice = row.querySelector('.inf-indice').value;
+      const uso = row.querySelector('.inf-uso').value;
+
+      if (cct || p || g || a) {
+        infraestructura.push({
+          cct: cct, poblacionP: p, gruposG: g, aulasA: a, indice: indice, uso: uso
+        });
+      }
+    });
+
+    // Recolectar Laboratorios
+    const laboratorios = [];
+    document.querySelectorAll('#tabla-laboratorios tbody tr').forEach(row => {
+      const cct = row.querySelector('.lab-cct').value;
+      const nombre = row.querySelector('.lab-nombre').value;
+      const capacidad = row.querySelector('.lab-capacidad').value;
+
+      if (cct || nombre || capacidad) {
+        laboratorios.push({
+          cct: cct, nombre: nombre, capacidad: capacidad
+        });
+      }
+    });
+
+    return { regionMicro, escuelas, plantaAcademica, infraestructura, laboratorios };
+  }
+
+  function enviarFormulario() {
+    const statusMsg = document.getElementById('status-msg');
+
+    // Validar formulario (HMTL5 validation)
+    const form = document.getElementById('factibilidadForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const capturista = document.getElementById('capturista').value;
+    const subsistema = document.getElementById('subsistema').value;
+    const programaEstudios = document.getElementById('programa-estudios').value;
+    const modalidad = document.querySelector('input[name="modalidad"]:checked')?.value || "";
+    const opcionEducativa = document.querySelector('input[name="opcion-educativa"]:checked')?.value || "";
+    const regionMacro = document.getElementById('region-macro').value;
+
+    const { regionMicro, escuelas, plantaAcademica, infraestructura, laboratorios } = recolectarDatosTablas();
+
+    const formData = {
+      capturista: capturista,
+      subsistema: subsistema,
+      programaEstudios: programaEstudios,
+      modalidad: modalidad,
+      opcionEducativa: opcionEducativa,
+      regionMacro: regionMacro,
+      regionMicro: regionMicro,
+      escuelas: escuelas,
+      plantaAcademica: plantaAcademica,
+      infraestructura: infraestructura,
+      laboratorios: laboratorios
+    };
+
+    // Mostrar mensaje de carga
+    statusMsg.style.display = 'block';
+    statusMsg.className = 'loading';
+    statusMsg.innerText = 'Guardando información... Por favor espere.';
+
+    // Deshabilitar botón
+    document.querySelector('.btn-submit').disabled = true;
+
+    // Simular llamada a Apps Script (ya que estamos fuera del entorno de Google para la vista previa, o llamarlo si existe google.script.run)
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          statusMsg.className = response.success ? 'success' : 'error';
+          statusMsg.innerText = response.message;
+          document.querySelector('.btn-submit').disabled = false;
+          if(response.success) document.getElementById('factibilidadForm').reset();
+        })
+        .withFailureHandler(function(error) {
+          statusMsg.className = 'error';
+          statusMsg.innerText = 'Error de conexión: ' + error.message;
+          document.querySelector('.btn-submit').disabled = false;
+        })
+        .submitForm(formData);
+    } else {
+      // Para pruebas locales sin Apps Script
+      setTimeout(() => {
+        console.log("Datos que se enviarían:", formData);
+        statusMsg.className = 'success';
+        statusMsg.innerText = 'Vista previa: Datos guardados correctamente en consola.';
+        document.querySelector('.btn-submit').disabled = false;
+      }, 1500);
+    }
+  }
+</script>
+
+</body>
+</html>
