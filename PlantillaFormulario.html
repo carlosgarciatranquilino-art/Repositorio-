@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario Docente</title>
-    <!-- Materialize CSS for responsive design -->
+    <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
             --vino-red: #56212F;
@@ -13,48 +14,47 @@
             --ochre-gold: #977E5B;
             --ochre-gold-light: #BC955B;
             --beige-warm: #D6D1CA;
-            --beige-warm-light: #DDC8A4;
+            --beige-warm-light: #f9f8f6;
         }
 
         body {
-            background-color: #f5f5f5;
+            background-color: #f0ede9; /* Fondo ligeramente beige para relajar la vista */
             display: flex;
             min-height: 100vh;
             flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
         }
 
         main {
             flex: 1 0 auto;
+            padding-bottom: 50px;
         }
 
-        /* Header / Navbar Styling */
+        /* ----------------------------------------------------
+           ENCABEZADO Y LOGOS
+           ---------------------------------------------------- */
         .brand-header {
             background-color: var(--vino-red);
-            padding: 10px 0;
+            padding: 15px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: white;
-            min-height: 170px; /* accommodate up to 150px logos */
+            min-height: 120px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .logo-placeholder {
+        .logo-container {
             width: 150px;
-            height: 150px;
-            border: 2px dashed rgba(255, 255, 255, 0.5);
+            height: 100px;
+            margin: 0 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            margin: 0 20px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.8);
-            /* Uncomment and replace url when logos are ready */
-            /* background-image: url('URL_HERE'); */
-            /* background-size: contain; */
-            /* background-repeat: no-repeat; */
-            /* background-position: center; */
-            /* border: none; */
+            /* El background-image se configura en el HTML más abajo */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .header-title {
@@ -63,187 +63,242 @@
         }
 
         .header-title h4 {
-            margin: 0;
-            font-weight: 500;
+            margin: 0 0 5px 0;
+            font-weight: 600;
+            font-size: 1.8rem;
         }
 
-        /* Card and Form Styling */
-        .form-card {
-            margin-top: -30px;
-            padding: 30px;
-            border-radius: 8px;
+        .header-title p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--beige-warm);
+        }
+
+        /* ----------------------------------------------------
+           TARJETAS DE SECCIÓN (INFO GENERAL)
+           ---------------------------------------------------- */
+        .section-card {
             background-color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: -30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--ochre-gold);
         }
 
         .section-title {
             color: var(--vino-red);
-            border-bottom: 2px solid var(--ochre-gold);
-            padding-bottom: 10px;
+            font-weight: 700;
+            margin-top: 0;
             margin-bottom: 25px;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
         }
 
-        /* Likert Table Styling */
-        .likert-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .section-title i {
+            margin-right: 10px;
+            font-size: 2rem;
+            color: var(--ochre-gold);
         }
 
-        .likert-table th, .likert-table td {
-            border: 1px solid var(--beige-warm);
-            padding: 15px 10px;
-            text-align: center;
-            vertical-align: middle;
+        /* ----------------------------------------------------
+           NUEVO DISEÑO DE PREGUNTAS (TARJETAS INDIVIDUALES)
+           ---------------------------------------------------- */
+        .question-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid var(--beige-warm);
         }
 
-        .likert-table th {
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Indicador de pregunta completada */
+        .question-card.answered {
+            border-left: 4px solid #4CAF50; /* Verde de éxito */
             background-color: var(--beige-warm-light);
-            color: var(--vino-red);
-            font-weight: bold;
         }
 
-        .likert-table td.question-text {
-            text-align: left;
-            width: 40%;
+        .question-text {
+            font-size: 1.15rem;
+            color: #333;
             font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
         }
 
-        /* Custom Radio Buttons */
-        [type="radio"]:checked + span:after,
-        [type="radio"].with-gap:checked + span:after {
-            background-color: var(--ochre-gold);
+        /* Estilo para los botones seleccionables en lugar de radio buttons pequeños */
+        .options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        [type="radio"]:checked + span:before,
-        [type="radio"].with-gap:checked + span:before {
-            border: 2px solid var(--ochre-gold);
+        .option-label {
+            flex: 1 1 18%; /* Toma espacio equitativo, se ajusta en móviles */
+            min-width: 120px; /* Evita que se hagan muy pequeños en celular */
+            margin: 0;
         }
 
-        /* Responsive Likert */
-        @media screen and (max-width: 800px) {
-            .brand-header {
-                flex-direction: column;
-                padding: 20px;
-            }
-            .logo-placeholder {
-                margin: 10px 0;
-            }
-            .likert-table thead {
-                display: none;
-            }
-            .likert-table, .likert-table tbody, .likert-table tr, .likert-table td {
-                display: block;
-                width: 100%;
-            }
-            .likert-table tr {
-                margin-bottom: 15px;
-                border: 2px solid var(--beige-warm);
-                border-radius: 5px;
-            }
-            .likert-table td {
-                border: none;
-                border-bottom: 1px solid #eee;
-                text-align: right;
-                padding-left: 50%;
-                position: relative;
-            }
-            .likert-table td.question-text {
-                background-color: var(--beige-warm-light);
-                text-align: left;
-                padding: 15px;
-                font-weight: bold;
-            }
-            .likert-table td:not(.question-text):before {
-                content: attr(data-label);
-                position: absolute;
-                left: 15px;
-                width: 45%;
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: 500;
-                color: var(--vino-red);
-            }
-            .likert-table td:last-child {
-                border-bottom: 0;
-            }
+        /* Ocultar el radio button real */
+        .option-label input[type="radio"] {
+            display: none;
         }
 
+        /* Botón visual */
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 12px 5px;
+            text-align: center;
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #555;
+            user-select: none;
+        }
+
+        .option-button:hover {
+            background-color: #eeeeee;
+            border-color: #bdbdbd;
+        }
+
+        /* Cuando el radio button interno está marcado, cambiar el estilo del botón visual */
+        .option-label input[type="radio"]:checked + .option-button {
+            background-color: var(--ochre-gold-light);
+            border-color: var(--ochre-gold);
+            color: white;
+            box-shadow: 0 2px 5px rgba(151, 126, 91, 0.4);
+            font-weight: 600;
+        }
+
+        /* ----------------------------------------------------
+           BOTÓN DE ENVÍO Y OVERLAY
+           ---------------------------------------------------- */
         .btn-submit {
             background-color: var(--vino-red);
-            margin-top: 30px;
             width: 100%;
-            padding: 10px;
+            padding: 15px;
             height: auto;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(86, 33, 47, 0.3);
         }
 
         .btn-submit:hover {
             background-color: var(--vino-red-light);
         }
 
+        .btn-submit i {
+            font-size: 1.5rem;
+        }
+
         #loading-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.8);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
             z-index: 9999;
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
 
-        .spinner-color {
-            border-color: var(--ochre-gold);
+        /* Responsivo adicional */
+        @media screen and (max-width: 600px) {
+            .brand-header {
+                flex-direction: column;
+                padding: 20px 10px;
+            }
+            .logo-container {
+                margin: 10px 0;
+                height: 80px; /* Logos un poco más chicos en celular */
+            }
+            .header-title h4 { font-size: 1.5rem; }
+            .option-label {
+                flex: 1 1 100%; /* En celular, los botones se apilan uno abajo del otro para ser muy fáciles de tocar */
+            }
         }
     </style>
 </head>
 <body>
 
     <header class="brand-header">
-        <div class="logo-placeholder">
-            Logo<br>Gobierno Edo. Méx.<br>(Hasta 150px)
+        <!--
+        ========================================================================
+        INSTRUCCIONES PARA LOS LOGOS:
+        1. Sube tu imagen (PNG transparente) a un servicio de alojamiento web,
+           o a Google Drive (y genera un link de descarga directa).
+        2. Reemplaza el texto "URL_DEL_LOGO_1" con el link de tu imagen.
+        3. Si no tienes un logo para este lado, simplemente borra todo el div <div class="logo-container"...>
+        ========================================================================
+        -->
+        <div class="logo-container" style="background-image: url('URL_DEL_LOGO_1_GOBIERNO'); border: 1px dashed rgba(255,255,255,0.3);">
+            <!-- Texto placeholder (Bórralo cuando pongas el link de tu imagen arriba) -->
+            <span style="font-size:12px; text-align:center;">Logo Edo. Méx.<br>(Poner URL en el código)</span>
         </div>
+
         <div class="header-title">
             <h4>Cuestionario Docente</h4>
             <p>Evaluación y Fortalecimiento</p>
         </div>
-        <div class="logo-placeholder">
-            Logo<br>Unidad de Apoyo Académico<br>(Hasta 150px)
+
+        <!-- LOGO 2: Sigue las mismas instrucciones de arriba -->
+        <div class="logo-container" style="background-image: url('URL_DEL_LOGO_2_UNIDAD'); border: 1px dashed rgba(255,255,255,0.3);">
+            <!-- Texto placeholder (Bórralo cuando pongas tu imagen) -->
+            <span style="font-size:12px; text-align:center;">Logo Unidad<br>(Poner URL en el código)</span>
         </div>
     </header>
 
     <main class="container">
-        <div class="form-card">
+        <form id="docenteForm">
 
-            <form id="docenteForm">
+            <!--
+            ========================================================================
+            INSTRUCCIONES PARA MODIFICAR LA INFORMACIÓN GENERAL:
+            Esta sección es la que cambiarás para cada uno de tus 6 sistemas educativos.
+            - Para cambiar un texto visible: modifica el texto entre las etiquetas <label>
+            - Para cambiar el nombre de la variable que se guarda en Excel: modifica el atributo 'name="nombre_variable"' en el <input> o <select>.
+            - Para quitar una pregunta: borra el bloque entero del <div class="input-field...">
+            - Para agregar una pregunta: copia un bloque <div class="input-field..."> y pégalo abajo, asegurándote de cambiar el 'id' y el 'name'.
+            ========================================================================
+            -->
+            <div class="section-card">
+                <h5 class="section-title"><i class="material-icons">account_circle</i> Información General</h5>
 
-                <!-- SECCIÓN DE INFORMACIÓN GENERAL (MODIFICABLE POR EL USUARIO PARA CADA SISTEMA) -->
-                <h5 class="section-title">Información General</h5>
-                <div class="row">
-                    <p class="grey-text text-darken-1">
-                        <em>Nota para el administrador: Modifique esta sección en el código HTML según los requerimientos del Sistema Educativo.</em>
-                    </p>
-
+                <div class="row" style="margin-bottom: 0;">
                     <div class="input-field col s12 m6">
+                        <!-- El 'name="nombre"' es como se llamará esta columna si usas código extra, por defecto se guarda en orden -->
                         <input id="nombre" type="text" name="nombre" required>
                         <label for="nombre">Nombre Completo</label>
                     </div>
+
                     <div class="input-field col s12 m6">
                         <input id="rfc" type="text" name="rfc" required>
                         <label for="rfc">RFC</label>
                     </div>
+
                     <div class="input-field col s12 m6">
                         <input id="plantel" type="text" name="plantel" required>
                         <label for="plantel">Plantel / C.C.T.</label>
                     </div>
+
                     <div class="input-field col s12 m6">
                         <select id="subsistema" name="subsistema" required>
+                            <!-- Aquí puedes quitar o agregar opciones para que queden fijas según el sistema que estés configurando -->
                             <option value="" disabled selected>Seleccione su subsistema</option>
                             <option value="CECyTEM">CECyTEM</option>
                             <option value="COBAEM">COBAEM</option>
@@ -255,55 +310,43 @@
                         <label>Subsistema</label>
                     </div>
                 </div>
+            </div>
 
-                <!-- SECCIÓN DE PREGUNTAS LIKERT -->
-                <h5 class="section-title" style="margin-top: 40px;">Cuestionario</h5>
-                <p>Seleccione la opción que mejor describa su respuesta para cada afirmación.</p>
+            <!-- CONTENEDOR DE PREGUNTAS (Se generan automáticamente por JS) -->
+            <div>
+                <h5 style="color: var(--vino-red); font-weight: bold; margin-bottom: 20px;">
+                    <i class="material-icons" style="vertical-align: bottom; color: var(--ochre-gold);">assignment</i>
+                    Cuestionario
+                </h5>
+                <p style="color: #666; margin-bottom: 25px;">Seleccione la opción que mejor describa su respuesta tocando el botón correspondiente.</p>
 
-                <table class="likert-table">
-                    <thead>
-                        <tr>
-                            <th>Afirmación</th>
-                            <th>1. Muy Alta</th>
-                            <th>2. Alta</th>
-                            <th>3. Media</th>
-                            <th>4. Baja</th>
-                            <th>5. Muy baja</th>
-                        </tr>
-                    </thead>
-                    <tbody id="likert-body">
-                        <!-- Las preguntas se inyectan via JS -->
-                    </tbody>
-                </table>
+                <div id="questions-container">
+                    <!-- Las tarjetas de preguntas se inyectarán aquí -->
+                </div>
+            </div>
 
-                <button class="btn waves-effect waves-light btn-submit" type="submit" id="submitBtn">
-                    Enviar Respuestas
-                    <i class="material-icons right">send</i>
-                </button>
-            </form>
-        </div>
+            <button class="btn waves-effect waves-light btn-submit" type="submit" id="submitBtn">
+                <i class="material-icons left">check_circle</i>
+                Enviar Respuestas
+            </button>
+        </form>
     </main>
 
     <!-- Overlay de carga -->
     <div id="loading-overlay">
         <div class="preloader-wrapper big active">
-            <div class="spinner-layer spinner-color">
-                <div class="circle-clipper left">
-                    <div class="circle"></div>
-                </div><div class="gap-patch">
-                    <div class="circle"></div>
-                </div><div class="circle-clipper right">
-                    <div class="circle"></div>
-                </div>
+            <div class="spinner-layer spinner-red-only" style="border-color: var(--vino-red);">
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
             </div>
         </div>
-        <h5 style="color: var(--vino-red); margin-top: 20px;">Procesando y guardando de forma segura...</h5>
+        <h5 style="color: var(--vino-red); margin-top: 20px; font-weight: bold;">Guardando respuestas de forma segura...</h5>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        // Lista de preguntas
         const preguntas = [
             "El nivel de necesidad que tengo de fortalecer mis conocimientos, habilidades, aptitudes, actitudes, principios y valores para ejercer la función docente es…",
             "El nivel de conocimiento que tengo sobre mi función docente apegada a la normatividad académica vigente es…",
@@ -327,33 +370,63 @@
         ];
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar selects de Materialize
+            // 1. Inicializar selects de Materialize
             var selects = document.querySelectorAll('select');
             M.FormSelect.init(selects);
 
-            // Generar tabla Likert
-            const tbody = document.getElementById('likert-body');
-            preguntas.forEach((pregunta, index) => {
+            // 2. Generar las tarjetas de preguntas (UI UX mejorada)
+            const container = document.getElementById('questions-container');
+            const niveles = ['Muy Alta', 'Alta', 'Media', 'Baja', 'Muy baja'];
+
+            preguntas.forEach(function(pregunta, index) {
                 const qNum = index + 1;
-                const tr = document.createElement('tr');
 
-                let html = `<td class="question-text">${qNum}. ${pregunta}</td>`;
+                // Crear el contenedor de la tarjeta
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = 'card-q' + qNum;
 
-                const niveles = ['Muy Alta', 'Alta', 'Media', 'Baja', 'Muy baja'];
-                niveles.forEach((nivel, nIndex) => {
+                // Añadir el texto de la pregunta
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.innerHTML = `<strong>${qNum}.</strong> ${pregunta}`;
+                card.appendChild(qText);
+
+                // Contenedor de botones
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+
+                niveles.forEach(function(nivel, nIndex) {
                     const val = nIndex + 1; // 1 a 5
-                    html += `
-                        <td data-label="${val}. ${nivel}">
-                            <label>
-                                <input name="q${qNum}" type="radio" value="${val} - ${nivel}" required class="with-gap"/>
-                                <span></span>
-                            </label>
-                        </td>
-                    `;
+
+                    const label = document.createElement('label');
+                    label.className = 'option-label';
+
+                    // Input oculto (es el que envía el dato real)
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'q' + qNum;
+                    input.value = `${val} - ${nivel}`;
+                    input.required = true;
+
+                    // Evento para marcar visualmente la tarjeta como completada
+                    input.addEventListener('change', function() {
+                        document.getElementById('card-q' + qNum).classList.add('answered');
+                    });
+
+                    // Botón visual clickeable
+                    const divVisual = document.createElement('div');
+                    divVisual.className = 'option-button';
+                    // Para versión móvil, acortar los nombres un poco si se desea, o dejarlos tal cual
+                    divVisual.innerHTML = `<span style="font-size:0.8rem; display:block; color:#999; margin-bottom:2px;">Nivel ${val}</span> ${nivel}`;
+
+                    label.appendChild(input);
+                    label.appendChild(divVisual);
+                    grid.appendChild(label);
                 });
 
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
+                card.appendChild(grid);
+                container.appendChild(card);
             });
         });
 
@@ -361,26 +434,29 @@
         document.getElementById('docenteForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Seguridad UI: Prevenir envíos múltiples
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
 
-            // Recolectar datos
             const formData = new FormData(this);
             const dataObj = {};
-            for (let [key, value] of formData.entries()) {
-                dataObj[key] = value;
-            }
+            // Convertir iterator a array para compatibilidad
+            Array.from(formData.entries()).forEach(function(pair) {
+                dataObj[pair[0]] = pair[1];
+            });
 
             // Enviar a Google Apps Script
-            // Se asume que este HTML será servido por HtmlService y ejecutará un google.script.run
             if (typeof google !== 'undefined' && google.script) {
                 google.script.run
                     .withSuccessHandler(function(response) {
                         document.getElementById('loading-overlay').style.display = 'none';
                         alert('¡Respuestas guardadas exitosamente! Gracias por su participación.');
                         document.getElementById('docenteForm').reset();
+                        // Limpiar estilos de completado
+                        document.querySelectorAll('.question-card').forEach(function(c) {
+                            c.classList.remove('answered');
+                        });
+                        window.scrollTo(0, 0); // Regresar al inicio
                         btn.disabled = false;
                     })
                     .withFailureHandler(function(error) {
@@ -390,10 +466,10 @@
                     })
                     .guardarRespuestas(dataObj);
             } else {
-                // Modo desarrollo local
-                setTimeout(() => {
+                // Modo desarrollo local (Simulación)
+                setTimeout(function() {
                     document.getElementById('loading-overlay').style.display = 'none';
-                    alert('SIMULACIÓN: Datos capturados. (En producción esto se envía al backend).');
+                    alert('SIMULACIÓN: Datos capturados. (En producción esto se envía a tu Google Sheet).');
                     console.log('Datos enviados:', dataObj);
                     btn.disabled = false;
                 }, 1500);
