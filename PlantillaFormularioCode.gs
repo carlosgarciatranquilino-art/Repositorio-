@@ -64,8 +64,9 @@ function guardarRespuestas(datos) {
     // Columnas base actualizadas según nuevos requerimientos
     var fila = [
       new Date(), // Timestamp automático
-      datos.curp || "N/A",
       datos.plantel || "N/A",
+      datos.zona_escolar || "N/A",
+      datos.subdireccion_regional || "N/A",
       datos.experiencia || "N/A",
       datos.formacion || "N/A",
       datos.situacion || "N/A",
@@ -101,8 +102,9 @@ function guardarRespuestas(datos) {
 function configurarEncabezados(sheet) {
   var encabezados = [
     "Marca temporal",
-    "CURP",
     "Plantel / C.C.T.",
+    "Zona Escolar",
+    "Subdirección Regional",
     "Años de Experiencia",
     "Naturaleza Formación",
     "Situación Laboral",

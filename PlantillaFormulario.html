@@ -291,13 +291,18 @@
 
                 <div class="row" style="margin-bottom: 0;">
                     <div class="input-field col s12 m6">
-                        <input id="curp" type="text" name="curp" required>
-                        <label for="curp">CURP</label>
+                        <input id="plantel" type="text" name="plantel" required>
+                        <label for="plantel">Plantel / C.C.T.</label>
                     </div>
 
                     <div class="input-field col s12 m6">
-                        <input id="plantel" type="text" name="plantel" required>
-                        <label for="plantel">Plantel / C.C.T.</label>
+                        <input id="zona_escolar" type="text" name="zona_escolar" pattern="^(0[1-9]|[1-4][0-9]|5[0-5])$" maxlength="2" title="Ingrese un número del 01 al 55 a dos dígitos" required>
+                        <label for="zona_escolar">Zona Escolar (Ej. 01, 15, 55)</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <input id="subdireccion_regional" type="text" name="subdireccion_regional" required>
+                        <label for="subdireccion_regional">Subdirección Regional</label>
                     </div>
 
                     <div class="input-field col s12 m6">
