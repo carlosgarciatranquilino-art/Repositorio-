@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Docente</title>
+    <!-- Materialize CSS for responsive design -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        :root {
+            --vino-red: #56212F;
+            --vino-red-light: #9F2241;
+            --ochre-gold: #977E5B;
+            --ochre-gold-light: #BC955B;
+            --beige-warm: #D6D1CA;
+            --beige-warm-light: #DDC8A4;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        /* Header / Navbar Styling */
+        .brand-header {
+            background-color: var(--vino-red);
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            min-height: 170px; /* accommodate up to 150px logos */
+        }
+
+        .logo-placeholder {
+            width: 150px;
+            height: 150px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            /* Uncomment and replace url when logos are ready */
+            /* background-image: url('URL_HERE'); */
+            /* background-size: contain; */
+            /* background-repeat: no-repeat; */
+            /* background-position: center; */
+            /* border: none; */
+        }
+
+        .header-title {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .header-title h4 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Card and Form Styling */
+        .form-card {
+            margin-top: -30px;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: var(--vino-red);
+            border-bottom: 2px solid var(--ochre-gold);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        /* Likert Table Styling */
+        .likert-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .likert-table th, .likert-table td {
+            border: 1px solid var(--beige-warm);
+            padding: 15px 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .likert-table th {
+            background-color: var(--beige-warm-light);
+            color: var(--vino-red);
+            font-weight: bold;
+        }
+
+        .likert-table td.question-text {
+            text-align: left;
+            width: 40%;
+            font-weight: 500;
+        }
+
+        /* Custom Radio Buttons */
+        [type="radio"]:checked + span:after,
+        [type="radio"].with-gap:checked + span:after {
+            background-color: var(--ochre-gold);
+        }
+
+        [type="radio"]:checked + span:before,
+        [type="radio"].with-gap:checked + span:before {
+            border: 2px solid var(--ochre-gold);
+        }
+
+        /* Responsive Likert */
+        @media screen and (max-width: 800px) {
+            .brand-header {
+                flex-direction: column;
+                padding: 20px;
+            }
+            .logo-placeholder {
+                margin: 10px 0;
+            }
+            .likert-table thead {
+                display: none;
+            }
+            .likert-table, .likert-table tbody, .likert-table tr, .likert-table td {
+                display: block;
+                width: 100%;
+            }
+            .likert-table tr {
+                margin-bottom: 15px;
+                border: 2px solid var(--beige-warm);
+                border-radius: 5px;
+            }
+            .likert-table td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+            .likert-table td.question-text {
+                background-color: var(--beige-warm-light);
+                text-align: left;
+                padding: 15px;
+                font-weight: bold;
+            }
+            .likert-table td:not(.question-text):before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 500;
+                color: var(--vino-red);
+            }
+            .likert-table td:last-child {
+                border-bottom: 0;
+            }
+        }
+
+        .btn-submit {
+            background-color: var(--vino-red);
+            margin-top: 30px;
+            width: 100%;
+            padding: 10px;
+            height: auto;
+            font-size: 1.1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--vino-red-light);
+        }
+
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner-color {
+            border-color: var(--ochre-gold);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="brand-header">
+        <div class="logo-placeholder">
+            Logo<br>Gobierno Edo. Méx.<br>(Hasta 150px)
+        </div>
+        <div class="header-title">
+            <h4>Cuestionario Docente</h4>
+            <p>Evaluación y Fortalecimiento</p>
+        </div>
+        <div class="logo-placeholder">
+            Logo<br>Unidad de Apoyo Académico<br>(Hasta 150px)
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="form-card">
+
+            <form id="docenteForm">
+
+                <!-- SECCIÓN DE INFORMACIÓN GENERAL (MODIFICABLE POR EL USUARIO PARA CADA SISTEMA) -->
+                <h5 class="section-title">Información General</h5>
+                <div class="row">
+                    <p class="grey-text text-darken-1">
+                        <em>Nota para el administrador: Modifique esta sección en el código HTML según los requerimientos del Sistema Educativo.</em>
+                    </p>
+
+                    <div class="input-field col s12 m6">
+                        <input id="nombre" type="text" name="nombre" required>
+                        <label for="nombre">Nombre Completo</label>
+                    </div>
+                    <div class="input-field col s12 m6">
+                        <input id="rfc" type="text" name="rfc" required>
+                        <label for="rfc">RFC</label>
+                    </div>
+                    <div class="input-field col s12 m6">
+                        <input id="plantel" type="text" name="plantel" required>
+                        <label for="plantel">Plantel / C.C.T.</label>
+                    </div>
+                    <div class="input-field col s12 m6">
+                        <select id="subsistema" name="subsistema" required>
+                            <option value="" disabled selected>Seleccione su subsistema</option>
+                            <option value="CECyTEM">CECyTEM</option>
+                            <option value="COBAEM">COBAEM</option>
+                            <option value="CONALEP">CONALEP</option>
+                            <option value="EPOEM">EPOEM</option>
+                            <option value="Edayo">Edayo</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                        <label>Subsistema</label>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE PREGUNTAS LIKERT -->
+                <h5 class="section-title" style="margin-top: 40px;">Cuestionario</h5>
+                <p>Seleccione la opción que mejor describa su respuesta para cada afirmación.</p>
+
+                <table class="likert-table">
+                    <thead>
+                        <tr>
+                            <th>Afirmación</th>
+                            <th>1. Muy Alta</th>
+                            <th>2. Alta</th>
+                            <th>3. Media</th>
+                            <th>4. Baja</th>
+                            <th>5. Muy baja</th>
+                        </tr>
+                    </thead>
+                    <tbody id="likert-body">
+                        <!-- Las preguntas se inyectan via JS -->
+                    </tbody>
+                </table>
+
+                <button class="btn waves-effect waves-light btn-submit" type="submit" id="submitBtn">
+                    Enviar Respuestas
+                    <i class="material-icons right">send</i>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Overlay de carga -->
+    <div id="loading-overlay">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-color">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div><div class="gap-patch">
+                    <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+        <h5 style="color: var(--vino-red); margin-top: 20px;">Procesando y guardando de forma segura...</h5>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        // Lista de preguntas
+        const preguntas = [
+            "El nivel de necesidad que tengo de fortalecer mis conocimientos, habilidades, aptitudes, actitudes, principios y valores para ejercer la función docente es…",
+            "El nivel de conocimiento que tengo sobre mi función docente apegada a la normatividad académica vigente es…",
+            "El nivel de conocimiento que tengo sobre mi función docente apegada a la normatividad administrativa vigente es…",
+            "El nivel en que concibo la escuela como un espacio de cuidado que fortalece una ciudadanía activa es…",
+            "Mi dominio sobre los programas de estudio de la asignatura o módulo que imparto es…",
+            "El nivel en que aplico los contenidos, estrategias y métodos comprendidos en la Nueva Escuela Mexicana (NEM) en la asignatura o módulo que imparto es…",
+            "El nivel en que incorporo estrategias y métodos activos que evidencien el logro de aprendizajes en la asignatura o módulo que imparto es…",
+            "El nivel en que incorporo estrategias y métodos que fortalezcan el sentido de pertenencia del estudiante en la asignatura o módulo que imparto es…",
+            "El nivel de habilidad que considero tener para planear los procesos de enseñanza-aprendizaje de acuerdo con la Nueva Escuela Mexicana es…",
+            "El nivel en que adapto mi enseñanza para atender las necesidades de aprendizaje del estudiante es…",
+            "El nivel en que mis estrategias generan ambientes favorables para el aprendizaje y promueven la cultura de la paz es…",
+            "El nivel en que considero que mis estrategias didácticas contribuyen a la vida saludable de mis estudiantes es…",
+            "Mi habilidad para diseñar estrategias de evaluación con enfoque formativo para el logro de aprendizajes significativos es…",
+            "El nivel en que incorporo habilidades socioemocionales en mi planeación es…",
+            "El nivel en que integro la igualdad, la inclusión y la equidad en mis estrategias de enseñanza es…",
+            "Mi participación en el trabajo colegiado y en las acciones colaborativas de mi comunidad escolar es…",
+            "El nivel en que la comunidad escolar de mi plantel considera la diversidad cultural, la perspectiva de género y la mejora continua es…",
+            "El nivel en que el análisis de mi práctica docente individual y colectiva identifica oportunamente mis fortalezas y áreas de oportunidad es…",
+            "El nivel de desarrollo de mis recursos socioemocionales para fortalecer el acompañamiento de las trayectorias estudiantiles es…"
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar selects de Materialize
+            var selects = document.querySelectorAll('select');
+            M.FormSelect.init(selects);
+
+            // Generar tabla Likert
+            const tbody = document.getElementById('likert-body');
+            preguntas.forEach((pregunta, index) => {
+                const qNum = index + 1;
+                const tr = document.createElement('tr');
+
+                let html = `<td class="question-text">${qNum}. ${pregunta}</td>`;
+
+                const niveles = ['Muy Alta', 'Alta', 'Media', 'Baja', 'Muy baja'];
+                niveles.forEach((nivel, nIndex) => {
+                    const val = nIndex + 1; // 1 a 5
+                    html += `
+                        <td data-label="${val}. ${nivel}">
+                            <label>
+                                <input name="q${qNum}" type="radio" value="${val} - ${nivel}" required class="with-gap"/>
+                                <span></span>
+                            </label>
+                        </td>
+                    `;
+                });
+
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            });
+        });
+
+        // Manejar el envío del formulario
+        document.getElementById('docenteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Seguridad UI: Prevenir envíos múltiples
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            // Recolectar datos
+            const formData = new FormData(this);
+            const dataObj = {};
+            for (let [key, value] of formData.entries()) {
+                dataObj[key] = value;
+            }
+
+            // Enviar a Google Apps Script
+            // Se asume que este HTML será servido por HtmlService y ejecutará un google.script.run
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(function(response) {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        alert('¡Respuestas guardadas exitosamente! Gracias por su participación.');
+                        document.getElementById('docenteForm').reset();
+                        btn.disabled = false;
+                    })
+                    .withFailureHandler(function(error) {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        alert('Hubo un error al guardar, por favor intente nuevamente. Error: ' + error.message);
+                        btn.disabled = false;
+                    })
+                    .guardarRespuestas(dataObj);
+            } else {
+                // Modo desarrollo local
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    alert('SIMULACIÓN: Datos capturados. (En producción esto se envía al backend).');
+                    console.log('Datos enviados:', dataObj);
+                    btn.disabled = false;
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>
