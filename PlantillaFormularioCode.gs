@@ -61,13 +61,15 @@ function guardarRespuestas(datos) {
     }
 
     // Preparar la fila de datos
-    // Columnas base: Marca temporal, Nombre, RFC, Plantel, Subsistema
+    // Columnas base actualizadas según nuevos requerimientos
     var fila = [
       new Date(), // Timestamp automático
-      datos.nombre || "N/A",
-      datos.rfc || "N/A",
+      datos.curp || "N/A",
       datos.plantel || "N/A",
-      datos.subsistema || "N/A"
+      datos.experiencia || "N/A",
+      datos.formacion || "N/A",
+      datos.situacion || "N/A",
+      datos.frecuencia_virtual || "N/A"
     ];
 
     // Añadir las 19 preguntas (q1 a q19)
@@ -99,10 +101,12 @@ function guardarRespuestas(datos) {
 function configurarEncabezados(sheet) {
   var encabezados = [
     "Marca temporal",
-    "Nombre Completo",
-    "RFC",
+    "CURP",
     "Plantel / C.C.T.",
-    "Subsistema"
+    "Años de Experiencia",
+    "Naturaleza Formación",
+    "Situación Laboral",
+    "Frec. Entornos Virtuales"
   ];
 
   // Agregar encabezados de preguntas

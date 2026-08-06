@@ -151,9 +151,27 @@
             margin: 0;
         }
 
-        /* Ocultar el radio button real */
+        /* Ocultar el radio button real de forma accesible para que funcione el 'required' del navegador */
         .option-label input[type="radio"] {
-            display: none;
+            opacity: 0;
+            position: absolute;
+            z-index: -1;
+            width: 1px;
+            height: 1px;
+        }
+
+        /* Materialize oculta los selects por defecto. Hacemos que el select original sea visible solo para validación HTML5 pero posicionado detrás */
+        select[required] {
+            display: block !important;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: 0;
+            border: 0;
+            opacity: 0;
+            bottom: 0;
+            left: 50%;
         }
 
         /* Botón visual */
@@ -273,14 +291,8 @@
 
                 <div class="row" style="margin-bottom: 0;">
                     <div class="input-field col s12 m6">
-                        <!-- El 'name="nombre"' es como se llamará esta columna si usas código extra, por defecto se guarda en orden -->
-                        <input id="nombre" type="text" name="nombre" required>
-                        <label for="nombre">Nombre Completo</label>
-                    </div>
-
-                    <div class="input-field col s12 m6">
-                        <input id="rfc" type="text" name="rfc" required>
-                        <label for="rfc">RFC</label>
+                        <input id="curp" type="text" name="curp" required>
+                        <label for="curp">CURP</label>
                     </div>
 
                     <div class="input-field col s12 m6">
@@ -289,17 +301,38 @@
                     </div>
 
                     <div class="input-field col s12 m6">
-                        <select id="subsistema" name="subsistema" required>
-                            <!-- Aquí puedes quitar o agregar opciones para que queden fijas según el sistema que estés configurando -->
-                            <option value="" disabled selected>Seleccione su subsistema</option>
-                            <option value="CECyTEM">CECyTEM</option>
-                            <option value="COBAEM">COBAEM</option>
-                            <option value="CONALEP">CONALEP</option>
-                            <option value="EPOEM">EPOEM</option>
-                            <option value="Edayo">Edayo</option>
-                            <option value="Otro">Otro</option>
+                        <input id="experiencia" type="number" name="experiencia" min="0" required>
+                        <label for="experiencia">Años de Experiencia docente en Educación Media Superior</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="formacion" name="formacion" required>
+                            <option value="" disabled selected>Seleccione la naturaleza de su formación</option>
+                            <option value="Formación Pedagógica/Educación">Formación Pedagógica/Educación</option>
+                            <option value="Formación Disciplinar (Ingeniería, Derecho, Salud, Etc.)">Formación Disciplinar (Ingeniería, Derecho, Salud, Etc.)</option>
                         </select>
-                        <label>Subsistema</label>
+                        <label>Naturaleza de la formación</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="situacion" name="situacion" required>
+                            <option value="" disabled selected>Seleccione su situación laboral</option>
+                            <option value="Horas base/Definitividad">Horas base/Definitividad</option>
+                            <option value="Horas clase temporal">Horas clase temporal</option>
+                        </select>
+                        <label>Situación Laboral</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="frecuencia_virtual" name="frecuencia_virtual" required>
+                            <option value="" disabled selected>Seleccione la frecuencia</option>
+                            <option value="Nunca">Nunca</option>
+                            <option value="Rara vez">Rara vez</option>
+                            <option value="Ocasionalmente">Ocasionalmente</option>
+                            <option value="Frecuentemente">Frecuentemente</option>
+                            <option value="Siempre">Siempre</option>
+                        </select>
+                        <label>Integración de Entornos Virtuales o Modelos Híbridos</label>
                     </div>
                 </div>
             </div>
@@ -409,8 +442,8 @@
                     // Botón visual clickeable
                     const divVisual = document.createElement('div');
                     divVisual.className = 'option-button';
-                    // Para versión móvil, acortar los nombres un poco si se desea, o dejarlos tal cual
-                    divVisual.innerHTML = `<span style="font-size:0.8rem; display:block; color:#999; margin-bottom:2px;">Nivel ${val}</span> ${nivel}`;
+                    divVisual.innerHTML = `${nivel}`;
+                    divVisual.style.padding = '20px 5px';
 
                     label.appendChild(input);
                     label.appendChild(divVisual);
