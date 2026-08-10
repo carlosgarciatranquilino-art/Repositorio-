@@ -395,6 +395,21 @@
                 <div id="questions-container">
                     <!-- Las tarjetas de preguntas se inyectarán aquí -->
                 </div>
+
+                <!-- SECCIÓN: COMENTARIOS FINALES -->
+                <div class="question-card" style="margin-top: 30px; border-left: 4px solid var(--vino-red);">
+                    <div class="question-text" style="color: var(--vino-red);">
+                        <strong>Comentarios Finales:</strong>
+                        <span style="font-size: 0.95rem; font-weight: normal; display: block; margin-top: 5px; color: #666;">
+                            Por favor anota la retroalimentación a este formulario, trata de ser objetivo y claro, utiliza palabras clave y frases poderosas, agradecemos tu participación.
+                        </span>
+                    </div>
+                    <div class="input-field">
+                        <textarea id="comentarios_finales" name="comentarios_finales" class="materialize-textarea" data-length="500"></textarea>
+                        <label for="comentarios_finales">Escribe tus comentarios aquí...</label>
+                    </div>
+                </div>
+
             </div>
 
             <button class="btn waves-effect waves-light btn-submit" type="submit" id="submitBtn">
@@ -445,6 +460,8 @@
             // 1. Inicializar selects de Materialize
             var selects = document.querySelectorAll('select');
             M.FormSelect.init(selects);
+            var textAreas = document.querySelectorAll('.materialize-textarea');
+            M.CharacterCounter.init(textAreas);
 
             // 2. Generar las tarjetas de preguntas (UI UX mejorada)
             const container = document.getElementById('questions-container');

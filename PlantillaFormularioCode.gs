@@ -80,6 +80,9 @@ function guardarRespuestas(datos) {
       fila.push(respuestaQ);
     }
 
+    // Añadir comentarios finales
+    fila.push(datos.comentarios_finales || "");
+
     // Insertar la fila al final
     sheet.appendRow(fila);
 
@@ -117,6 +120,8 @@ function configurarEncabezados(sheet) {
   for (var i = 1; i <= 19; i++) {
     encabezados.push("P" + i);
   }
+
+  encabezados.push("Comentarios Finales");
 
   sheet.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
 
