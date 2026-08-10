@@ -433,7 +433,7 @@
                 <div class="circle-clipper right"><div class="circle"></div></div>
             </div>
         </div>
-        <h5 style="color: var(--vino-red); margin-top: 20px; font-weight: bold;">Guardando respuestas de forma segura...</h5>
+        <h5 id="loading-text" style="color: var(--vino-red); margin-top: 20px; font-weight: bold; text-align: center;">Guardando respuestas de forma segura...</h5>
     </div>
 
     <!-- Scripts -->
@@ -542,35 +542,56 @@
                 dataObj[pair[0]] = pair[1];
             });
 
-            // Enviar a Google Apps Script
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run
-                    .withSuccessHandler(function(response) {
-                        document.getElementById('loading-overlay').style.display = 'none';
-                        alert('¡Respuestas guardadas exitosamente! Gracias por su participación.');
-                        document.getElementById('docenteForm').reset();
-                        // Limpiar estilos de completado
-                        document.querySelectorAll('.question-card').forEach(function(c) {
-                            c.classList.remove('answered');
-                        });
-                        window.scrollTo(0, 0); // Regresar al inicio
-                        btn.disabled = false;
-                    })
-                    .withFailureHandler(function(error) {
-                        document.getElementById('loading-overlay').style.display = 'none';
-                        alert('Hubo un error al guardar, por favor intente nuevamente. Error: ' + error.message);
-                        btn.disabled = false;
-                    })
-                    .guardarRespuestas(dataObj);
-            } else {
-                // Modo desarrollo local (Simulación)
-                setTimeout(function() {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    alert('SIMULACIÓN: Datos capturados. (En producción esto se envía a tu Google Sheet).');
-                    console.log('Datos enviados:', dataObj);
-                    btn.disabled = false;
-                }, 1500);
+            const loadingText = document.getElementById('loading-text');
+            loadingText.innerText = "Guardando respuestas de forma segura...";
+
+            // Función recursiva para reintento automático
+            function intentarEnviar(intentosRestantes) {
+                if (typeof google !== 'undefined' && google.script) {
+                    google.script.run
+                        .withSuccessHandler(function(response) {
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            alert('¡Respuestas guardadas exitosamente! Gracias por su participación.');
+                            document.getElementById('docenteForm').reset();
+                            // Limpiar estilos de completado
+                            document.querySelectorAll('.question-card').forEach(function(c) {
+                                c.classList.remove('answered');
+                            });
+                            window.scrollTo(0, 0); // Regresar al inicio
+                            btn.disabled = false;
+                        })
+                        .withFailureHandler(function(error) {
+                            if (intentosRestantes > 0) {
+                                console.warn('Tráfico alto. Reintentando... Intentos restantes: ' + intentosRestantes);
+                                loadingText.innerText = "Alta demanda detectada. Reintentando conexión de forma segura (" + intentosRestantes + ")...";
+                                // Esperar 3 segundos antes de intentar de nuevo
+                                setTimeout(function() {
+                                    intentarEnviar(intentosRestantes - 1);
+                                }, 3000);
+                            } else {
+                                document.getElementById('loading-overlay').style.display = 'none';
+                                alert('El sistema está experimentando un volumen muy alto de tráfico y no pudimos conectar.\n\nPor favor, espere unos minutos e intente presionar "Enviar Respuestas" nuevamente. Sus respuestas no se han borrado.');
+                                btn.disabled = false;
+                            }
+                        })
+                        .guardarRespuestas(dataObj);
+                } else {
+                    // Modo desarrollo local (Simulación)
+                    setTimeout(function() {
+                        if (intentosRestantes > 1) { // Simular fallo una vez
+                            intentarEnviar(intentosRestantes - 1);
+                        } else {
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            alert('SIMULACIÓN: Datos capturados. (En producción esto se envía a tu Google Sheet).');
+                            console.log('Datos enviados:', dataObj);
+                            btn.disabled = false;
+                        }
+                    }, 1500);
+                }
             }
+
+            // Iniciar el proceso de envío con 3 reintentos automáticos
+            intentarEnviar(3);
         });
     </script>
 </body>
