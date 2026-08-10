@@ -74,8 +74,8 @@ function guardarRespuestas(datos) {
       datos.frecuencia_virtual || "N/A"
     ];
 
-    // Añadir las 19 preguntas (q1 a q19)
-    for (var i = 1; i <= 19; i++) {
+    // Añadir las 22 preguntas (q1 a q22)
+    for (var i = 1; i <= 22; i++) {
       var respuestaQ = datos["q" + i] || "";
       fila.push(respuestaQ);
     }
@@ -117,7 +117,7 @@ function configurarEncabezados(sheet) {
   ];
 
   // Agregar encabezados de preguntas
-  for (var i = 1; i <= 19; i++) {
+  for (var i = 1; i <= 22; i++) {
     encabezados.push("P" + i);
   }
 
