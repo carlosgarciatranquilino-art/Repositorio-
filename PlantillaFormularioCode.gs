@@ -70,6 +70,7 @@ function guardarRespuestas(datos) {
       datos.experiencia || "N/A",
       datos.formacion || "N/A",
       datos.situacion || "N/A",
+      datos.curriculum || "N/A",
       datos.frecuencia_virtual || "N/A"
     ];
 
@@ -108,6 +109,7 @@ function configurarEncabezados(sheet) {
     "Años de Experiencia",
     "Naturaleza Formación",
     "Situación Laboral",
+    "Currículum",
     "Frec. Entornos Virtuales"
   ];
 
