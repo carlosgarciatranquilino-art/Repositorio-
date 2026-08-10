@@ -65,6 +65,7 @@ function guardarRespuestas(datos) {
     var fila = [
       new Date(), // Timestamp automático
       datos.plantel || "N/A",
+      datos.cct || "N/A",
       datos.zona_escolar || "N/A",
       datos.subdireccion_regional || "N/A",
       datos.experiencia || "N/A",
@@ -106,7 +107,8 @@ function guardarRespuestas(datos) {
 function configurarEncabezados(sheet) {
   var encabezados = [
     "Marca temporal",
-    "Plantel / C.C.T.",
+    "Plantel",
+    "C.C.T.",
     "Zona Escolar",
     "Subdirección Regional",
     "Años de Experiencia",
