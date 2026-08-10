@@ -85,10 +85,31 @@
             background-color: white;
             border-radius: 12px;
             padding: 30px;
-            margin-top: -30px;
             margin-bottom: 30px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.08);
             border-top: 5px solid var(--ochre-gold);
+        }
+
+        .first-card {
+            margin-top: -30px;
+        }
+
+        .objective-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            text-align: justify;
+        }
+
+        .instructions-panel {
+            background-color: #fcf9f2;
+            border-left: 5px solid var(--ochre-gold);
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.5;
         }
 
         .section-title {
@@ -275,6 +296,14 @@
     <main class="container">
         <form id="docenteForm">
 
+            <!-- SECCIÓN: OBJETIVO -->
+            <div class="section-card first-card">
+                <h5 class="section-title"><i class="material-icons">track_changes</i> Objetivo</h5>
+                <p class="objective-text">
+                    Identificar necesidades de formación docente, mediante su autopercepción acerca de sus conocimientos, habilidades y actitudes en relación con su función en Educación Media Superior, con la finalidad de obtener un diagnóstico que oriente la planeación de las acciones de formación, capacitación y actualización.
+                </p>
+            </div>
+
             <!--
             ========================================================================
             INSTRUCCIONES PARA MODIFICAR LA INFORMACIÓN GENERAL:
@@ -343,11 +372,14 @@
 
             <!-- CONTENEDOR DE PREGUNTAS (Se generan automáticamente por JS) -->
             <div>
-                <h5 style="color: var(--vino-red); font-weight: bold; margin-bottom: 20px;">
+                <h5 style="color: var(--vino-red); font-weight: bold; margin-bottom: 15px;">
                     <i class="material-icons" style="vertical-align: bottom; color: var(--ochre-gold);">assignment</i>
                     Cuestionario
                 </h5>
-                <p style="color: #666; margin-bottom: 25px;">Seleccione la opción que mejor describa su respuesta tocando el botón correspondiente.</p>
+
+                <div class="instructions-panel">
+                    <strong>Indicaciones:</strong> Lea cuidadosamente cada uno de los siguientes enunciados y seleccione la opción que mejor describa su nivel actual de conocimiento, dominio, habilidad o disposición de acuerdo con su función docente. No existen respuestas correctas o incorrectas. Responda con honestidad considerando su experiencia.
+                </div>
 
                 <div id="questions-container">
                     <!-- Las tarjetas de preguntas se inyectarán aquí -->
