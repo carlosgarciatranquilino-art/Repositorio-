@@ -81,6 +81,9 @@ function guardarRespuestas(datos) {
       fila.push(respuestaQ);
     }
 
+    // Añadir Temática Prioritaria
+    fila.push(datos.tematica_prioritaria || "");
+
     // Añadir comentarios finales
     fila.push(datos.comentarios_finales || "");
 
@@ -123,6 +126,7 @@ function configurarEncabezados(sheet) {
     encabezados.push("P" + i);
   }
 
+  encabezados.push("Temática Prioritaria");
   encabezados.push("Comentarios Finales");
 
   sheet.getRange(1, 1, 1, encabezados.length).setValues([encabezados]);
