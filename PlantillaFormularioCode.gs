@@ -113,11 +113,11 @@ function configurarEncabezados(sheet) {
     "Plantel",
     "C.C.T.",
     "Zona Escolar",
-    "Subdirección Regional",
+    "Subdirección Regional / Unidad Académica",
     "Años de Experiencia",
     "Naturaleza Formación",
     "Situación Laboral",
-    "Currículum",
+    "Currículum que imparte/desarrolla",
     "Frec. Entornos Virtuales"
   ];
 
