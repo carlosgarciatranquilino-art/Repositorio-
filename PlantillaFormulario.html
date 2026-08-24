@@ -488,10 +488,17 @@
 
             // 2. Generar las tarjetas de preguntas (UI UX mejorada)
             const container = document.getElementById('questions-container');
-            const niveles = ['Muy alto', 'Alto', 'Medio', 'Bajo', 'Muy bajo'];
+            const nivelesMasc = ['Muy alto', 'Alto', 'Medio', 'Bajo', 'Muy bajo'];
+            const nivelesFem = ['Muy alta', 'Alta', 'Media', 'Baja', 'Muy baja'];
 
             preguntas.forEach(function(pregunta, index) {
                 const qNum = index + 1;
+
+                // Determinar el género de la escala basado en el número de pregunta
+                let niveles = nivelesMasc;
+                if (qNum === 15 || qNum === 18 || qNum === 19 || qNum === 21) {
+                    niveles = nivelesFem;
+                }
 
                 // Crear el contenedor de la tarjeta
                 const card = document.createElement('div');
