@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Docente</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --vino-red: #56212F;
+            --vino-red-light: #9F2241;
+            --ochre-gold: #977E5B;
+            --ochre-gold-light: #BC955B;
+            --beige-warm: #D6D1CA;
+            --beige-warm-light: #f9f8f6;
+        }
+
+        body {
+            background-color: #f0ede9; /* Fondo ligeramente beige para relajar la vista */
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        }
+
+        main {
+            flex: 1 0 auto;
+            padding-bottom: 50px;
+        }
+
+        /* ----------------------------------------------------
+           ENCABEZADO Y LOGOS
+           ---------------------------------------------------- */
+        .brand-header {
+            background-color: var(--vino-red);
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            min-height: 120px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logo-container {
+            width: 150px;
+            height: 100px;
+            margin: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            /* Filtro mágico: convierte imagen negra a blanco puro para contrastar */
+            filter: brightness(0) invert(1);
+        }
+
+        .header-title {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .header-title h4 {
+            margin: 0 0 5px 0;
+            font-weight: 600;
+            font-size: 1.8rem;
+        }
+
+        .header-title p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--beige-warm);
+        }
+
+        /* ----------------------------------------------------
+           TARJETAS DE SECCIÓN (INFO GENERAL)
+           ---------------------------------------------------- */
+        .section-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--ochre-gold);
+        }
+
+        .first-card {
+            margin-top: -30px;
+        }
+
+        .objective-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            text-align: justify;
+        }
+
+        .instructions-panel {
+            background-color: #fcf9f2;
+            border-left: 5px solid var(--ochre-gold);
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .section-title {
+            color: var(--vino-red);
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            font-size: 2rem;
+            color: var(--ochre-gold);
+        }
+
+        /* ----------------------------------------------------
+           NUEVO DISEÑO DE PREGUNTAS (TARJETAS INDIVIDUALES)
+           ---------------------------------------------------- */
+        .question-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid var(--beige-warm);
+        }
+
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Indicador de pregunta completada */
+        .question-card.answered {
+            border-left: 4px solid #4CAF50; /* Verde de éxito */
+            background-color: var(--beige-warm-light);
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* Estilo para los botones seleccionables en lugar de radio buttons pequeños */
+        .options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .option-label {
+            flex: 1 1 18%; /* Toma espacio equitativo, se ajusta en móviles */
+            min-width: 120px; /* Evita que se hagan muy pequeños en celular */
+            margin: 0;
+        }
+
+        /* Ocultar el radio button real de forma accesible para que funcione el 'required' del navegador */
+        .option-label input[type="radio"] {
+            opacity: 0;
+            position: absolute;
+            z-index: -1;
+            width: 1px;
+            height: 1px;
+        }
+
+        /* Materialize oculta los selects por defecto. Hacemos que el select original sea visible solo para validación HTML5 pero posicionado detrás */
+        select[required] {
+            display: block !important;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: 0;
+            border: 0;
+            opacity: 0;
+            bottom: 0;
+            left: 50%;
+        }
+
+        /* Botón visual */
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 12px 5px;
+            text-align: center;
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #555;
+            user-select: none;
+        }
+
+        .option-button:hover {
+            background-color: #eeeeee;
+            border-color: #bdbdbd;
+        }
+
+        /* Cuando el radio button interno está marcado, cambiar el estilo del botón visual */
+        .option-label input[type="radio"]:checked + .option-button {
+            background-color: var(--ochre-gold-light);
+            border-color: var(--ochre-gold);
+            color: white;
+            box-shadow: 0 2px 5px rgba(151, 126, 91, 0.4);
+            font-weight: 600;
+        }
+
+        /* ----------------------------------------------------
+           BOTÓN DE ENVÍO Y OVERLAY
+           ---------------------------------------------------- */
+        .btn-submit {
+            background-color: var(--vino-red);
+            width: 100%;
+            padding: 15px;
+            height: auto;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(86, 33, 47, 0.3);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--vino-red-light);
+        }
+
+        .btn-submit i {
+            font-size: 1.5rem;
+        }
+
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* Responsivo adicional */
+        @media screen and (max-width: 600px) {
+            .brand-header {
+                flex-direction: column;
+                padding: 20px 10px;
+            }
+            .logo-container {
+                margin: 10px 0;
+                height: 80px; /* Logos un poco más chicos en celular */
+            }
+            .header-title h4 { font-size: 1.5rem; }
+            .option-label {
+                flex: 1 1 100%; /* En celular, los botones se apilan uno abajo del otro para ser muy fáciles de tocar */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="brand-header">
+        <div class="logo-container">
+            <img src="data:image/png;base64,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" alt="Logo UAAEMS">
+        </div>
+    </header>
+
+    <main class="container">
+        <form id="docenteForm">
+
+            <!-- SECCIÓN: OBJETIVO -->
+            <div class="section-card first-card">
+                <h5 class="section-title"><i class="material-icons">track_changes</i> Objetivo</h5>
+                <p class="objective-text">
+                    Identificar necesidades de formación docente, mediante su autopercepción acerca de sus conocimientos, habilidades y actitudes en relación con su función en Educación Media Superior, con la finalidad de obtener un diagnóstico que oriente la planeación de las acciones de formación, capacitación y actualización.
+                </p>
+            </div>
+
+            <!--
+            ========================================================================
+            INSTRUCCIONES PARA MODIFICAR LA INFORMACIÓN GENERAL:
+            Esta sección es la que cambiarás para cada uno de tus 6 sistemas educativos.
+            - Para cambiar un texto visible: modifica el texto entre las etiquetas <label>
+            - Para cambiar el nombre de la variable que se guarda en Excel: modifica el atributo 'name="nombre_variable"' en el <input> o <select>.
+            - Para quitar una pregunta: borra el bloque entero del <div class="input-field...">
+            - Para agregar una pregunta: copia un bloque <div class="input-field..."> y pégalo abajo, asegurándote de cambiar el 'id' y el 'name'.
+            ========================================================================
+            -->
+            <div class="section-card">
+                <h5 class="section-title"><i class="material-icons">account_circle</i> Información General</h5>
+
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="input-field col s12 m6">
+                        <input id="plantel" type="text" name="plantel" required>
+                        <label for="plantel">Nombre del Plantel</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <input id="cct" type="text" name="cct" required>
+                        <label for="cct">C.C.T. (Clave de Centro de Trabajo)</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <input id="experiencia" type="number" name="experiencia" min="0" required>
+                        <label for="experiencia">Años de Experiencia docente en Educación Media Superior</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="formacion" name="formacion" required>
+                            <option value="" disabled selected>Seleccione la naturaleza de su formación</option>
+                            <option value="Formación Pedagógica/Educación">Formación Pedagógica/Educación</option>
+                            <option value="Formación Disciplinar (Ingeniería, Derecho, Salud, Etc.)">Formación Disciplinar (Ingeniería, Derecho, Salud, Etc.)</option>
+                        </select>
+                        <label>Naturaleza de la formación</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="situacion" name="situacion" required>
+                            <option value="" disabled selected>Seleccione su situación laboral</option>
+                            <option value="Horas Base / Indefinido">Horas Base / Indefinido</option>
+                            <option value="Por contrato">Por contrato</option>
+                            <option value="Horas clase Temporal">Horas clase Temporal</option>
+                        </select>
+                        <label>Situación Laboral</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="curriculum" name="curriculum" required>
+                            <option value="" disabled selected>Seleccione el currículum</option>
+                            <option value="Fundamental">Fundamental</option>
+                            <option value="Ampliado">Ampliado</option>
+                            <option value="Laboral">Laboral</option>
+                        </select>
+                        <label>Currículum que imparte</label>
+                    </div>
+
+                    <div class="input-field col s12 m6">
+                        <select id="frecuencia_virtual" name="frecuencia_virtual" required>
+                            <option value="" disabled selected>Seleccione la frecuencia</option>
+                            <option value="Nunca">Nunca</option>
+                            <option value="Rara vez">Rara vez</option>
+                            <option value="Ocasionalmente">Ocasionalmente</option>
+                            <option value="Frecuentemente">Frecuentemente</option>
+                            <option value="Siempre">Siempre</option>
+                        </select>
+                        <label>Integración de Entornos Virtuales o Modelos Híbridos</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR DE PREGUNTAS (Se generan automáticamente por JS) -->
+            <div>
+                <h5 style="color: var(--vino-red); font-weight: bold; margin-bottom: 15px;">
+                    <i class="material-icons" style="vertical-align: bottom; color: var(--ochre-gold);">assignment</i>
+                    Cuestionario
+                </h5>
+
+                <div class="instructions-panel">
+                    <strong>Indicaciones:</strong> Lea cuidadosamente cada uno de los siguientes enunciados y seleccione la opción que mejor describa su nivel actual de conocimiento, dominio, habilidad o disposición de acuerdo con su función docente. No existen respuestas correctas o incorrectas. Responda con honestidad considerando su experiencia.
+                </div>
+
+                <div id="questions-container">
+                    <!-- Las tarjetas de preguntas se inyectarán aquí -->
+                </div>
+
+                <!-- SECCIÓN: TEMÁTICA PRIORITARIA (PREGUNTA ABIERTA) -->
+                <div class="question-card" style="margin-top: 30px; border-left: 4px solid var(--ochre-gold);">
+                    <div class="question-text" style="color: var(--vino-red);">
+                        <strong>Temática Prioritaria:</strong>
+                        <span style="font-size: 1rem; font-weight: normal; display: block; margin-top: 5px; color: #444;">
+                            ¿Qué otra temática de formación considera prioritaria para mejorar su práctica docente y que no se haya mencionado anteriormente?
+                        </span>
+                    </div>
+                    <div class="input-field">
+                        <textarea id="tematica_prioritaria" name="tematica_prioritaria" class="materialize-textarea" data-length="500"></textarea>
+                        <label for="tematica_prioritaria">Escriba su respuesta aquí...</label>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: COMENTARIOS FINALES -->
+                <div class="question-card" style="margin-top: 20px; border-left: 4px solid var(--vino-red);">
+                    <div class="question-text" style="color: var(--vino-red);">
+                        <strong>Comentarios Finales:</strong>
+                        <span style="font-size: 0.95rem; font-weight: normal; display: block; margin-top: 5px; color: #666;">
+                            Por favor anota la retroalimentación a este formulario, trata de ser objetivo y claro, utiliza palabras clave y frases poderosas, agradecemos tu participación.
+                        </span>
+                    </div>
+                    <div class="input-field">
+                        <textarea id="comentarios_finales" name="comentarios_finales" class="materialize-textarea" data-length="500"></textarea>
+                        <label for="comentarios_finales">Escribe tus comentarios aquí...</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="btn waves-effect waves-light btn-submit" type="submit" id="submitBtn">
+                <i class="material-icons left">check_circle</i>
+                Enviar Respuestas
+            </button>
+        </form>
+    </main>
+
+    <!-- Overlay de carga -->
+    <div id="loading-overlay">
+        <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-red-only" style="border-color: var(--vino-red);">
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+        </div>
+        <h5 id="loading-text" style="color: var(--vino-red); margin-top: 20px; font-weight: bold; text-align: center;">Guardando respuestas de forma segura...</h5>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        const preguntas = [
+            "El nivel de necesidad que tengo de fortalecer mis conocimientos, habilidades, aptitudes, actitudes, principios y valores para ejercer la función docente es…",
+            "El nivel de conocimiento que tengo sobre mi función docente apegada a la normatividad académica vigente es…",
+            "El nivel de conocimiento que tengo sobre mi función docente apegada a la normatividad administrativa vigente es…",
+            "El nivel en que concibo la escuela como un espacio de cuidado que fortalece una ciudadanía activa es…",
+            "Mi dominio sobre los programas de estudio de la asignatura o módulo que imparto es…",
+            "El nivel en que aplico los contenidos, estrategias y métodos comprendidos en la Nueva Escuela Mexicana (NEM) en la asignatura o módulo que imparto es…",
+            "El nivel en que incorporo estrategias y métodos activos que evidencien el logro de aprendizajes en la asignatura o módulo que imparto es…",
+            "El nivel en que incorporo estrategias y métodos que fortalezcan el sentido de pertenencia del estudiantado en la asignatura o módulo que imparto es…",
+            "El nivel de habilidad que considero tener para planear los procesos de enseñanza-aprendizaje de acuerdo con la Nueva Escuela Mexicana es…",
+            "El nivel de habilidad para planear de manera transversal de acuerdo con el Plan y Programa de Estudio, considerando las características del estudiantado es…",
+            "El nivel de habilidad para planear estrategias didácticas orientadas al desarrollo integral y al acompañamiento de las trayectorias educativas para contribuir al perfil de egreso es…",
+            "El nivel en que adapto mi enseñanza para atender las necesidades de aprendizaje del estudiantado es…",
+            "El nivel en que mis estrategias generan ambientes favorables para el aprendizaje y promueven la cultura de la paz es…",
+            "El nivel en que considero que mis estrategias didácticas contribuyen a la vida saludable del estudiantado es…",
+            "Mi habilidad para diseñar estrategias de evaluación con enfoque formativo para el logro de aprendizajes significativos es…",
+            "El nivel en que incorporo habilidades socioemocionales en mi planeación es…",
+            "El nivel en que integro los principios de igualdad, inclusión y equidad en mis estrategias de enseñanza es…",
+            "Mi participación en el trabajo colegiado y en las acciones colaborativas de mi comunidad escolar es…",
+            "Mi participación en el Plan de Mejora Continua y el Programa Aula, Escuela y Comunidad del centro educativo, considerando la diversidad cultural y perspectiva de género es…",
+            "El nivel en que el análisis de mi práctica docente individual y colectiva identifica oportunamente mis fortalezas y áreas de oportunidad es…",
+            "La disposición para fortalecer mi trayectoria formativa con base en el autoconocimiento, análisis y reflexión de la práctica docente es…",
+            "El nivel de desarrollo de mis recursos socioemocionales para fortalecer el acompañamiento de las trayectorias del estudiantado es…"
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Inicializar selects de Materialize
+            var selects = document.querySelectorAll('select');
+            M.FormSelect.init(selects);
+            var textAreas = document.querySelectorAll('.materialize-textarea');
+            M.CharacterCounter.init(textAreas);
+
+            // 2. Generar las tarjetas de preguntas (UI UX mejorada)
+            const container = document.getElementById('questions-container');
+            const niveles = ['Muy alto', 'Alto', 'Medio', 'Bajo', 'Muy bajo'];
+
+            preguntas.forEach(function(pregunta, index) {
+                const qNum = index + 1;
+
+                // Crear el contenedor de la tarjeta
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = 'card-q' + qNum;
+
+                // Añadir el texto de la pregunta
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.innerHTML = `<strong>${qNum}.</strong> ${pregunta}`;
+                card.appendChild(qText);
+
+                // Contenedor de botones
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+
+                niveles.forEach(function(nivel, nIndex) {
+                    const val = nIndex + 1; // 1 a 5
+
+                    const label = document.createElement('label');
+                    label.className = 'option-label';
+
+                    // Input oculto (es el que envía el dato real)
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'q' + qNum;
+                    input.value = `${val}`;
+                    input.required = true;
+
+                    // Evento para marcar visualmente la tarjeta como completada
+                    input.addEventListener('change', function() {
+                        document.getElementById('card-q' + qNum).classList.add('answered');
+                    });
+
+                    // Botón visual clickeable
+                    const divVisual = document.createElement('div');
+                    divVisual.className = 'option-button';
+                    divVisual.innerHTML = `${nivel}`;
+                    divVisual.style.padding = '20px 5px';
+
+                    label.appendChild(input);
+                    label.appendChild(divVisual);
+                    grid.appendChild(label);
+                });
+
+                card.appendChild(grid);
+                container.appendChild(card);
+            });
+        });
+
+        // Manejar el envío del formulario
+        document.getElementById('docenteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            const formData = new FormData(this);
+            const dataObj = {};
+            // Convertir iterator a array para compatibilidad
+            Array.from(formData.entries()).forEach(function(pair) {
+                dataObj[pair[0]] = pair[1];
+            });
+
+            const loadingText = document.getElementById('loading-text');
+            loadingText.innerText = "Guardando respuestas de forma segura...";
+
+            // Función recursiva para reintento automático
+            function intentarEnviar(intentosRestantes) {
+                if (typeof google !== 'undefined' && google.script) {
+                    google.script.run
+                        .withSuccessHandler(function(response) {
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            alert('¡Respuestas guardadas exitosamente! Gracias por su participación.');
+                            document.getElementById('docenteForm').reset();
+                            // Limpiar estilos de completado
+                            document.querySelectorAll('.question-card').forEach(function(c) {
+                                c.classList.remove('answered');
+                            });
+                            window.scrollTo(0, 0); // Regresar al inicio
+                            btn.disabled = false;
+                        })
+                        .withFailureHandler(function(error) {
+                            if (intentosRestantes > 0) {
+                                console.warn('Tráfico alto. Reintentando... Intentos restantes: ' + intentosRestantes);
+                                loadingText.innerText = "Alta demanda detectada. Reintentando conexión de forma segura (" + intentosRestantes + ")...";
+                                // Esperar 3 segundos antes de intentar de nuevo
+                                setTimeout(function() {
+                                    intentarEnviar(intentosRestantes - 1);
+                                }, 3000);
+                            } else {
+                                document.getElementById('loading-overlay').style.display = 'none';
+                                alert('El sistema está experimentando un volumen muy alto de tráfico y no pudimos conectar.\n\nPor favor, espere unos minutos e intente presionar "Enviar Respuestas" nuevamente. Sus respuestas no se han borrado.');
+                                btn.disabled = false;
+                            }
+                        })
+                        .guardarRespuestas(dataObj);
+                } else {
+                    // Modo desarrollo local (Simulación)
+                    setTimeout(function() {
+                        if (intentosRestantes > 1) { // Simular fallo una vez
+                            intentarEnviar(intentosRestantes - 1);
+                        } else {
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            alert('SIMULACIÓN: Datos capturados. (En producción esto se envía a tu Google Sheet).');
+                            console.log('Datos enviados:', dataObj);
+                            btn.disabled = false;
+                        }
+                    }, 1500);
+                }
+            }
+
+            // Iniciar el proceso de envío con 3 reintentos automáticos
+            intentarEnviar(3);
+        });
+    </script>
+</body>
+</html>
