@@ -365,7 +365,7 @@ function submitFactibilidadForm(dataObj) {
       dataObj.aulas_numero, dataObj.aulas_vent_nat, dataObj.aulas_vent_art, dataObj.aulas_pizarron, dataObj.aulas_pintarron, dataObj.aulas_proyector, dataObj.aulas_escritorio, dataObj.aulas_silla, dataObj.aulas_pupitres,
       dataObj.comp_mesas, dataObj.comp_bancos, dataObj.comp_num_equipos, dataObj.comp_procesador, dataObj.comp_red, dataObj.comp_internet,
       dataObj.bib_mesas, dataObj.bib_sillas, dataObj.bib_libreros, "Ver detalle en hoja ind.",
-      dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
+      dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas, dataObj.otr_salon_usos, dataObj.otr_sala_maestros, dataObj.otr_cubiculos, dataObj.otr_auditorio, dataObj.otr_cafeteria,
       flattenPersonal(dataObj.pers_nombre, dataObj.pers_funcion, dataObj.pers_perfil),
       flattenDocentes(dataObj.doc_nombre, dataObj.doc_funcion, dataObj.doc_perfil, dataObj.doc_asignatura),
       flattenDocentes(dataObj.docExt_nombre, dataObj.docExt_funcion, dataObj.docExt_perfil, dataObj.docExt_asignatura),
@@ -389,7 +389,7 @@ function submitFactibilidadForm(dataObj) {
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
       "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Acervo Bibliográfico",
-      "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Laboratorios/Talleres",
+      "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Laboratorios/Talleres", "Otras Inst: Salón usos múltiples", "Otras Inst: Sala maestros", "Otras Inst: Cubículos", "Otras Inst: Auditorio", "Otras Inst: Cafetería",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
     ]];
@@ -674,6 +674,15 @@ function submitFactibilidadForm(dataObj) {
     addRowData("Áreas de Servicio", dataObj.desc_servicios);
     addRowData("Espacios Deportivos", dataObj.desc_deportivos);
     addRowData("Laboratorios o talleres", dataObj.desc_demas);
+    currentRow++;
+
+    // Otras instalaciones
+    addSectionTitle("Otras instalaciones");
+    addRowData("Salón de usos múltiples", dataObj.otr_salon_usos);
+    addRowData("Sala de maestros", dataObj.otr_sala_maestros);
+    addRowData("Cubículos de orientación", dataObj.otr_cubiculos);
+    addRowData("Salón de actos, auditorio u otro", dataObj.otr_auditorio);
+    addRowData("Cafetería o tienda escolar", dataObj.otr_cafeteria);
     addRowData("Objetivos", dataObj.objetivos_mejora);
     addRowData("Área Influencia", dataObj.area_influencia);
     addRowData("Campo Laboral", dataObj.campo_laboral);
