@@ -294,7 +294,7 @@ function submitFactibilidadForm(dataObj) {
       dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"),
       "Ver detalle en hoja ind.", "Ver detalle en hoja ind.",
       dataObj.aulas_numero, dataObj.aulas_vent_nat, dataObj.aulas_vent_art, dataObj.aulas_pizarron, dataObj.aulas_pintarron, dataObj.aulas_proyector, dataObj.aulas_escritorio, dataObj.aulas_silla, dataObj.aulas_pupitres,
-      `${dataObj.comp_pob}/${dataObj.comp_horas_req}/${dataObj.comp_equipos}/${dataObj.comp_horas_disp}/${dataObj.comp_horas_falt}/${dataObj.comp_equipo_falt}`,
+      dataObj.comp_mesas, dataObj.comp_bancos, dataObj.comp_num_equipos, dataObj.comp_procesador, dataObj.comp_red, dataObj.comp_internet,
       "Ver detalle en hoja ind.",
       dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
       flattenPersonal(dataObj.pers_nombre, dataObj.pers_funcion, dataObj.pers_perfil),
@@ -319,7 +319,7 @@ function submitFactibilidadForm(dataObj) {
       "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
-      "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
+      "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Fondo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
@@ -456,6 +456,16 @@ function submitFactibilidadForm(dataObj) {
     addRowData("Escritorio para el docente", dataObj.aulas_escritorio);
     addRowData("Silla para el docente", dataObj.aulas_silla);
     addRowData("Mobiliario para los estudiantes (Número de pupitres)", dataObj.aulas_pupitres);
+    currentRow++;
+
+    // Centro de cómputo
+    addSectionTitle("Centro de cómputo");
+    addRowData("Mesas", dataObj.comp_mesas);
+    addRowData("Bancos", dataObj.comp_bancos);
+    addRowData("Número de equipos", dataObj.comp_num_equipos);
+    addRowData("Procesador", dataObj.comp_procesador);
+    addRowData("El centro de cómputo se encuentra instalado en red", dataObj.comp_red);
+    addRowData("Cuenta con internet", dataObj.comp_internet);
     currentRow++;
 
 

@@ -658,23 +658,43 @@
         </tr>
       </table>
 
-      <h4>Centro o aula de cómputo.</h4>
+      <h4>Centro de cómputo.</h4>
       <table>
         <tr>
-          <th>Población escolar</th>
-          <th>Horas de uso requeridas a la semana</th>
-          <th>Número de equipos funcionales</th>
-          <th>Horas de uso general disponibles a la semana</th>
-          <th>Horas de uso general faltante</th>
-          <th>Equipo faltante</th>
+          <td class="label-col">Mesas:</td>
+          <td><input type="number" name="comp_mesas" required></td>
         </tr>
         <tr>
-          <td><input type="number" name="comp_pob"></td>
-          <td><input type="number" name="comp_horas_req"></td>
-          <td><input type="number" name="comp_equipos"></td>
-          <td><input type="number" name="comp_horas_disp"></td>
-          <td><input type="number" name="comp_horas_falt"></td>
-          <td><input type="number" name="comp_equipo_falt"></td>
+          <td class="label-col">Bancos:</td>
+          <td><input type="number" name="comp_bancos" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Número de equipos:</td>
+          <td><input type="number" name="comp_num_equipos" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Procesador:</td>
+          <td><input type="text" name="comp_procesador" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">El centro de cómputo se encuentra instalado en red:</td>
+          <td>
+            <select name="comp_red" required>
+              <option value="" disabled selected>Seleccione</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-col">Cuenta con internet:</td>
+          <td>
+            <select name="comp_internet" required>
+              <option value="" disabled selected>Seleccione</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </td>
         </tr>
       </table>
 
