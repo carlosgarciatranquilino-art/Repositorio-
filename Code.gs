@@ -292,7 +292,7 @@ function submitFactibilidadForm(dataObj) {
       respName, emailStr, phoneStr,
       dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_opcion, dataObj.id_region, dataObj.id_municipio, dataObj.id_zona, dataObj.id_turno, (Array.isArray(dataObj.id_cct) ? dataObj.id_cct.join(", ") : dataObj.id_cct),
       dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"),
-      "Ver detalle en hoja ind.", "Ver detalle en hoja ind.", dataObj.mat_justificacion,
+      "Ver detalle en hoja ind.", "Ver detalle en hoja ind.",
       `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}`,
       flattenDynamic(dataObj.esp_nombre, dataObj.esp_capacidad, "Cap"),
       `${dataObj.comp_pob}/${dataObj.comp_horas_req}/${dataObj.comp_equipos}/${dataObj.comp_horas_disp}/${dataObj.comp_horas_falt}/${dataObj.comp_equipo_falt}`,
@@ -318,7 +318,7 @@ function submitFactibilidadForm(dataObj) {
       "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
       "Servicio Educativo", "Nombre EPO", "Modalidad", "Opción Educativa", "Región", "Municipio", "Zona", "Turnos", "CCT",
       "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
-      "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)", "Justificación Matrícula",
+      "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
       "Aulas: Pob/Gpos/Total", "Espacios Aprendizaje",
       "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
@@ -440,11 +440,9 @@ function submitFactibilidadForm(dataObj) {
     addSectionTitle("Proyección de matrícula por grupos y por turnos");
     epoSheet.getRange(currentRow, 1, 1, 5).setValues([["Ciclo", "Hombres", "Mujeres", "Grupos", "Turno"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
     currentRow++;
-    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2026-2027", dataObj.p_2627_h, dataObj.p_2627_m, dataObj.p_2627_g, dataObj.p_2627_t]]); currentRow++;
-    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2027-2028", dataObj.p_2728_h, dataObj.p_2728_m, dataObj.p_2728_g, dataObj.p_2728_t]]); currentRow++;
-    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2028-2029", dataObj.p_2829_h, dataObj.p_2829_m, dataObj.p_2829_g, dataObj.p_2829_t]]); currentRow++;
-    currentRow++;
-    addRowData("Justificación de la demanda", dataObj.mat_justificacion);
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2027-2028", dataObj.p_2627_h, dataObj.p_2627_m, dataObj.p_2627_g, dataObj.p_2627_t]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2028-2029", dataObj.p_2728_h, dataObj.p_2728_m, dataObj.p_2728_g, dataObj.p_2728_t]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2029-2030", dataObj.p_2829_h, dataObj.p_2829_m, dataObj.p_2829_g, dataObj.p_2829_t]]); currentRow++;
     currentRow++;
 
 
