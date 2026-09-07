@@ -295,7 +295,7 @@ function submitFactibilidadForm(dataObj) {
       "Ver detalle en hoja ind.", "Ver detalle en hoja ind.",
       dataObj.aulas_numero, dataObj.aulas_vent_nat, dataObj.aulas_vent_art, dataObj.aulas_pizarron, dataObj.aulas_pintarron, dataObj.aulas_proyector, dataObj.aulas_escritorio, dataObj.aulas_silla, dataObj.aulas_pupitres,
       dataObj.comp_mesas, dataObj.comp_bancos, dataObj.comp_num_equipos, dataObj.comp_procesador, dataObj.comp_red, dataObj.comp_internet,
-      "Ver detalle en hoja ind.",
+      dataObj.bib_mesas, dataObj.bib_sillas, dataObj.bib_libreros, "Ver detalle en hoja ind.",
       dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
       flattenPersonal(dataObj.pers_nombre, dataObj.pers_funcion, dataObj.pers_perfil),
       flattenDocentes(dataObj.doc_nombre, dataObj.doc_funcion, dataObj.doc_perfil, dataObj.doc_asignatura),
@@ -319,7 +319,7 @@ function submitFactibilidadForm(dataObj) {
       "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
-      "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Fondo Bibliográfico",
+      "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Fondo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
@@ -466,6 +466,13 @@ function submitFactibilidadForm(dataObj) {
     addRowData("Procesador", dataObj.comp_procesador);
     addRowData("El centro de cómputo se encuentra instalado en red", dataObj.comp_red);
     addRowData("Cuenta con internet", dataObj.comp_internet);
+    currentRow++;
+
+    // Biblioteca
+    addSectionTitle("Biblioteca");
+    addRowData("Mesas", dataObj.bib_mesas);
+    addRowData("Sillas", dataObj.bib_sillas);
+    addRowData("Número de libreros o estantes", dataObj.bib_libreros);
     currentRow++;
 
 
