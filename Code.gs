@@ -293,7 +293,7 @@ function submitFactibilidadForm(dataObj) {
       dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_opcion, dataObj.id_region, dataObj.id_municipio, dataObj.id_zona, dataObj.id_turno, (Array.isArray(dataObj.id_cct) ? dataObj.id_cct.join(", ") : dataObj.id_cct),
       dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"),
       "Ver detalle en hoja ind.", "Ver detalle en hoja ind.",
-      `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}`,
+      dataObj.aulas_numero, dataObj.aulas_vent_nat, dataObj.aulas_vent_art, dataObj.aulas_pizarron, dataObj.aulas_pintarron, dataObj.aulas_proyector, dataObj.aulas_escritorio, dataObj.aulas_silla, dataObj.aulas_pupitres,
       `${dataObj.comp_pob}/${dataObj.comp_horas_req}/${dataObj.comp_equipos}/${dataObj.comp_horas_disp}/${dataObj.comp_horas_falt}/${dataObj.comp_equipo_falt}`,
       "Ver detalle en hoja ind.",
       dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
@@ -318,7 +318,7 @@ function submitFactibilidadForm(dataObj) {
       "Servicio Educativo", "Nombre EPO", "Modalidad", "Opción Educativa", "Región", "Municipio", "Zona", "Turnos", "CCT",
       "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
-      "Espacio de Aprendizaje: Pob/Gpos/Total",
+      "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
       "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
@@ -447,13 +447,16 @@ function submitFactibilidadForm(dataObj) {
 
     // Instalaciones - Aulas
     addSectionTitle("VI. Instalaciones - Espacio de Aprendizaje");
-    let aulasHeaders = ["Población", "Total grupos", "Total aulas"];
-    epoSheet.getRange(currentRow, 1, 1, 3).setValues([aulasHeaders]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    addRowData("Número de aulas", dataObj.aulas_numero);
+    addRowData("Ventilación e iluminación naturales", dataObj.aulas_vent_nat);
+    addRowData("Ventilación e iluminación artificial", dataObj.aulas_vent_art);
+    addRowData("Pizarrarón", dataObj.aulas_pizarron);
+    addRowData("Pintarrón", dataObj.aulas_pintarron);
+    addRowData("Proyector", dataObj.aulas_proyector);
+    addRowData("Escritorio para el docente", dataObj.aulas_escritorio);
+    addRowData("Silla para el docente", dataObj.aulas_silla);
+    addRowData("Mobiliario para los estudiantes (Número de pupitres)", dataObj.aulas_pupitres);
     currentRow++;
-    epoSheet.getRange(currentRow, 1, 1, 3).setValues([[
-      dataObj.aulas_pob, dataObj.aulas_gpos, dataObj.aulas_total
-    ]]);
-    currentRow += 2;
 
 
     // Dinámico: Personal
