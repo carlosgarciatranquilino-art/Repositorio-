@@ -407,6 +407,8 @@ function submitFactibilidadForm(dataObj) {
 
     // Matrícula actual
     addSectionTitle("V. Oferta y demanda educativa de Bachillerato General por plantel.");
+    epoSheet.getRange(currentRow, 1, 1, 2).merge().setValue("Matrícula total (2026-2027).").setBackground(colorBeige).setFontWeight("bold").setHorizontalAlignment("center");
+    currentRow++;
     epoSheet.getRange(currentRow, 1).setValue("Indicador").setBackground(colorVinoClaro).setFontColor(colorBlanco);
     epoSheet.getRange(currentRow, 2).setValue("Total general").setBackground(colorVinoClaro).setFontColor(colorBlanco);
     currentRow++;
