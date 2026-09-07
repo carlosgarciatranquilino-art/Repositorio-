@@ -291,7 +291,7 @@ function submitFactibilidadForm(dataObj) {
       new Date(),
       respName, emailStr, phoneStr,
       dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_opcion, dataObj.id_region, dataObj.id_municipio, dataObj.id_zona, dataObj.id_turno, (Array.isArray(dataObj.id_cct) ? dataObj.id_cct.join(", ") : dataObj.id_cct),
-      dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos,
+      dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"),
       "Ver detalle en hoja ind.", "Ver detalle en hoja ind.", dataObj.mat_justificacion,
       `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}`,
       flattenDynamic(dataObj.esp_nombre, dataObj.esp_capacidad, "Cap"),
@@ -303,7 +303,7 @@ function submitFactibilidadForm(dataObj) {
       flattenDocentes(dataObj.docExt_nombre, dataObj.docExt_funcion, dataObj.docExt_perfil, dataObj.docExt_asignatura),
       flattenDocentes(dataObj.docAmp_nombre, dataObj.docAmp_funcion, dataObj.docAmp_perfil, dataObj.docAmp_asignatura),
       flattenDocentes(dataObj.docFOB_nombre, dataObj.docFOB_funcion, dataObj.docFOB_perfil, dataObj.docFOB_asignatura),
-      flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"), dataObj.objetivos_mejora, dataObj.area_influencia,
+      dataObj.objetivos_mejora, dataObj.area_influencia,
       dataObj.campo_laboral, dataObj.conclusion_epo,
       fileUrls.join(" | ")
     ];
@@ -317,12 +317,12 @@ function submitFactibilidadForm(dataObj) {
     const headers = [[
       "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
       "Servicio Educativo", "Nombre EPO", "Modalidad", "Opción Educativa", "Región", "Municipio", "Zona", "Turnos", "CCT",
-      "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos",
+      "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)", "Justificación Matrícula",
       "Aulas: Pob/Gpos/Total", "Espacios Aprendizaje",
       "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
-      "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Municipios Procedencia", "Objetivos Mejora", "Área Influencia",
+      "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
     ]];
     masterSheet.getRange(1, 1, 1, headers[0].length).setValues(headers)
@@ -414,6 +414,9 @@ function submitFactibilidadForm(dataObj) {
     currentRow++;
     epoSheet.getRange(currentRow, 1).setValue("Total estudiantes"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_estudiantes); currentRow++;
     epoSheet.getRange(currentRow, 1).setValue("Total grupos"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_grupos); currentRow++;
+    currentRow++;
+    addSectionTitle("Municipios dentro y fuera del Estado de México");
+    addRowData("Municipios", flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"));
     currentRow++;
 
 
@@ -589,7 +592,6 @@ function submitFactibilidadForm(dataObj) {
 
     // Descripciones varias
     addSectionTitle("Textos y Conclusiones");
-    addRowData("Municipios", flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"));
     addRowData("Objetivos", dataObj.objetivos_mejora);
     addRowData("Área Influencia", dataObj.area_influencia);
     addRowData("Campo Laboral", dataObj.campo_laboral);

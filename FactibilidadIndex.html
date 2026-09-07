@@ -471,7 +471,51 @@
         </tr>
       </table>
 
-            <h4>Histórico de matrícula por grupos y por turno.</h4>
+      <h4>Municipios dentro y fuera del Estado de México.</h4>
+      <p class="indicacion" style="margin-bottom: 5px;">Indicación: Identificar el lugar de procedencia de las y los estudiantes inscritos en el plantel y analizar cuáles son los municipios que aportan la mayor cantidad de matrícula, con la finalidad de determinar el área de influencia y cobertura del servicio educativo.</p>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Nota: El área de influencia se determinará considerando los principales municipios de los que provienen las y los estudiantes de la matrícula actual.</p>
+
+      <div class="form-group">
+        <button type="button" class="btn-add" onclick="addMunicipioField()">+ Agregar Municipio</button>
+        <div id="municipios-container">
+          <div style="display: flex; align-items: center; margin-bottom: 10px; background-color: var(--beige-claro); padding: 10px; border-radius: 5px;">
+            <span style="margin-right: 10px; font-weight: bold;" class="mun-num">1.</span>
+            <input type="text" name="municipios_procedencia[]" placeholder="Nombre del Municipio" required style="flex: 2; margin-right: 10px;">
+            <input type="number" name="municipios_cantidad[]" placeholder="Cantidad de estudiantes" required style="flex: 1;">
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function addMunicipioField() {
+          const container = document.getElementById('municipios-container');
+          const count = container.children.length + 1;
+          const div = document.createElement('div');
+          div.style = 'display: flex; align-items: center; margin-bottom: 10px; background-color: var(--beige-claro); padding: 10px; border-radius: 5px;';
+          div.innerHTML = `
+            <span style="margin-right: 10px; font-weight: bold;" class="mun-num">${count}.</span>
+            <input type="text" name="municipios_procedencia[]" placeholder="Nombre del Municipio" required style="flex: 2; margin-right: 10px;">
+            <input type="number" name="municipios_cantidad[]" placeholder="Cantidad de estudiantes" required style="flex: 1;">
+            <button type="button" class="btn-remove" onclick="removeMunicipioField(this)" style="margin-left: 10px;">Eliminar</button>
+          `;
+          container.appendChild(div);
+        }
+
+        function removeMunicipioField(btn) {
+          const row = btn.parentNode;
+          const container = row.parentNode;
+          container.removeChild(row);
+
+          // Re-number
+          const rows = container.children;
+          for(let i=0; i<rows.length; i++) {
+            rows[i].querySelector('.mun-num').innerText = (i + 1) + '.';
+          }
+        }
+      </script>
+
+
+      <h4>Histórico de matrícula por grupos y por turno.</h4>
       <table>
         <tr>
           <th colspan="4" class="th-sub">2023-2024</th>
@@ -741,68 +785,25 @@
         </tr>
       </table>
 
-      <h2>VIII. Municipios dentro y fuera del Estado de México.</h2>
-      <p class="indicacion" style="margin-bottom: 5px;">Indicación: Identificar el lugar de procedencia de las y los estudiantes inscritos en el plantel y analizar cuáles son los municipios que aportan la mayor cantidad de matrícula, con la finalidad de determinar el área de influencia y cobertura del servicio educativo.</p>
-      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Nota: El área de influencia se determinará considerando los principales municipios de los que provienen las y los estudiantes de la matrícula actual.</p>
-
-      <div class="form-group">
-        <button type="button" class="btn-add" onclick="addMunicipioField()">+ Agregar Municipio</button>
-        <div id="municipios-container">
-          <div style="display: flex; align-items: center; margin-bottom: 10px; background-color: var(--beige-claro); padding: 10px; border-radius: 5px;">
-            <span style="margin-right: 10px; font-weight: bold;" class="mun-num">1.</span>
-            <input type="text" name="municipios_procedencia[]" placeholder="Nombre del Municipio" required style="flex: 2; margin-right: 10px;">
-            <input type="number" name="municipios_cantidad[]" placeholder="Cantidad de estudiantes" required style="flex: 1;">
-          </div>
-        </div>
-      </div>
-
-      <script>
-        function addMunicipioField() {
-          const container = document.getElementById('municipios-container');
-          const count = container.children.length + 1;
-          const div = document.createElement('div');
-          div.style = 'display: flex; align-items: center; margin-bottom: 10px; background-color: var(--beige-claro); padding: 10px; border-radius: 5px;';
-          div.innerHTML = `
-            <span style="margin-right: 10px; font-weight: bold;" class="mun-num">${count}.</span>
-            <input type="text" name="municipios_procedencia[]" placeholder="Nombre del Municipio" required style="flex: 2; margin-right: 10px;">
-            <input type="number" name="municipios_cantidad[]" placeholder="Cantidad de estudiantes" required style="flex: 1;">
-            <button type="button" class="btn-remove" onclick="removeMunicipioField(this)" style="margin-left: 10px;">Eliminar</button>
-          `;
-          container.appendChild(div);
-        }
-
-        function removeMunicipioField(btn) {
-          const row = btn.parentNode;
-          const container = row.parentNode;
-          container.removeChild(row);
-
-          // Re-number
-          const rows = container.children;
-          for(let i=0; i<rows.length; i++) {
-            rows[i].querySelector('.mun-num').innerText = (i + 1) + '.';
-          }
-        }
-      </script>
-
-      <h2>IX. Objetivos del Plan (Planeación) de Mejora Continua de la EPO vinculados a la oferta de Formación Ocupacional Básica.</h2>
+      <h2>VIII. Objetivos del Plan (Planeación) de Mejora Continua de la EPO vinculados a la oferta de Formación Ocupacional Básica.</h2>
       <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indicación: Describir los objetivos del Plan de Mejora Continua de la EPO que se busca fortalecer o atender mediante la futura implementación de asignaturas de Formación Laboral Básica. Explique de qué manera la apertura de esta oferta educativa contribuiría al logro de las metas institucionales y a la atención de las necesidades identificadas en el plantel.</p>
       <div class="form-group">
         <textarea name="objetivos_mejora" required></textarea>
       </div>
 
-      <h2>X. Área de influencia y contexto regional.</h2>
+      <h2>IX. Área de influencia y contexto regional.</h2>
       <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indicación: Describir los principales municipios que integran el área de influencia del plantel, así como las actividades económicas y vocaciones productivas predominantes de la región, con el fin de fundamentar qué tipo de perfil o áreas de Formación Laboral Básica resultarían pertinentes para la comunidad estudiantil.</p>
       <div class="form-group">
         <textarea name="area_influencia" required></textarea>
       </div>
 
-      <h2>XI. Existencia de campo laboral.</h2>
+      <h2>X. Existencia de campo laboral.</h2>
       <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indicación: Enlistar los principales espacios laborales, empresas, instituciones u organizaciones ubicadas en el área de influencia del plantel. Asimismo, describa brevemente qué tipo de conocimientos, habilidades o perfiles demandan estos espacios, con el fin de justificar cuáles áreas de Formación Laboral Básica resultarían más pertinentes y viables para sus estudiantes.</p>
       <div class="form-group">
         <textarea name="campo_laboral" required></textarea>
       </div>
 
-      <h2>XII. Conclusión y dictamen.</h2>
+      <h2>XI. Conclusión y dictamen.</h2>
       <div class="form-group">
         <label><b>CONCLUSIÓN POR PARTE DE LA EPO:</b></label>
         <textarea name="conclusion_epo" required></textarea>
