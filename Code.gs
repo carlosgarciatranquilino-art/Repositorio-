@@ -557,6 +557,7 @@ function submitFactibilidadForm(dataObj) {
 
     // Dinámico: Personal
     addSectionTitle("VII. Personal directivo, administrativo y docente");
+    addSectionTitle("Personal directivo y administrativo");
     epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Nombre", "Función", "Perfil"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
     currentRow++;
     if (dataObj.pers_nombre && dataObj.pers_nombre.length > 0) {
@@ -577,7 +578,8 @@ function submitFactibilidadForm(dataObj) {
     currentRow++;
 
     // Dinámico: Docentes
-    addSectionTitle("DOCENTES - Currículum Fundamental");
+    addSectionTitle("DOCENTES");
+    addSectionTitle("Currículum Fundamental");
     epoSheet.getRange(currentRow, 1, 1, 4).setValues([["Nombre", "Función", "Perfil académico", "Asignatura que imparte"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
     currentRow++;
     if (dataObj.doc_nombre && dataObj.doc_nombre.length > 0) {
