@@ -388,7 +388,7 @@ function submitFactibilidadForm(dataObj) {
       "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
-      "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Fondo Bibliográfico",
+      "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Acervo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
@@ -542,6 +542,16 @@ function submitFactibilidadForm(dataObj) {
     addRowData("Mesas", dataObj.bib_mesas);
     addRowData("Sillas", dataObj.bib_sillas);
     addRowData("Número de libreros o estantes", dataObj.bib_libreros);
+    currentRow++;
+
+    // Acervo Bibliográfico
+    addSectionTitle("Acervo Bibliográfico");
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Tipo", "Impresos", "Electrónicos"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Libros", dataObj.bib_lib_imp, dataObj.bib_lib_elec]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Revistas", dataObj.bib_rev_imp, dataObj.bib_rev_elec]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Periódicos", dataObj.bib_per_imp, dataObj.bib_per_elec]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Otros", dataObj.bib_otr_imp, dataObj.bib_otr_elec]]); currentRow++;
     currentRow++;
 
 
