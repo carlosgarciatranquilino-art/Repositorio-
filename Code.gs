@@ -1,3 +1,72 @@
+/**
+ * ==============================================================================================
+ * GUÍA DE INSTALACIÓN Y CONFIGURACIÓN PARA NUEVAS CUENTAS (PLANTILLA)
+ * ==============================================================================================
+ * Si has copiado este código a una nueva cuenta de Gmail / Workspace, sigue estos pasos
+ * para autorizar los permisos correctamente y evitar errores de acceso denegado:
+ *
+ * 1. Pega este código en el archivo `Code.gs`.
+ * 2. Pega el código HTML en el archivo `FactibilidadIndex.html`.
+ * 3. En el menú superior del editor, selecciona la función `setup` (al lado del botón Ejecutar).
+ * 4. Haz clic en "Ejecutar".
+ * 5. Google te pedirá "Revisar permisos". Sigue las instrucciones en pantalla:
+ *    -> Elige tu cuenta.
+ *    -> Haz clic en "Avanzado" (si aparece una advertencia de seguridad).
+ *    -> Haz clic en "Ir a Proyecto (no seguro)" o "Go to Project".
+ *    -> Haz clic en "Permitir".
+ * 6. Una vez que la función `setup` termine, la hoja de cálculo y la carpeta se habrán creado
+ *    en tu Google Drive automáticamente.
+ * 7. Finalmente, ve a "Implementar" (arriba a la derecha) -> "Nueva implementación".
+ *    - Tipo: Aplicación Web.
+ *    - Ejecutar como: Mí (Tu correo).
+ *    - Quién tiene acceso: Cualquier usuario.
+ *    - Haz clic en "Implementar" y copia la URL generada. ¡Ese es el enlace de tu formulario!
+ * ==============================================================================================
+ */
+
+/**
+ * Función de inicialización forzada.
+ * Ejecutar esta función manualmente desde el editor de Apps Script obliga a Google a
+ * solicitar y otorgar los permisos necesarios de Google Drive y Google Sheets.
+ */
+function setup() {
+  Logger.log("Iniciando configuración inicial y solicitud de permisos...");
+
+  // 1. Verificar/Crear Carpeta principal en Drive
+  const parentFolderName = "Evidencias_Factibilidad";
+  const folders = DriveApp.getFoldersByName(parentFolderName);
+  if (!folders.hasNext()) {
+    DriveApp.createFolder(parentFolderName);
+    Logger.log("Carpeta '" + parentFolderName + "' creada en la raíz de Google Drive.");
+  } else {
+    Logger.log("La carpeta '" + parentFolderName + "' ya existe.");
+  }
+
+  // 2. Verificar/Crear Hoja de Cálculo principal
+  const ssName = "Registros_Factibilidad";
+  const files = DriveApp.getFilesByName(ssName);
+  let ss;
+  if (!files.hasNext()) {
+    ss = SpreadsheetApp.create(ssName);
+    Logger.log("Archivo de Hojas de Cálculo '" + ssName + "' creado en la raíz de Google Drive.");
+
+    // Crear la hoja de registros por defecto para evitar errores futuros
+    let masterSheet = ss.getSheetByName("Registros");
+    if (!masterSheet) {
+      ss.insertSheet("Registros");
+      // Si se crea Sheet1 por defecto, la eliminamos
+      let defaultSheet = ss.getSheetByName("Sheet1") || ss.getSheetByName("Hoja 1");
+      if (defaultSheet) {
+        ss.deleteSheet(defaultSheet);
+      }
+    }
+  } else {
+    Logger.log("El archivo de Hojas de Cálculo '" + ssName + "' ya existe.");
+  }
+
+  Logger.log("¡Configuración exitosa! Ya tienes los permisos necesarios. Procede a Implementar la Aplicación Web.");
+}
+
 // ==========================================
 // CONFIGURACIÓN PRINCIPAL
 // ==========================================
