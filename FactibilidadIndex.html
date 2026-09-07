@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pertinencia y factibilidad.</title>
+  <style>
+    :root {
+      --vino-oscuro: #56212F;
+      --vino-claro: #9F2241;
+      --ocre-oscuro: #977E5B;
+      --ocre-claro: #BC955B;
+      --beige-oscuro: #D6D1CA;
+      --beige-claro: #DDC8A4;
+      --blanco: #FFFFFF;
+      --texto: #333333;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: var(--texto);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: var(--blanco);
+      padding: 40px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-top: 10px solid var(--vino-oscuro);
+    }
+
+    h1 {
+      color: var(--vino-oscuro);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: var(--vino-oscuro);
+      border-bottom: 2px solid var(--ocre-claro);
+      padding-bottom: 5px;
+      margin-top: 40px;
+    }
+
+    h3 {
+      color: var(--vino-claro);
+      margin-top: 30px;
+    }
+
+    .indicacion {
+      color: #000000;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.9em;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--vino-oscuro);
+      color: var(--blanco);
+      text-align: center;
+    }
+
+    .th-sub {
+      background-color: var(--vino-claro);
+      font-size: 0.9em;
+    }
+
+    .label-col {
+      background-color: var(--vino-oscuro);
+      color: var(--blanco);
+      font-weight: bold;
+      width: 30%;
+    }
+
+    input[type="text"], input[type="number"], textarea, select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn-add {
+      background-color: var(--ocre-oscuro);
+      color: var(--blanco);
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .btn-add:hover {
+      background-color: var(--ocre-claro);
+    }
+
+    .btn-remove {
+      background-color: #cc0000;
+      color: var(--blanco);
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .btn-submit {
+      background-color: var(--vino-oscuro);
+      color: var(--blanco);
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border-radius: 5px;
+      display: block;
+      width: 100%;
+      margin-top: 40px;
+      font-weight: bold;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--vino-claro);
+    }
+
+    .file-input-container {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: var(--beige-claro);
+      border: 1px dashed var(--ocre-oscuro);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      z-index: 1000;
+      color: white;
+      text-align: center;
+      padding-top: 20%;
+      font-size: 1.5em;
+    }
+
+    .spinner {
+      margin: 20px auto;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--vino-claro);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Estilos personalizados para checkboxes como una "X" */
+    input[type="checkbox"][name="sector_estrategico[]"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background-color: white;
+      vertical-align: middle;
+    }
+    input[type="checkbox"][name="sector_estrategico[]"]:checked::after {
+      content: 'X';
+      color: var(--vino-oscuro);
+      font-weight: bold;
+      font-size: 16px;
+    }
+    input[type="checkbox"][name="sector_estrategico[]"]:hover {
+      border-color: var(--vino-oscuro);
+    }
+</style>
+</head>
+<body>
+  <div id="overlay">
+    <div>Enviando formulario, por favor espere...</div>
+    <div class="spinner"></div>
+  </div>
+
+  <div class="container">
+    <h1>Pertinencia y factibilidad.</h1>
+
+    <form id="factibilidadForm" onsubmit="handleFormSubmit(event)">
+      <!-- Datos de Contacto y Seguridad -->
+      <h2>Datos del responsable de la información. (Director Escolar).</h2>
+      <p class="indicacion">Por favor ingrese sus datos de contacto institucionales.</p>
+      <div class="form-group">
+        <label><b>Nombre completo:</b></label>
+        <input type="text" id="contacto_nombre" name="contacto_nombre" placeholder="Nombre completo" required>
+      </div>
+      <div class="form-group">
+        <label><b>Correo electrónico oficial:</b></label>
+        <input type="email" id="contacto_correo" name="contacto_correo" placeholder="ejemplo@edomex.gob.mx" required>
+        <small style="color: #000000;">Debe ser un correo válido.</small>
+      </div>
+      <div class="form-group">
+        <label><b>Número de teléfono de contacto (10 dígitos):</b></label>
+        <input type="tel" id="contacto_telefono" name="contacto_telefono" pattern="[0-9]{10}" placeholder="Ej: 5512345678" required>
+        <small style="color: #000000;">Solo números, sin espacios ni guiones.</small>
+      </div>
+
+      <!-- a) Datos generales -->
+      <h2>a) Datos generales.</h2>
+      <p class="indicacion">Llenar la información institucional de la Escuela Preparatoria Oficial por plantel y turno según sea el caso.</p>
+
+      <h3>I. Datos de identificación de la Escuela Preparatoria Oficial del Estado de México</h3>
+      <p class="indicacion">Indicación: Proporcionar de manera precisa, pero suficiente la información solicitada a través del siguiente cuadro:</p>
+
+      <table>
+        <tr>
+          <td class="label-col">Servicio Educativo</td>
+          <td><input type="text" name="id_subsistema" value="Bachillerato General" readonly required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Nombre de la EPO.</td>
+          <td><input type="text" name="id_nombre_epo" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Modalidad Educativa</td>
+          <td><input type="text" name="id_modalidad" value="Escolarizada" readonly required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Opción Educativa</td>
+          <td><input type="text" name="id_opcion" value="Presencial" readonly required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Región.</td>
+          <td>
+            <select name="id_region" required>
+              <option value="" disabled selected>Seleccione una región</option>
+              <option value="BG TOLUCA">BG TOLUCA</option>
+              <option value="BG ORIENTE">BG ORIENTE</option>
+              <option value="BG PONIENTE">BG PONIENTE</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-col">Municipio</td>
+          <td><input type="text" name="id_municipio" required placeholder="Escriba el municipio"></td>
+        </tr>
+        <tr>
+          <td class="label-col">Zona escolar.</td>
+          <td><input type="text" name="id_zona" required></td>
+        </tr>
+        <tr>
+          <td class="label-col">Turno(s).</td>
+          <td>
+            <select name="id_turno" required>
+              <option value="" disabled selected>Seleccione un turno</option>
+              <option value="MATUTINO">MATUTINO</option>
+              <option value="VESPERTINO">VESPERTINO</option>
+              <option value="AMBOS">AMBOS</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-col">CCT.</td>
+          <td>
+            <div id="cct-container">
+              <div class="form-group" style="margin-bottom: 10px; display: flex; align-items: center;">
+                <input type="text" name="id_cct[]" placeholder="Primer CCT" required style="flex: 1;">
+                <button type="button" class="btn-add" onclick="addCctField()" style="margin-bottom: 0; margin-left: 10px; padding: 8px 12px; font-size: 0.9em;">+ Agregar otro CCT</button>
+              </div>
+            </div>
+            <script>
+              function addCctField() {
+                const container = document.getElementById('cct-container');
+                // Allow maximum 2 CCTs as requested ("UNO O DOS")
+                if (container.children.length >= 2) {
+                  alert("Solo se permite un máximo de dos CCT.");
+                  return;
+                }
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                div.style = 'margin-bottom: 10px; display: flex; align-items: center;';
+                div.innerHTML = '<input type="text" name="id_cct[]" placeholder="Segundo CCT" required style="flex: 1;">' +
+                                '<button type="button" class="btn-remove" onclick="removeCctField(this)" style="margin-left: 10px;">Eliminar</button>';
+                container.appendChild(div);
+              }
+              function removeCctField(btn) {
+                const row = btn.parentNode;
+                row.parentNode.removeChild(row);
+              }
+            </script>
+          </td>
+        </tr>
+      </table>
+
+      <!-- b) Descripción de la EPO -->
+      <h2>b) Descripción de la Escuela Preparatoria Oficial</h2>
+
+      <h3>I. Localización de la Escuela Preparatoria Oficial</h3>
+      <p class="indicacion">Localización: Colocar el domicilio completo e integrar una imagen satelital que permita identificar claramente su ubicación geográfica.</p>
+      <div class="form-group">
+        <label><b>Domicilio completo:</b></label>
+        <textarea name="loc_domicilio" required></textarea>
+      </div>
+      <div class="file-input-container">
+        <label><b>Imagen Satelital de Ubicación:</b></label><br>
+        <input type="file" id="file_satelital" accept="image/*" required>
+      </div>
+
+      <h3>II. Sector estratégico.</h3>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Marque con una “X” el sector estratégico que coincida con la ubicación geográfica del plantel.</p>
+
+      <div class="form-group" style="margin-bottom: 30px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <th style="width: 5%; text-align: center;">X</th>
+            <th>Sector Estratégico</th>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Automotriz y electromovilidad*"></td>
+            <td>1. Automotriz y electromovilidad*</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Bienes de consumo*"></td>
+            <td>2. Bienes de consumo*</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Farmacéutica y dispositivos médicos*"></td>
+            <td>3. Farmacéutica y dispositivos médicos*</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Electrónica y semiconductores*"></td>
+            <td>4. Electrónica y semiconductores*</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Logística*"></td>
+            <td>5. Logística*</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Salud y cuidados***"></td>
+            <td>6. Salud y cuidados***</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Industrial**"></td>
+            <td>7. Industrial**</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Tecnologías de la información y la comunicación***"></td>
+            <td>8. Tecnologías de la información y la comunicación***</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Turismo***(Inmobiliario y turismo**)"></td>
+            <td>9. Turismo***(Inmobiliario y turismo**)</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Industria del entretenimiento***"></td>
+            <td>10. Industria del entretenimiento***</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Industria de la construcción***"></td>
+            <td>11. Industria de la construcción***</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Gestión administrativa y productividad***"></td>
+            <td>12. Gestión administrativa y productividad***</td>
+          </tr>
+          <tr>
+            <td style="text-align: center;"><input type="checkbox" name="sector_estrategico[]" value="Educación"></td>
+            <td>13. Educación</td>
+          </tr>
+        </table>
+
+        <div style="margin-top: 20px; font-size: 0.9em; color: #000000; line-height: 1.5;">
+          * Sectores estratégicos definidos en el Plan México. Se pueden consultar en: <a href="https://www.planmexico.gob.mx/" target="_blank">https://www.planmexico.gob.mx/</a><br>
+          ** Sectores estratégicos definidos en Proyectos México. Se pueden consultar en: <a href="https://www.proyectosmexico.gob.mx/" target="_blank">https://www.proyectosmexico.gob.mx/</a><br>
+          *** Sectores estratégicos integrados por el objeto de la formación laboral.
+        </div>
+      </div>
+
+      <h3>III. Vocaciones productivas regionales.</h3>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indique las principales actividades económicas de su región. En caso de no tener actividades económicas en algún sector coloque “no aplica”.</p>
+
+      <div class="form-group">
+        <label><b>Principales actividades económicas del sector productivo:</b></label>
+        <textarea name="voc_productivo" required></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Principales actividades económicas del sector de servicios:</b></label>
+        <textarea name="voc_servicios" required></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Principales actividades económicas del sector agropecuario:</b></label>
+        <textarea name="voc_agropecuario" required></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Industrias clave y los clústeres consolidados:</b></label>
+        <textarea name="voc_industrias" required></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>¿Cuáles son las principales fuentes de empleo y empresas en el municipio o zonas vecinas?</b></label>
+        <textarea name="voc_fuentes" required></textarea>
+      </div>
+
+      <h3>IV. Diagnóstico de la región de influencia.</h3>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Describa cada uno de los apartados que conforman un diagnóstico de la región, en máximo 500 palabras. Incorpore inmediatamente después de la enunciación de un dato, la fuente oficial y año de publicación, que sustenta la argumentación.</p>
+
+      <table>
+        <tr>
+          <td class="label-col">Principales problemáticas</td>
+          <td><textarea name="diag_problematicas" placeholder="[Tipos de problemáticas sociales, políticas, de salud, por grupo de edad que dan origen a la formación laboral]" required></textarea></td>
+        </tr>
+        <tr>
+          <td class="label-col">Programas de estudio afines<br>(Media Superior)</td>
+          <td><textarea name="diag_prog_media" placeholder="[Programas similares que se ofertan en otras instituciones de educación media superior]" required></textarea></td>
+        </tr>
+        <tr>
+          <td class="label-col">Programas de estudio afines<br>(Superior)</td>
+          <td><textarea name="diag_prog_sup" placeholder="[Programas similares que se ofertan en instituciones de educación superior y que representen una posibilidad de continuidad de los estudios]" required></textarea></td>
+        </tr>
+      </table>
+
+
+      <h3>V. Matrícula.</h3>
+      <p class="indicacion">Incluir el histórico de los últimos tres ciclos escolares y una proyección para los tres siguientes, justificada en el comportamiento histórico de la demanda.</p>
+
+      <h4>Matrícula total actual (ciclo escolar 2025-2026).</h4>
+      <table>
+        <tr>
+          <th>Indicador.</th>
+          <th>Total general.</th>
+        </tr>
+        <tr>
+          <td>Total de estudiantes inscritos</td>
+          <td><input type="number" name="mat_actual_estudiantes" required></td>
+        </tr>
+        <tr>
+          <td>Total de grupos</td>
+          <td><input type="number" name="mat_actual_grupos" required></td>
+        </tr>
+      </table>
+
+      <h4>Promedio de estudiantado por grupo.</h4>
+      <p class="indicacion">Favor de colocar el Grado, Grupo y promedio según corresponda.</p>
+      <button type="button" class="btn-add" onclick="addPromedioRow()">+ Agregar Grupo</button>
+      <table id="tblPromedios">
+        <tr>
+          <th>Grado.</th>
+          <th>Grupo.</th>
+          <th>Promedio.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="prom_grado[]" required></td>
+          <td><input type="text" name="prom_grupo[]" required></td>
+          <td><input type="number" step="0.1" name="prom_promedio[]" required></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <h4>Histórico de matrícula por grupos y por turno.</h4>
+      <table>
+        <tr>
+          <th colspan="4" class="th-sub">2023-2024</th>
+          <th colspan="4" class="th-sub">2024-2025</th>
+          <th colspan="4" class="th-sub">2025-2026</th>
+        </tr>
+        <tr>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="h_2324_h"></td><td><input type="number" name="h_2324_m"></td><td><input type="number" name="h_2324_g"></td><td><input type="text" name="h_2324_t"></td>
+          <td><input type="number" name="h_2425_h"></td><td><input type="number" name="h_2425_m"></td><td><input type="number" name="h_2425_g"></td><td><input type="text" name="h_2425_t"></td>
+          <td><input type="number" name="h_2526_h"></td><td><input type="number" name="h_2526_m"></td><td><input type="number" name="h_2526_g"></td><td><input type="text" name="h_2526_t"></td>
+        </tr>
+      </table>
+
+      <h4>Egresados por ciclo escolar.</h4>
+      <table>
+        <tr>
+          <th>2023-2024</th>
+          <th>2024-2025</th>
+          <th>2025-2026</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="h_2324_e"></td>
+          <td><input type="number" name="h_2425_e"></td>
+          <td><input type="number" name="h_2526_e"></td>
+        </tr>
+      </table>
+
+      <h4>Proyección de matrícula por grupos y por turnos.</h4>
+      <table>
+        <tr>
+          <th colspan="4" class="th-sub">2026-2027</th>
+          <th colspan="4" class="th-sub">2027-2028</th>
+          <th colspan="4" class="th-sub">2028-2029</th>
+        </tr>
+        <tr>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+          <th>H</th><th>M</th><th>Gpos</th><th>Turno</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="p_2627_h"></td><td><input type="number" name="p_2627_m"></td><td><input type="number" name="p_2627_g"></td><td><input type="text" name="p_2627_t"></td>
+          <td><input type="number" name="p_2728_h"></td><td><input type="number" name="p_2728_m"></td><td><input type="number" name="p_2728_g"></td><td><input type="text" name="p_2728_t"></td>
+          <td><input type="number" name="p_2829_h"></td><td><input type="number" name="p_2829_m"></td><td><input type="number" name="p_2829_g"></td><td><input type="text" name="p_2829_t"></td>
+        </tr>
+      </table>
+
+      <div class="form-group">
+        <label><b>Justificación del comportamiento histórico de la demanda:</b></label>
+        <textarea name="mat_justificacion" required></textarea>
+      </div>
+
+
+      <h3>VI. Descripción general de instalaciones y equipamiento.</h3>
+      <p class="indicacion">Indicación: Presentar una descripción detallada de la infraestructura física del plantel</p>
+
+      <div class="file-input-container">
+        <label><b>Fotografías de instalaciones (seleccione de 3 a 5 imágenes):</b></label><br>
+        <p class="indicacion" style="margin-top: 5px; font-weight: normal; color: #000000;">Adjunte fotografías representativas de los diferentes espacios del plantel. Asegúrese de privilegiar aquellas imágenes que permitan identificar claramente las condiciones y características actuales de cada una de las áreas descritas.</p>
+        <input type="file" id="files_instalaciones" accept="image/*" multiple required>
+      </div>
+
+      <h4>Aulas.</h4>
+      <table>
+        <tr>
+          <th>Población Escolar</th>
+          <th>Total de grupos</th>
+          <th>Total de aulas</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="aulas_pob"></td>
+          <td><input type="number" name="aulas_gpos"></td>
+          <td><input type="number" name="aulas_total"></td>
+        </tr>
+      </table>
+
+      <h4>Espacios de aprendizaje.</h4>
+      <button type="button" class="btn-add" onclick="addRow('tblEspacios')">+ Agregar Espacio</button>
+      <table id="tblEspacios">
+        <tr>
+          <th>Nombre del espacio de aprendizaje.</th>
+          <th>Capacidad de estudiantes.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="esp_nombre[]"></td>
+          <td><input type="number" name="esp_capacidad[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <h4>Centro o aula de cómputo.</h4>
+      <table>
+        <tr>
+          <th>Población escolar</th>
+          <th>Horas de uso requeridas a la semana</th>
+          <th>Número de equipos funcionales</th>
+          <th>Horas de uso general disponibles a la semana</th>
+          <th>Horas de uso general faltante</th>
+          <th>Equipo faltante</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="comp_pob"></td>
+          <td><input type="number" name="comp_horas_req"></td>
+          <td><input type="number" name="comp_equipos"></td>
+          <td><input type="number" name="comp_horas_disp"></td>
+          <td><input type="number" name="comp_horas_falt"></td>
+          <td><input type="number" name="comp_equipo_falt"></td>
+        </tr>
+      </table>
+
+      <h4>Fondo bibliográfico.</h4>
+      <table>
+        <tr>
+          <th colspan="2" class="th-sub">Libros</th>
+          <th colspan="2" class="th-sub">Revistas</th>
+          <th colspan="2" class="th-sub">Periódicos</th>
+          <th colspan="2" class="th-sub">Otros</th>
+        </tr>
+        <tr>
+          <th>Impresos.</th><th>Electrónicos.</th>
+          <th>Impresas.</th><th>Electrónicas.</th>
+          <th>Impresos.</th><th>Electrónicos.</th>
+          <th>Impresos.</th><th>Electrónicos.</th>
+        </tr>
+        <tr>
+          <td><input type="number" name="bib_lib_imp"></td><td><input type="number" name="bib_lib_elec"></td>
+          <td><input type="number" name="bib_rev_imp"></td><td><input type="number" name="bib_rev_elec"></td>
+          <td><input type="number" name="bib_per_imp"></td><td><input type="number" name="bib_per_elec"></td>
+          <td><input type="number" name="bib_otr_imp"></td><td><input type="number" name="bib_otr_elec"></td>
+        </tr>
+      </table>
+
+      <div class="form-group">
+        <label><b>Descripción de espacios administrativos:</b></label>
+        <p class="indicacion" style="margin-top: 5px; font-weight: normal; color: #000000;">Detalle las áreas destinadas a la gestión directiva y administrativa del plantel.</p>
+        <textarea name="desc_admin"></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Descripción de áreas de servicios:</b></label>
+        <p class="indicacion" style="margin-top: 5px; font-weight: normal; color: #000000;">Explique con qué espacios comunes y de servicio cuenta el plantel.</p>
+        <textarea name="desc_servicios"></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Descripción de espacios deportivos:</b></label>
+        <textarea name="desc_deportivos"></textarea>
+      </div>
+      <div class="form-group">
+        <label><b>Demás instalaciones destinadas al desarrollo de las actividades académicas:</b></label>
+        <p class="indicacion" style="margin-top: 5px; font-weight: normal; color: #000000;">Incluya cualquier otro espacio o área en general que sea necesaria para el proceso educativo.</p>
+        <textarea name="desc_demas"></textarea>
+      </div>
+
+
+      <!-- IV. Personal directivo, docente y administrativo -->
+      <h2>VII. Personal directivo, docente y administrativo.</h2>
+      <p class="indicacion">Indicación: Presentar, mediante tablas, la plantilla de personal con que cuenta el plantel, desglosada en personal directivo, docente y administrativo. En caso de que un docente imparta asignaturas correspondientes a más de dos currículums, registrar únicamente el currículum que corresponda a su perfil docente o formación profesional.</p>
+
+      <button type="button" class="btn-add" onclick="addRow('tblPersonal')">+ Agregar Personal</button>
+      <table id="tblPersonal">
+        <tr>
+          <th>Nombre.</th>
+          <th>Función/categoría/puesto.</th>
+          <th>Perfil académico.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="pers_nombre[]"></td>
+          <td><input type="text" name="pers_funcion[]"></td>
+          <td><input type="text" name="pers_perfil[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <br>
+      <button type="button" class="btn-add" onclick="addRow('tblDocentes')">+ Agregar Docente</button>
+      <table id="tblDocentes">
+        <tr>
+          <th colspan="5" style="background-color: var(--vino-oscuro); color: white; text-align: center;">DOCENTES</th>
+        </tr>
+        <tr>
+          <th colspan="5" style="background-color: var(--vino-oscuro); color: white; text-align: center;">Currículum Fundamental</th>
+        </tr>
+        <tr>
+          <th>Nombre.</th>
+          <th>Función.</th>
+          <th>Perfil académico.</th>
+          <th>Asignatura que imparte.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="doc_nombre[]"></td>
+          <td><input type="text" name="doc_funcion[]"></td>
+          <td><input type="text" name="doc_perfil[]"></td>
+          <td><input type="text" name="doc_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <br>
+      <button type="button" class="btn-add" onclick="addRow('tblDocentesExt')">+ Agregar Docente</button>
+      <table id="tblDocentesExt">
+        <tr>
+          <th colspan="5" style="background-color: var(--vino-oscuro); color: white; text-align: center;">Currículum Fundamental Extendido</th>
+        </tr>
+        <tr>
+          <th>Nombre.</th>
+          <th>Función.</th>
+          <th>Perfil académico.</th>
+          <th>Asignatura que imparte.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="docExt_nombre[]"></td>
+          <td><input type="text" name="docExt_funcion[]"></td>
+          <td><input type="text" name="docExt_perfil[]"></td>
+          <td><input type="text" name="docExt_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <br>
+      <button type="button" class="btn-add" onclick="addRow('tblDocentesAmp')">+ Agregar Docente</button>
+      <table id="tblDocentesAmp">
+        <tr>
+          <th colspan="5" style="background-color: var(--vino-oscuro); color: white; text-align: center;">Currículum Ampliado</th>
+        </tr>
+        <tr>
+          <th>Nombre.</th>
+          <th>Función.</th>
+          <th>Perfil académico.</th>
+          <th>Asignatura que imparte.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="docAmp_nombre[]"></td>
+          <td><input type="text" name="docAmp_funcion[]"></td>
+          <td><input type="text" name="docAmp_perfil[]"></td>
+          <td><input type="text" name="docAmp_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <br>
+      <button type="button" class="btn-add" onclick="addRow('tblDocentesFOB')">+ Agregar Docente</button>
+      <table id="tblDocentesFOB">
+        <tr>
+          <th colspan="5" style="background-color: var(--vino-oscuro); color: white; text-align: center;">Formación Ocupacional Básica en Tecnologías de la Información y la Comunicación.</th>
+        </tr>
+        <tr>
+          <th>Nombre.</th>
+          <th>Función.</th>
+          <th>Perfil académico.</th>
+          <th>Asignatura que imparte.</th>
+          <th>Acción.</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="docFOB_nombre[]"></td>
+          <td><input type="text" name="docFOB_funcion[]"></td>
+          <td><input type="text" name="docFOB_perfil[]"></td>
+          <td><input type="text" name="docFOB_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        </tr>
+      </table>
+
+      <h2>VIII. Municipios dentro y fuera del Estado de México.</h2>
+      <p class="indicacion" style="margin-bottom: 5px;">Indicación: Identificar el lugar de procedencia de las y los estudiantes inscritos en el plantel y analizar cuáles son los municipios que aportan la mayor cantidad de matrícula, con la finalidad de determinar el área de influencia y cobertura del servicio educativo.</p>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Nota: El área de influencia se determinará considerando los principales municipios de los que provienen las y los estudiantes de la matrícula actual.</p>
+
+      <div class="form-group">
+        <button type="button" class="btn-add" onclick="addMunicipioField()">+ Agregar Municipio</button>
+        <div id="municipios-container">
+          <div style="display: flex; align-items: center; margin-bottom: 10px; background-color: var(--beige-claro); padding: 10px; border-radius: 5px;">
+            <span style="margin-right: 10px; font-weight: bold;" class="mun-num">1.</span>
+            <input type="text" name="municipios_procedencia[]" placeholder="Nombre del Municipio" required style="flex: 2; margin-right: 10px;">
+            <input type="number" name="municipios_cantidad[]" placeholder="Cantidad de estudiantes" required style="flex: 1;">
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function addMunicipioField() {
+          const container = document.getElementById('municipios-container');
+          const count = container.children.length + 1;
+          const div = document.createElement('div');
+          div.style = 'display: flex; align-items: center; margin-bottom: 10px; background-color: var(--beige-claro); padding: 10px; border-radius: 5px;';
+          div.innerHTML = `
+            <span style="margin-right: 10px; font-weight: bold;" class="mun-num">${count}.</span>
+            <input type="text" name="municipios_procedencia[]" placeholder="Nombre del Municipio" required style="flex: 2; margin-right: 10px;">
+            <input type="number" name="municipios_cantidad[]" placeholder="Cantidad de estudiantes" required style="flex: 1;">
+            <button type="button" class="btn-remove" onclick="removeMunicipioField(this)" style="margin-left: 10px;">Eliminar</button>
+          `;
+          container.appendChild(div);
+        }
+
+        function removeMunicipioField(btn) {
+          const row = btn.parentNode;
+          const container = row.parentNode;
+          container.removeChild(row);
+
+          // Re-number
+          const rows = container.children;
+          for(let i=0; i<rows.length; i++) {
+            rows[i].querySelector('.mun-num').innerText = (i + 1) + '.';
+          }
+        }
+      </script>
+
+      <h2>IX. Objetivos del Plan (Planeación) de Mejora Continua de la EPO vinculados a la oferta de Formación Ocupacional Básica.</h2>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indicación: Describir los objetivos del Plan de Mejora Continua de la EPO que se busca fortalecer o atender mediante la futura implementación de asignaturas de Formación Laboral Básica. Explique de qué manera la apertura de esta oferta educativa contribuiría al logro de las metas institucionales y a la atención de las necesidades identificadas en el plantel.</p>
+      <div class="form-group">
+        <textarea name="objetivos_mejora" required></textarea>
+      </div>
+
+      <h2>X. Área de influencia y contexto regional.</h2>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indicación: Describir los principales municipios que integran el área de influencia del plantel, así como las actividades económicas y vocaciones productivas predominantes de la región, con el fin de fundamentar qué tipo de perfil o áreas de Formación Laboral Básica resultarían pertinentes para la comunidad estudiantil.</p>
+      <div class="form-group">
+        <textarea name="area_influencia" required></textarea>
+      </div>
+
+      <h2>XI. Existencia de campo laboral.</h2>
+      <p class="indicacion" style="font-weight: normal; margin-bottom: 15px;">Indicación: Enlistar los principales espacios laborales, empresas, instituciones u organizaciones ubicadas en el área de influencia del plantel. Asimismo, describa brevemente qué tipo de conocimientos, habilidades o perfiles demandan estos espacios, con el fin de justificar cuáles áreas de Formación Laboral Básica resultarían más pertinentes y viables para sus estudiantes.</p>
+      <div class="form-group">
+        <textarea name="campo_laboral" required></textarea>
+      </div>
+
+      <h2>XII. Conclusión y dictamen.</h2>
+      <div class="form-group">
+        <label><b>CONCLUSIÓN POR PARTE DE LA EPO:</b></label>
+        <textarea name="conclusion_epo" required></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit">Enviar Formulario</button>
+    </form>
+  </div>
+
+  <script>
+    function addRow(tableId) {
+      const table = document.getElementById(tableId);
+      const newRow = table.insertRow(-1);
+
+      let html = '';
+      if(tableId === 'tblEspacios') {
+        const prefix = 'esp';
+        html = `
+          <td><input type="text" name="${prefix}_nombre[]"></td>
+          <td><input type="number" name="${prefix}_capacidad[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      } else if (tableId === 'tblPersonal') {
+        html = `
+          <td><input type="text" name="pers_nombre[]"></td>
+          <td><input type="text" name="pers_funcion[]"></td>
+          <td><input type="text" name="pers_perfil[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      } else if (tableId === 'tblDocentes') {
+        html = `
+          <td><input type="text" name="doc_nombre[]"></td>
+          <td><input type="text" name="doc_funcion[]"></td>
+          <td><input type="text" name="doc_perfil[]"></td>
+          <td><input type="text" name="doc_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      } else if (tableId === 'tblDocentesExt') {
+        html = `
+          <td><input type="text" name="docExt_nombre[]"></td>
+          <td><input type="text" name="docExt_funcion[]"></td>
+          <td><input type="text" name="docExt_perfil[]"></td>
+          <td><input type="text" name="docExt_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      } else if (tableId === 'tblDocentesAmp') {
+        html = `
+          <td><input type="text" name="docAmp_nombre[]"></td>
+          <td><input type="text" name="docAmp_funcion[]"></td>
+          <td><input type="text" name="docAmp_perfil[]"></td>
+          <td><input type="text" name="docAmp_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      } else if (tableId === 'tblDocentesFOB') {
+        html = `
+          <td><input type="text" name="docFOB_nombre[]"></td>
+          <td><input type="text" name="docFOB_funcion[]"></td>
+          <td><input type="text" name="docFOB_perfil[]"></td>
+          <td><input type="text" name="docFOB_asignatura[]"></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+      }
+      newRow.innerHTML = html;
+    }
+
+
+    function addPromedioRow() {
+      const table = document.getElementById('tblPromedios');
+      const newRow = table.insertRow(-1);
+
+      let html = `
+          <td><input type="text" name="prom_grado[]" required></td>
+          <td><input type="text" name="prom_grupo[]" required></td>
+          <td><input type="number" step="0.1" name="prom_promedio[]" required></td>
+          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
+      `;
+      newRow.innerHTML = html;
+    }
+
+    function removeRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+    }
+
+    // Convert file to base64
+    function getBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve({
+          filename: file.name,
+          mimeType: file.type,
+          bytes: reader.result.split(',')[1] // remove data:image/png;base64,
+        });
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+
+      // Validación extra en frontend de correo y teléfono
+      const email = document.getElementById('contacto_correo').value;
+      const phone = document.getElementById('contacto_telefono').value;
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("Por favor ingrese un correo electrónico válido.");
+        return;
+      }
+
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(phone)) {
+        alert("El número de teléfono debe contener exactamente 10 dígitos numéricos.");
+        return;
+      }
+
+      document.getElementById('overlay').style.display = 'block';
+
+      try {
+        const form = document.getElementById('factibilidadForm');
+        const formData = new FormData(form);
+        const dataObj = {};
+
+        // Normal inputs
+        for (let [key, value] of formData.entries()) {
+          if(key.endsWith('[]')) {
+            const cleanKey = key.slice(0, -2);
+            if(!dataObj[cleanKey]) dataObj[cleanKey] = [];
+            dataObj[cleanKey].push(value);
+          } else {
+            dataObj[key] = value;
+          }
+        }
+
+        // Handle files
+        dataObj.files = [];
+
+        // file_satelital (single)
+        const fileSatelital = document.getElementById('file_satelital').files[0];
+        if (fileSatelital) {
+          const b64Sat = await getBase64(fileSatelital);
+          b64Sat.tag = 'Satelital';
+          dataObj.files.push(b64Sat);
+        }
+
+        // files_instalaciones (multiple)
+        const filesInst = document.getElementById('files_instalaciones').files;
+        for(let i=0; i<filesInst.length; i++) {
+          const b64 = await getBase64(filesInst[i]);
+          b64.tag = 'Instalacion_' + (i+1);
+          dataObj.files.push(b64);
+        }
+
+        // Send to backend
+        google.script.run
+          .withSuccessHandler(function(response) {
+            document.getElementById('overlay').style.display = 'none';
+            alert('Formulario enviado y guardado exitosamente.');
+            form.reset();
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById('overlay').style.display = 'none';
+            alert('Error al enviar: ' + error.message);
+          })
+          .submitFactibilidadForm(dataObj);
+
+      } catch (error) {
+        document.getElementById('overlay').style.display = 'none';
+        alert('Error procesando archivos: ' + error);
+      }
+    }
+  </script>
+</body>
+</html>

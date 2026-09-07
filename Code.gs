@@ -5,13 +5,22 @@
 const API_KEY = 'TU_API_KEY_AQUI';
 
 // ==========================================
-// FUNCIÓN PRINCIPAL DE INTERFAZ WEB
+// FUNCIÓN PRINCIPAL DE INTERFAZ WEB (ENRUTADOR)
 // ==========================================
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
-      .setTitle('Calculadora de Value Bets y Kelly')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+function doGet(e) {
+  // Si se envía el parámetro ?app=apuestas, carga la app de apuestas.
+  // De lo contrario, carga el formulario de Factibilidad por defecto.
+  if (e && e.parameter && e.parameter.app === 'apuestas') {
+    return HtmlService.createHtmlOutputFromFile('index')
+        .setTitle('Calculadora de Value Bets y Kelly')
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } else {
+    return HtmlService.createHtmlOutputFromFile('FactibilidadIndex')
+        .setTitle('Formulario de Pertinencia y Factibilidad')
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
 }
 
 // ==========================================
@@ -161,4 +170,475 @@ function calculateKelly(probability, decimalOdds) {
       return f * fractionalKelly;
   }
   return 0;
+}
+/**
+ * Procesar el formulario de Pertinencia y Factibilidad de manera segura
+ * @param {Object} dataObj - El objeto JSON con todos los datos del formulario y los archivos en base64
+ */
+function submitFactibilidadForm(dataObj) {
+  // Inicializamos el LockService para evitar colisiones de escritura (concurrencia)
+  const lock = LockService.getScriptLock();
+
+  // Intentamos obtener el bloqueo por hasta 30 segundos
+  if (!lock.tryLock(30000)) {
+    throw new Error("El sistema está muy ocupado procesando otras solicitudes. Por favor, intente enviar de nuevo en unos segundos.");
+  }
+
+  try {
+    // 0. Validaciones de Seguridad en Backend
+    const respName = String(dataObj.contacto_nombre || '').trim();
+    const emailStr = String(dataObj.contacto_correo || '').trim();
+    const phoneStr = String(dataObj.contacto_telefono || '').trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
+      throw new Error("Validación de seguridad fallida: Correo electrónico inválido.");
+    }
+    if (!/^[0-9]{10}$/.test(phoneStr)) {
+      throw new Error("Validación de seguridad fallida: Teléfono inválido (debe tener 10 dígitos).");
+    }
+
+    const epoName = (dataObj.id_nombre_epo || 'EPO_Desconocida').trim();
+
+    // 1. Manejo de Archivos en Google Drive
+    const parentFolderName = "Evidencias_Factibilidad";
+    let parentFolder;
+    const folders = DriveApp.getFoldersByName(parentFolderName);
+    if (folders.hasNext()) {
+      parentFolder = folders.next();
+    } else {
+      parentFolder = DriveApp.createFolder(parentFolderName);
+    }
+
+    // Carpeta específica para la EPO actual y la fecha/hora del envío
+    const now = new Date();
+    // Formatear fecha: YYYY-MM-DD HH:mm
+    const dateStr = now.getFullYear() + "-" +
+                    ("0" + (now.getMonth()+1)).slice(-2) + "-" +
+                    ("0" + now.getDate()).slice(-2) + " " +
+                    ("0" + now.getHours()).slice(-2) + ":" +
+                    ("0" + now.getMinutes()).slice(-2);
+
+    const folderName = epoName + " - " + dateStr;
+
+    // Siempre creamos una nueva subcarpeta para cada envío para no mezclar archivos
+    const epoFolder = parentFolder.createFolder(folderName);
+
+    // Guardar archivos
+    let fileUrls = [];
+    if (dataObj.files && dataObj.files.length > 0) {
+      dataObj.files.forEach(function(f) {
+        const blob = Utilities.newBlob(Utilities.base64Decode(f.bytes), f.mimeType, f.tag + "_" + f.filename);
+        const savedFile = epoFolder.createFile(blob);
+        fileUrls.push(f.tag + ": " + savedFile.getUrl());
+      });
+    }
+
+    // 2. Manejo de Google Sheets
+    const ssName = "Registros_Factibilidad";
+    let ss;
+    const files = DriveApp.getFilesByName(ssName);
+    if (files.hasNext()) {
+      ss = SpreadsheetApp.open(files.next());
+    } else {
+      ss = SpreadsheetApp.create(ssName);
+    }
+
+    // --- Helper para aplanar arrays dinámicos ---
+    function flattenDynamic(names, details, label) {
+      if (!names) return "Sin datos";
+      let nArr = Array.isArray(names) ? names : [names];
+      let dArr = Array.isArray(details) ? details : [details];
+      let res = [];
+      for(let i=0; i<nArr.length; i++) {
+        res.push(`${nArr[i]} (${label}: ${dArr[i] || 'N/A'})`);
+      }
+      return res.join(" | ");
+    }
+
+    function flattenPersonal(nombres, funciones, perfiles) {
+      if (!nombres) return "Sin datos";
+      let nArr = Array.isArray(nombres) ? nombres : [nombres];
+      let fArr = Array.isArray(funciones) ? funciones : [funciones];
+      let pArr = Array.isArray(perfiles) ? perfiles : [perfiles];
+      let res = [];
+      for(let i=0; i<nArr.length; i++) {
+        res.push(`${nArr[i]} [Función: ${fArr[i] || 'N/A'}, Perfil: ${pArr[i] || 'N/A'}]`);
+      }
+      return res.join(" | ");
+    }
+
+    function flattenDocentes(nombres, funciones, perfiles, asignaturas) {
+      if (!nombres) return "Sin datos";
+      let nArr = Array.isArray(nombres) ? nombres : [nombres];
+      let fArr = Array.isArray(funciones) ? funciones : [funciones];
+      let pArr = Array.isArray(perfiles) ? perfiles : [perfiles];
+      let aArr = Array.isArray(asignaturas) ? asignaturas : [asignaturas];
+      let res = [];
+      for(let i=0; i<nArr.length; i++) {
+        res.push(`${nArr[i]} [Función: ${fArr[i] || 'N/A'}, Perfil: ${pArr[i] || 'N/A'}, Asig: ${aArr[i] || 'N/A'}]`);
+      }
+      return res.join(" | ");
+    }
+
+    // --- Hoja Maestra (Resumen Completo) ---
+    let masterSheet = ss.getSheetByName("Registros");
+    if (!masterSheet) {
+      masterSheet = ss.insertSheet("Registros");
+    }
+
+    // Construimos la fila de datos
+    const rowData = [
+      new Date(),
+      respName, emailStr, phoneStr,
+      dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_opcion, dataObj.id_region, dataObj.id_municipio, dataObj.id_zona, dataObj.id_turno, (Array.isArray(dataObj.id_cct) ? dataObj.id_cct.join(", ") : dataObj.id_cct),
+      dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.prom_grado, dataObj.prom_promedio, "Prom"),
+      "Ver detalle en hoja ind.", "Ver detalle en hoja ind.", dataObj.mat_justificacion,
+      `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}`,
+      flattenDynamic(dataObj.esp_nombre, dataObj.esp_capacidad, "Cap"),
+      `${dataObj.comp_pob}/${dataObj.comp_horas_req}/${dataObj.comp_equipos}/${dataObj.comp_horas_disp}/${dataObj.comp_horas_falt}/${dataObj.comp_equipo_falt}`,
+      "Ver detalle en hoja ind.",
+      dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
+      flattenPersonal(dataObj.pers_nombre, dataObj.pers_funcion, dataObj.pers_perfil),
+      flattenDocentes(dataObj.doc_nombre, dataObj.doc_funcion, dataObj.doc_perfil, dataObj.doc_asignatura),
+      flattenDocentes(dataObj.docExt_nombre, dataObj.docExt_funcion, dataObj.docExt_perfil, dataObj.docExt_asignatura),
+      flattenDocentes(dataObj.docAmp_nombre, dataObj.docAmp_funcion, dataObj.docAmp_perfil, dataObj.docAmp_asignatura),
+      flattenDocentes(dataObj.docFOB_nombre, dataObj.docFOB_funcion, dataObj.docFOB_perfil, dataObj.docFOB_asignatura),
+      flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"), dataObj.objetivos_mejora, dataObj.area_influencia,
+      dataObj.campo_laboral, dataObj.conclusion_epo,
+      fileUrls.join(" | ")
+    ];
+
+    // Primero agregamos la fila de datos. appendRow() automáticamente expande el número
+    // de columnas en la hoja si no hay suficientes, previniendo el error "Out of bounds".
+    masterSheet.appendRow(rowData);
+
+    // Ahora que la hoja tiene aseguradas las columnas necesarias, forzamos la reescritura
+    // de los encabezados en la fila 1 para actualizar hojas creadas en versiones anteriores.
+    const headers = [[
+      "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
+      "Servicio Educativo", "Nombre EPO", "Modalidad", "Opción Educativa", "Región", "Municipio", "Zona", "Turnos", "CCT",
+      "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Promedio Grupo",
+      "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)", "Justificación Matrícula",
+      "Aulas: Pob/Gpos/Total", "Espacios Aprendizaje",
+      "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
+      "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
+      "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Municipios Procedencia", "Objetivos Mejora", "Área Influencia",
+      "Campo Laboral", "Conclusión EPO", "Evidencias URL"
+    ]];
+    masterSheet.getRange(1, 1, 1, headers[0].length).setValues(headers)
+      .setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
+
+    // --- Hoja Dinámica Específica para la EPO ---
+    // Si ya existe una hoja con ese nombre, le agregamos un timestamp
+    let sheetName = epoName.substring(0, 31); // Limite de 31 caracteres en Sheets
+    if (ss.getSheetByName(sheetName)) {
+      sheetName = epoName.substring(0, 26) + "_" + new Date().getTime().toString().slice(-4);
+    }
+    const epoSheet = ss.insertSheet(sheetName);
+
+    // Paleta Institucional
+    const colorVinoOscuro = "#56212F";
+    const colorVinoClaro = "#9F2241";
+    const colorBeige = "#DDC8A4";
+    const colorBlanco = "#FFFFFF";
+
+    let currentRow = 1;
+
+    function addSectionTitle(title) {
+      epoSheet.getRange(currentRow, 1, 1, 4).merge().setValue(title)
+        .setBackground(colorVinoOscuro).setFontColor(colorBlanco)
+        .setFontWeight("bold").setHorizontalAlignment("center");
+      currentRow++;
+    }
+
+    function addRowData(label, value) {
+      epoSheet.getRange(currentRow, 1).setValue(label).setBackground(colorBeige).setFontWeight("bold");
+      epoSheet.getRange(currentRow, 2, 1, 3).merge().setValue(value || "");
+      currentRow++;
+    }
+
+    // Datos del Responsable
+    addSectionTitle("Datos del Responsable de la Información");
+    addRowData("Nombre completo", respName);
+    addRowData("Correo electrónico oficial", emailStr);
+    addRowData("Teléfono de contacto", phoneStr);
+    currentRow++;
+
+    // A. Datos Generales
+    addSectionTitle("I. Datos de identificación de la EPO");
+    addRowData("Servicio Educativo", dataObj.id_subsistema);
+    addRowData("Nombre de la EPO", epoName);
+    addRowData("Modalidad Educativa", dataObj.id_modalidad);
+    addRowData("Opción Educativa", dataObj.id_opcion);
+    addRowData("Región", dataObj.id_region);
+    addRowData("Municipio", dataObj.id_municipio);
+    addRowData("Zona Escolar", dataObj.id_zona);
+    addRowData("Turno (s)", dataObj.id_turno);
+    addRowData("CCT", Array.isArray(dataObj.id_cct) ? dataObj.id_cct.join(", ") : dataObj.id_cct);
+    currentRow++;
+
+    // B. Localización
+    addSectionTitle("I. Localización");
+    addRowData("Domicilio", dataObj.loc_domicilio);
+    currentRow++;
+
+    // Sector
+    addSectionTitle("II. Sector Estratégico");
+    addRowData("Sector seleccionado", (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"));
+    currentRow++;
+
+    // Vocaciones
+    addSectionTitle("III. Vocaciones productivas regionales");
+    addRowData("Sector productivo", dataObj.voc_productivo);
+    addRowData("Sector de servicios", dataObj.voc_servicios);
+    addRowData("Sector agropecuario", dataObj.voc_agropecuario);
+    addRowData("Industrias clave y clústeres", dataObj.voc_industrias);
+    addRowData("Fuentes de empleo", dataObj.voc_fuentes);
+    currentRow++;
+
+
+
+    // Diagnóstico
+    addSectionTitle("IV. Diagnóstico de la región de influencia");
+    addRowData("Principales problemáticas", dataObj.diag_problematicas);
+    addRowData("Programas afines (Media Superior)", dataObj.diag_prog_media);
+    addRowData("Programas afines (Superior)", dataObj.diag_prog_sup);
+    currentRow++;
+
+    // Matrícula actual
+    addSectionTitle("V. Matrícula total actual");
+    epoSheet.getRange(currentRow, 1).setValue("Indicador").setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    epoSheet.getRange(currentRow, 2).setValue("Total general").setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    epoSheet.getRange(currentRow, 1).setValue("Total estudiantes"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_estudiantes); currentRow++;
+    epoSheet.getRange(currentRow, 1).setValue("Total grupos"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_grupos); currentRow++;
+    currentRow++;
+
+    addSectionTitle("Promedio por grupo");
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Grado", "Grupo", "Promedio"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.prom_grado && dataObj.prom_grado.length > 0) {
+      let grados = Array.isArray(dataObj.prom_grado) ? dataObj.prom_grado : [dataObj.prom_grado];
+      let grupos = Array.isArray(dataObj.prom_grupo) ? dataObj.prom_grupo : [dataObj.prom_grupo];
+      let promedios = Array.isArray(dataObj.prom_promedio) ? dataObj.prom_promedio : [dataObj.prom_promedio];
+
+      for(let i=0; i<grados.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(grados[i]);
+        epoSheet.getRange(currentRow, 2).setValue(grupos[i]);
+        epoSheet.getRange(currentRow, 3).setValue(promedios[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Histórico de matrícula
+    addSectionTitle("Histórico de matrícula por grupos y por turno");
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["Ciclo", "Hombres", "Mujeres", "Grupos", "Turno"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2023-2024", dataObj.h_2324_h, dataObj.h_2324_m, dataObj.h_2324_g, dataObj.h_2324_t]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2024-2025", dataObj.h_2425_h, dataObj.h_2425_m, dataObj.h_2425_g, dataObj.h_2425_t]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2025-2026", dataObj.h_2526_h, dataObj.h_2526_m, dataObj.h_2526_g, dataObj.h_2526_t]]); currentRow++;
+    currentRow++;
+
+    // Egresados
+    addSectionTitle("Egresados por ciclo escolar");
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["2023-2024", "2024-2025", "2025-2026"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([[dataObj.h_2324_e, dataObj.h_2425_e, dataObj.h_2526_e]]); currentRow++;
+    currentRow++;
+
+    // Proyección de matrícula
+    addSectionTitle("Proyección de matrícula por grupos y por turnos");
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["Ciclo", "Hombres", "Mujeres", "Grupos", "Turno"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2026-2027", dataObj.p_2627_h, dataObj.p_2627_m, dataObj.p_2627_g, dataObj.p_2627_t]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2027-2028", dataObj.p_2728_h, dataObj.p_2728_m, dataObj.p_2728_g, dataObj.p_2728_t]]); currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 5).setValues([["2028-2029", dataObj.p_2829_h, dataObj.p_2829_m, dataObj.p_2829_g, dataObj.p_2829_t]]); currentRow++;
+    currentRow++;
+    addRowData("Justificación de la demanda", dataObj.mat_justificacion);
+    currentRow++;
+
+
+    // Instalaciones - Aulas
+    addSectionTitle("VI. Instalaciones - Aulas");
+    let aulasHeaders = ["Población", "Total grupos", "Total aulas"];
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([aulasHeaders]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([[
+      dataObj.aulas_pob, dataObj.aulas_gpos, dataObj.aulas_total
+    ]]);
+    currentRow += 2;
+
+    // Dinámico: Espacios
+    addSectionTitle("Espacios de Aprendizaje");
+    epoSheet.getRange(currentRow, 1, 1, 2).setValues([["Nombre", "Capacidad"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.esp_nombre && dataObj.esp_nombre.length > 0) {
+      let names = Array.isArray(dataObj.esp_nombre) ? dataObj.esp_nombre : [dataObj.esp_nombre];
+      let caps = Array.isArray(dataObj.esp_capacidad) ? dataObj.esp_capacidad : [dataObj.esp_capacidad];
+
+      for(let i=0; i<names.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(names[i]);
+        epoSheet.getRange(currentRow, 2).setValue(caps[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Dinámico: Personal
+    addSectionTitle("VII. Personal");
+    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Nombre", "Función", "Perfil"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.pers_nombre && dataObj.pers_nombre.length > 0) {
+      let nombres = Array.isArray(dataObj.pers_nombre) ? dataObj.pers_nombre : [dataObj.pers_nombre];
+      let func = Array.isArray(dataObj.pers_funcion) ? dataObj.pers_funcion : [dataObj.pers_funcion];
+      let perfil = Array.isArray(dataObj.pers_perfil) ? dataObj.pers_perfil : [dataObj.pers_perfil];
+
+      for(let i=0; i<nombres.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(nombres[i]);
+        epoSheet.getRange(currentRow, 2).setValue(func[i]);
+        epoSheet.getRange(currentRow, 3).setValue(perfil[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Dinámico: Docentes
+    addSectionTitle("DOCENTES - Currículum Fundamental");
+    epoSheet.getRange(currentRow, 1, 1, 4).setValues([["Nombre", "Función", "Perfil académico", "Asignatura que imparte"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.doc_nombre && dataObj.doc_nombre.length > 0) {
+      let doc_nombres = Array.isArray(dataObj.doc_nombre) ? dataObj.doc_nombre : [dataObj.doc_nombre];
+      let doc_func = Array.isArray(dataObj.doc_funcion) ? dataObj.doc_funcion : [dataObj.doc_funcion];
+      let doc_perfil = Array.isArray(dataObj.doc_perfil) ? dataObj.doc_perfil : [dataObj.doc_perfil];
+      let doc_asig = Array.isArray(dataObj.doc_asignatura) ? dataObj.doc_asignatura : [dataObj.doc_asignatura];
+
+      for(let i=0; i<doc_nombres.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(doc_nombres[i]);
+        epoSheet.getRange(currentRow, 2).setValue(doc_func[i]);
+        epoSheet.getRange(currentRow, 3).setValue(doc_perfil[i]);
+        epoSheet.getRange(currentRow, 4).setValue(doc_asig[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Dinámico: Docentes Extendido
+    addSectionTitle("DOCENTES - Currículum Fundamental Extendido");
+    epoSheet.getRange(currentRow, 1, 1, 4).setValues([["Nombre", "Función", "Perfil académico", "Asignatura que imparte"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.docExt_nombre && dataObj.docExt_nombre.length > 0) {
+      let doc_nombres = Array.isArray(dataObj.docExt_nombre) ? dataObj.docExt_nombre : [dataObj.docExt_nombre];
+      let doc_func = Array.isArray(dataObj.docExt_funcion) ? dataObj.docExt_funcion : [dataObj.docExt_funcion];
+      let doc_perfil = Array.isArray(dataObj.docExt_perfil) ? dataObj.docExt_perfil : [dataObj.docExt_perfil];
+      let doc_asig = Array.isArray(dataObj.docExt_asignatura) ? dataObj.docExt_asignatura : [dataObj.docExt_asignatura];
+
+      for(let i=0; i<doc_nombres.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(doc_nombres[i]);
+        epoSheet.getRange(currentRow, 2).setValue(doc_func[i]);
+        epoSheet.getRange(currentRow, 3).setValue(doc_perfil[i]);
+        epoSheet.getRange(currentRow, 4).setValue(doc_asig[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Dinámico: Docentes Ampliado
+    addSectionTitle("DOCENTES - Currículum Ampliado");
+    epoSheet.getRange(currentRow, 1, 1, 4).setValues([["Nombre", "Función", "Perfil académico", "Asignatura que imparte"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.docAmp_nombre && dataObj.docAmp_nombre.length > 0) {
+      let doc_nombres = Array.isArray(dataObj.docAmp_nombre) ? dataObj.docAmp_nombre : [dataObj.docAmp_nombre];
+      let doc_func = Array.isArray(dataObj.docAmp_funcion) ? dataObj.docAmp_funcion : [dataObj.docAmp_funcion];
+      let doc_perfil = Array.isArray(dataObj.docAmp_perfil) ? dataObj.docAmp_perfil : [dataObj.docAmp_perfil];
+      let doc_asig = Array.isArray(dataObj.docAmp_asignatura) ? dataObj.docAmp_asignatura : [dataObj.docAmp_asignatura];
+
+      for(let i=0; i<doc_nombres.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(doc_nombres[i]);
+        epoSheet.getRange(currentRow, 2).setValue(doc_func[i]);
+        epoSheet.getRange(currentRow, 3).setValue(doc_perfil[i]);
+        epoSheet.getRange(currentRow, 4).setValue(doc_asig[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Dinámico: Docentes FOB
+    addSectionTitle("DOCENTES - Formación Ocupacional Básica TIC");
+    epoSheet.getRange(currentRow, 1, 1, 4).setValues([["Nombre", "Función", "Perfil académico", "Asignatura que imparte"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
+    currentRow++;
+    if (dataObj.docFOB_nombre && dataObj.docFOB_nombre.length > 0) {
+      let doc_nombres = Array.isArray(dataObj.docFOB_nombre) ? dataObj.docFOB_nombre : [dataObj.docFOB_nombre];
+      let doc_func = Array.isArray(dataObj.docFOB_funcion) ? dataObj.docFOB_funcion : [dataObj.docFOB_funcion];
+      let doc_perfil = Array.isArray(dataObj.docFOB_perfil) ? dataObj.docFOB_perfil : [dataObj.docFOB_perfil];
+      let doc_asig = Array.isArray(dataObj.docFOB_asignatura) ? dataObj.docFOB_asignatura : [dataObj.docFOB_asignatura];
+
+      for(let i=0; i<doc_nombres.length; i++) {
+        epoSheet.getRange(currentRow, 1).setValue(doc_nombres[i]);
+        epoSheet.getRange(currentRow, 2).setValue(doc_func[i]);
+        epoSheet.getRange(currentRow, 3).setValue(doc_perfil[i]);
+        epoSheet.getRange(currentRow, 4).setValue(doc_asig[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
+      currentRow++;
+    }
+    currentRow++;
+
+    // Descripciones varias
+    addSectionTitle("Textos y Conclusiones");
+    addRowData("Municipios", flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"));
+    addRowData("Objetivos", dataObj.objetivos_mejora);
+    addRowData("Área Influencia", dataObj.area_influencia);
+    addRowData("Campo Laboral", dataObj.campo_laboral);
+    addRowData("Conclusión EPO", dataObj.conclusion_epo);
+    currentRow++;
+
+    // Enlaces a archivos
+    addSectionTitle("Evidencias Adjuntas");
+    if (fileUrls.length > 0) {
+      for(let i=0; i<fileUrls.length; i++) {
+        epoSheet.getRange(currentRow, 1, 1, 4).merge().setValue(fileUrls[i]);
+        currentRow++;
+      }
+    } else {
+      epoSheet.getRange(currentRow, 1).setValue("No se adjuntaron archivos.");
+    }
+
+    // Formato final de las columnas para evitar expansión excesiva
+    epoSheet.setColumnWidth(1, 300);
+    epoSheet.setColumnWidth(2, 200);
+    epoSheet.setColumnWidth(3, 200);
+    epoSheet.setColumnWidth(4, 200);
+
+    // Activar ajuste de texto (Wrap Text) y alineación superior para toda la hoja
+    epoSheet.getDataRange().setWrap(true).setVerticalAlignment("top");
+
+    return { success: true, message: "Guardado correctamente en Drive y Sheets." };
+  } catch (error) {
+    Logger.log("Error en submitFactibilidadForm: " + error.toString());
+    throw new Error("Error interno al guardar: " + error.message);
+  } finally {
+    // Siempre liberar el bloqueo cuando se termine, exitoso o no
+    lock.releaseLock();
+  }
 }
