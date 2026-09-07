@@ -371,8 +371,7 @@ function submitFactibilidadForm(dataObj) {
       flattenDocentes(dataObj.docExt_nombre, dataObj.docExt_funcion, dataObj.docExt_perfil, dataObj.docExt_asignatura),
       flattenDocentes(dataObj.docAmp_nombre, dataObj.docAmp_funcion, dataObj.docAmp_perfil, dataObj.docAmp_asignatura),
       flattenDocentes(dataObj.docFOB_nombre, dataObj.docFOB_funcion, dataObj.docFOB_perfil, dataObj.docFOB_asignatura),
-      dataObj.objetivos_mejora, dataObj.area_influencia,
-      dataObj.campo_laboral, dataObj.conclusion_epo,
+      dataObj.conclusion_epo,
       fileUrls.join(" | ")
     ];
 
@@ -390,8 +389,7 @@ function submitFactibilidadForm(dataObj) {
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
       "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Acervo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Laboratorios/Talleres", "Otras Inst: Salón usos múltiples", "Otras Inst: Sala maestros", "Otras Inst: Cubículos", "Otras Inst: Auditorio", "Otras Inst: Cafetería",
-      "Plantilla Personal Directivo/Admin/Docente", "Docentes Fundamental", "Docentes Formación Fundamental Extendida", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
-      "Campo Laboral", "Conclusión EPO", "Evidencias URL"
+      "Plantilla Personal Directivo/Admin/Docente", "Docentes Fundamental", "Docentes Formación Fundamental Extendida", "Docentes Ampliado", "Docentes FOB TIC", "Conclusión EPO", "Evidencias URL"
     ]];
     masterSheet.getRange(1, 1, 1, headers[0].length).setValues(headers)
       .setBackground("#56212F").setFontColor("#FFFFFF").setFontWeight("bold");
@@ -685,9 +683,6 @@ function submitFactibilidadForm(dataObj) {
     addRowData("Cubículos de orientación", dataObj.otr_cubiculos);
     addRowData("Salón de actos, auditorio u otro", dataObj.otr_auditorio);
     addRowData("Cafetería o tienda escolar", dataObj.otr_cafeteria);
-    addRowData("Objetivos", dataObj.objetivos_mejora);
-    addRowData("Área Influencia", dataObj.area_influencia);
-    addRowData("Campo Laboral", dataObj.campo_laboral);
     addRowData("Conclusión EPO", dataObj.conclusion_epo);
     currentRow++;
 
