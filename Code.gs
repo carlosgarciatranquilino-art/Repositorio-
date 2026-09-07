@@ -389,7 +389,7 @@ function submitFactibilidadForm(dataObj) {
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
       "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Acervo Bibliográfico",
-      "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
+      "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Laboratorios/Talleres",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
     ]];
@@ -670,6 +670,10 @@ function submitFactibilidadForm(dataObj) {
 
     // Descripciones varias
     addSectionTitle("Textos y Conclusiones");
+    addRowData("Descripción Admin", dataObj.desc_admin);
+    addRowData("Áreas de Servicio", dataObj.desc_servicios);
+    addRowData("Espacios Deportivos", dataObj.desc_deportivos);
+    addRowData("Laboratorios o talleres", dataObj.desc_demas);
     addRowData("Objetivos", dataObj.objetivos_mejora);
     addRowData("Área Influencia", dataObj.area_influencia);
     addRowData("Campo Laboral", dataObj.campo_laboral);
