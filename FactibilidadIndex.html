@@ -471,25 +471,7 @@
         </tr>
       </table>
 
-      <h4>Promedio de estudiantado por grupo.</h4>
-      <p class="indicacion">Favor de colocar el Grado, Grupo y promedio según corresponda.</p>
-      <button type="button" class="btn-add" onclick="addPromedioRow()">+ Agregar Grupo</button>
-      <table id="tblPromedios">
-        <tr>
-          <th>Grado.</th>
-          <th>Grupo.</th>
-          <th>Promedio.</th>
-          <th>Acción.</th>
-        </tr>
-        <tr>
-          <td><input type="text" name="prom_grado[]" required></td>
-          <td><input type="text" name="prom_grupo[]" required></td>
-          <td><input type="number" step="0.1" name="prom_promedio[]" required></td>
-          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
-        </tr>
-      </table>
-
-      <h4>Histórico de matrícula por grupos y por turno.</h4>
+            <h4>Histórico de matrícula por grupos y por turno.</h4>
       <table>
         <tr>
           <th colspan="4" class="th-sub">2023-2024</th>
@@ -886,19 +868,6 @@
       newRow.innerHTML = html;
     }
 
-
-    function addPromedioRow() {
-      const table = document.getElementById('tblPromedios');
-      const newRow = table.insertRow(-1);
-
-      let html = `
-          <td><input type="text" name="prom_grado[]" required></td>
-          <td><input type="text" name="prom_grupo[]" required></td>
-          <td><input type="number" step="0.1" name="prom_promedio[]" required></td>
-          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
-      `;
-      newRow.innerHTML = html;
-    }
 
     function removeRow(btn) {
       const row = btn.parentNode.parentNode;

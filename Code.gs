@@ -291,7 +291,7 @@ function submitFactibilidadForm(dataObj) {
       new Date(),
       respName, emailStr, phoneStr,
       dataObj.id_subsistema, epoName, dataObj.id_modalidad, dataObj.id_opcion, dataObj.id_region, dataObj.id_municipio, dataObj.id_zona, dataObj.id_turno, (Array.isArray(dataObj.id_cct) ? dataObj.id_cct.join(", ") : dataObj.id_cct),
-      dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.prom_grado, dataObj.prom_promedio, "Prom"),
+      dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos,
       "Ver detalle en hoja ind.", "Ver detalle en hoja ind.", dataObj.mat_justificacion,
       `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}`,
       flattenDynamic(dataObj.esp_nombre, dataObj.esp_capacidad, "Cap"),
@@ -317,7 +317,7 @@ function submitFactibilidadForm(dataObj) {
     const headers = [[
       "Fecha Envío", "Nombre Responsable", "Correo Responsable", "Teléfono Responsable",
       "Servicio Educativo", "Nombre EPO", "Modalidad", "Opción Educativa", "Región", "Municipio", "Zona", "Turnos", "CCT",
-      "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Promedio Grupo",
+      "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (26-29)", "Justificación Matrícula",
       "Aulas: Pob/Gpos/Total", "Espacios Aprendizaje",
       "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
@@ -416,25 +416,6 @@ function submitFactibilidadForm(dataObj) {
     epoSheet.getRange(currentRow, 1).setValue("Total grupos"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_grupos); currentRow++;
     currentRow++;
 
-    addSectionTitle("Promedio por grupo");
-    epoSheet.getRange(currentRow, 1, 1, 3).setValues([["Grado", "Grupo", "Promedio"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
-    currentRow++;
-    if (dataObj.prom_grado && dataObj.prom_grado.length > 0) {
-      let grados = Array.isArray(dataObj.prom_grado) ? dataObj.prom_grado : [dataObj.prom_grado];
-      let grupos = Array.isArray(dataObj.prom_grupo) ? dataObj.prom_grupo : [dataObj.prom_grupo];
-      let promedios = Array.isArray(dataObj.prom_promedio) ? dataObj.prom_promedio : [dataObj.prom_promedio];
-
-      for(let i=0; i<grados.length; i++) {
-        epoSheet.getRange(currentRow, 1).setValue(grados[i]);
-        epoSheet.getRange(currentRow, 2).setValue(grupos[i]);
-        epoSheet.getRange(currentRow, 3).setValue(promedios[i]);
-        currentRow++;
-      }
-    } else {
-      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
-      currentRow++;
-    }
-    currentRow++;
 
     // Histórico de matrícula
     addSectionTitle("Histórico de matrícula por grupos y por turno");
