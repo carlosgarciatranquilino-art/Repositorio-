@@ -390,7 +390,7 @@ function submitFactibilidadForm(dataObj) {
       "Número de aulas", "Vent. natural", "Vent. artificial", "Pizarrón", "Pintarrón", "Proyector", "Escritorio docente", "Silla docente", "Pupitres",
       "Cómputo: Mesas", "Cómputo: Bancos", "Cómputo: Número de equipos", "Cómputo: Procesador", "Cómputo: Instalado en red", "Cómputo: Cuenta con internet", "Biblioteca: Mesas", "Biblioteca: Sillas", "Biblioteca: Libreros", "Acervo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Laboratorios/Talleres", "Otras Inst: Salón usos múltiples", "Otras Inst: Sala maestros", "Otras Inst: Cubículos", "Otras Inst: Auditorio", "Otras Inst: Cafetería",
-      "Plantilla Personal Directivo/Admin/Docente", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
+      "Plantilla Personal Directivo/Admin/Docente", "Docentes Fundamental", "Docentes Formación Fundamental Extendida", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
       "Campo Laboral", "Conclusión EPO", "Evidencias URL"
     ]];
     masterSheet.getRange(1, 1, 1, headers[0].length).setValues(headers)
@@ -602,7 +602,7 @@ function submitFactibilidadForm(dataObj) {
     currentRow++;
 
     // Dinámico: Docentes Extendido
-    addSectionTitle("DOCENTES - Currículum Fundamental Extendido");
+    addSectionTitle("DOCENTES - Componente de formación fundamental extendida");
     epoSheet.getRange(currentRow, 1, 1, 4).setValues([["Nombre", "Función", "Perfil académico", "Asignatura que imparte"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
     currentRow++;
     if (dataObj.docExt_nombre && dataObj.docExt_nombre.length > 0) {
