@@ -415,7 +415,7 @@ function submitFactibilidadForm(dataObj) {
     epoSheet.getRange(currentRow, 1).setValue("Total estudiantes"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_estudiantes); currentRow++;
     epoSheet.getRange(currentRow, 1).setValue("Total grupos"); epoSheet.getRange(currentRow, 2).setValue(dataObj.mat_actual_grupos); currentRow++;
     currentRow++;
-    addSectionTitle("Municipios dentro y fuera del Estado de México");
+    addSectionTitle("Área de influencia y cobertura del servicio educativo");
     addRowData("Municipios", flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"));
     currentRow++;
 
