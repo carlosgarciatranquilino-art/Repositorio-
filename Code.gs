@@ -294,7 +294,6 @@ function submitFactibilidadForm(dataObj) {
       dataObj.loc_domicilio, (Array.isArray(dataObj.sector_estrategico) ? dataObj.sector_estrategico.join(", ") : dataObj.sector_estrategico || "No especificado"), dataObj.voc_productivo, dataObj.voc_servicios, dataObj.voc_agropecuario, dataObj.voc_industrias, dataObj.voc_fuentes, dataObj.diag_problematicas, dataObj.diag_prog_media, dataObj.diag_prog_sup, dataObj.mat_actual_estudiantes, dataObj.mat_actual_grupos, flattenDynamic(dataObj.municipios_procedencia, dataObj.municipios_cantidad, "Estudiantes").replace(/ \| /g, "\n"),
       "Ver detalle en hoja ind.", "Ver detalle en hoja ind.",
       `${dataObj.aulas_pob}/${dataObj.aulas_gpos}/${dataObj.aulas_total}`,
-      flattenDynamic(dataObj.esp_nombre, dataObj.esp_capacidad, "Cap"),
       `${dataObj.comp_pob}/${dataObj.comp_horas_req}/${dataObj.comp_equipos}/${dataObj.comp_horas_disp}/${dataObj.comp_horas_falt}/${dataObj.comp_equipo_falt}`,
       "Ver detalle en hoja ind.",
       dataObj.desc_admin, dataObj.desc_servicios, dataObj.desc_deportivos, dataObj.desc_demas,
@@ -319,7 +318,7 @@ function submitFactibilidadForm(dataObj) {
       "Servicio Educativo", "Nombre EPO", "Modalidad", "Opción Educativa", "Región", "Municipio", "Zona", "Turnos", "CCT",
       "Domicilio", "Sector Estratégico", "Vocaciones: Productivo", "Vocaciones: Servicios", "Vocaciones: Agropecuario", "Vocaciones: Industrias/Clústeres", "Fuentes de Empleo", "Diag: Problemáticas", "Diag: Prog Media Sup", "Diag: Prog Sup", "Tot. Estudiantes", "Tot. Grupos", "Municipios Procedencia",
       "Histórico Matrícula (23-26)", "Proyección Matrícula (27-30)",
-      "Aulas: Pob/Gpos/Total", "Espacios Aprendizaje",
+      "Espacio de Aprendizaje: Pob/Gpos/Total",
       "Aula Cómputo (Pob/Req/Eq.Funcionales/Disp/Falt/EqFalt)", "Fondo Bibliográfico",
       "Desc. Admin", "Desc. Servicios", "Desc. Deportivos", "Desc. Demás",
       "Plantilla Personal", "Docentes Fundamental", "Docentes Extendido", "Docentes Ampliado", "Docentes FOB TIC", "Objetivos Mejora", "Área Influencia",
@@ -447,7 +446,7 @@ function submitFactibilidadForm(dataObj) {
 
 
     // Instalaciones - Aulas
-    addSectionTitle("VI. Instalaciones - Aulas");
+    addSectionTitle("VI. Instalaciones - Espacio de Aprendizaje");
     let aulasHeaders = ["Población", "Total grupos", "Total aulas"];
     epoSheet.getRange(currentRow, 1, 1, 3).setValues([aulasHeaders]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
     currentRow++;
@@ -456,24 +455,6 @@ function submitFactibilidadForm(dataObj) {
     ]]);
     currentRow += 2;
 
-    // Dinámico: Espacios
-    addSectionTitle("Espacios de Aprendizaje");
-    epoSheet.getRange(currentRow, 1, 1, 2).setValues([["Nombre", "Capacidad"]]).setBackground(colorVinoClaro).setFontColor(colorBlanco);
-    currentRow++;
-    if (dataObj.esp_nombre && dataObj.esp_nombre.length > 0) {
-      let names = Array.isArray(dataObj.esp_nombre) ? dataObj.esp_nombre : [dataObj.esp_nombre];
-      let caps = Array.isArray(dataObj.esp_capacidad) ? dataObj.esp_capacidad : [dataObj.esp_capacidad];
-
-      for(let i=0; i<names.length; i++) {
-        epoSheet.getRange(currentRow, 1).setValue(names[i]);
-        epoSheet.getRange(currentRow, 2).setValue(caps[i]);
-        currentRow++;
-      }
-    } else {
-      epoSheet.getRange(currentRow, 1).setValue("Sin datos");
-      currentRow++;
-    }
-    currentRow++;
 
     // Dinámico: Personal
     addSectionTitle("VII. Personal");

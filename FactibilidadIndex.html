@@ -576,7 +576,7 @@
         <input type="file" id="files_instalaciones" accept="image/*" multiple required>
       </div>
 
-      <h4>Aulas.</h4>
+      <h4>Espacio de Aprendizaje.</h4>
       <table>
         <tr>
           <th>Población Escolar</th>
@@ -587,21 +587,6 @@
           <td><input type="number" name="aulas_pob"></td>
           <td><input type="number" name="aulas_gpos"></td>
           <td><input type="number" name="aulas_total"></td>
-        </tr>
-      </table>
-
-      <h4>Espacios de aprendizaje.</h4>
-      <button type="button" class="btn-add" onclick="addRow('tblEspacios')">+ Agregar Espacio</button>
-      <table id="tblEspacios">
-        <tr>
-          <th>Nombre del espacio de aprendizaje.</th>
-          <th>Capacidad de estudiantes.</th>
-          <th>Acción.</th>
-        </tr>
-        <tr>
-          <td><input type="text" name="esp_nombre[]"></td>
-          <td><input type="number" name="esp_capacidad[]"></td>
-          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
         </tr>
       </table>
 
@@ -813,14 +798,7 @@
       const newRow = table.insertRow(-1);
 
       let html = '';
-      if(tableId === 'tblEspacios') {
-        const prefix = 'esp';
-        html = `
-          <td><input type="text" name="${prefix}_nombre[]"></td>
-          <td><input type="number" name="${prefix}_capacidad[]"></td>
-          <td><button type="button" class="btn-remove" onclick="removeRow(this)">Eliminar</button></td>
-        `;
-      } else if (tableId === 'tblPersonal') {
+if (tableId === 'tblPersonal') {
         html = `
           <td><input type="text" name="pers_nombre[]"></td>
           <td><input type="text" name="pers_funcion[]"></td>
