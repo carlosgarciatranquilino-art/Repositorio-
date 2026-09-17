@@ -32,7 +32,7 @@ ui <- dashboardPage(
     width = 350,
     sidebarMenu(
       menuItem("Resumen General", tabName = "resumen", icon = icon("dashboard")),
-      menuItem("Análisis por Dimensión", tabName = "dimensiones", icon = icon("chart-bar"))
+      menuItem("Análisis por Dominio/Línea", tabName = "dimensiones", icon = icon("chart-bar"))
     ),
     # Filtros dinámicos
     hr(),
@@ -65,13 +65,13 @@ ui <- dashboardPage(
                     plotOutput("plot_formacion"))
               )
       ),
-      # Pestaña 2: Dimensiones (Ejemplo)
+      # Pestaña 2: Dominios y Líneas (Ejemplo)
       tabItem(tabName = "dimensiones",
               h2("Análisis Específico (Ejemplo)"),
               fluidRow(
                 box(width = 12, status = "danger",
-                    p("Aquí se conectarán los resultados cruzados con la Matriz de Dimensiones
-                      una vez que se estructuren los datos reales de la Fase 1."))
+                    p("Aquí se conectarán los resultados cruzados con la Matriz de Dominios (USICAMM)
+                      y Líneas Temáticas (COSAC) una vez que se estructuren los datos reales de la Fase 1."))
               )
       )
     )

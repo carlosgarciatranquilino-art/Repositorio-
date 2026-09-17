@@ -50,12 +50,12 @@ if("subdireccion_regional" %in% names(datos)) {
 }
 ```
 
-## 2. Necesidades de Formación (Escala Likert)
+## 2. Necesidades de Formación (Escala Likert por Dominios y Líneas Temáticas)
 
-Análisis descriptivo de las necesidades formativas identificadas por los docentes, agrupadas por las dimensiones de la normativa vigente.
+Análisis descriptivo de las necesidades formativas identificadas por los docentes, agrupadas por los Dominios del Marco de Excelencia (USICAMM) y las Líneas Temáticas (COSAC).
 
 ```{r likert_descriptivo}
-# Aquí iría el código para pivotar las 22 preguntas de Likert
+# Aquí iría el código para pivotar las 22 preguntas de Likert,
 # cruzar con la matriz de dimensiones y sacar promedios.
 # (Dependerá de los nombres exactos de tus columnas, pero la lógica será:)
 #
@@ -64,7 +64,11 @@ Análisis descriptivo de las necesidades formativas identificadas por los docent
 #   pivot_longer(-id_docente, names_to = "pregunta_id", values_to = "respuesta") %>%
 #   left_join(matriz, by = "pregunta_id")
 #
-# Luego agrupar y promediar por dimensión.
+# Luego agrupar y promediar por dominio_marco_excelencia o lineas_tematicas_orientaciones_cosac:
+#
+# datos_resumen_dominio <- datos_likert %>%
+#   group_by(dominio_marco_excelencia) %>%
+#   summarise(promedio_necesidad = mean(respuesta, na.rm = TRUE))
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)

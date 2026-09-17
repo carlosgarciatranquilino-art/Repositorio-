@@ -6,10 +6,16 @@ Esta fase se encarga de conectar tu entorno local de R con Google Drive, descarg
 1. Descarga e instala R desde: https://cran.r-project.org/
 2. Descarga e instala RStudio Desktop desde: https://posit.co/download/rstudio-desktop/
 
-## Paso 2: Preparar la Matriz de Dimensiones
+## Paso 2: Preparar la Matriz de Dimensiones (Categorización USICAMM y COSAC)
 1. Abre el archivo `matriz_dimensiones.csv` (puedes abrirlo en Excel).
-2. Pasa la información de tu archivo de Word a este CSV.
-3. Asegúrate de mantener la estructura de las columnas: `Pregunta_ID`, `Texto_Pregunta`, `Dimension`, `Normativa_Referencia`.
+2. Pasa la información de tu archivo de Word a este CSV, pegando el texto literal de cada pregunta en "Texto_Pregunta".
+3. Asegúrate de mantener la nueva estructura de las columnas:
+   - `Pregunta_ID`
+   - `Texto_Pregunta`
+   - `Dominio_Marco_Excelencia` (USICAMM)
+   - `Indicador_Dominio_Marco_Excelencia` (USICAMM)
+   - `Lineas_Tematicas_Orientaciones_COSAC`
+   - `Atributos_Docencia_Orientaciones_COSAC`
 4. Guarda los cambios manteniendo el formato `.csv` (valores separados por comas).
 
 ## Paso 3: Configurar el Script

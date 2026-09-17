@@ -1,4 +1,4 @@
-Pregunta_ID,Texto_Pregunta,Dimension,Normativa_Referencia
-P1,Pregunta de ejemplo 1,Pedagógica,Marco Curricular Común
-P2,Pregunta de ejemplo 2,Disciplinar,Lineamientos 2023
-P3,Pregunta de ejemplo 3,Tecnológica,Plan de Desarrollo
+Pregunta_ID,Texto_Pregunta,Dominio_Marco_Excelencia,Indicador_Dominio_Marco_Excelencia,Lineas_Tematicas_Orientaciones_COSAC,Atributos_Docencia_Orientaciones_COSAC
+P1,Pregunta de ejemplo 1,Dominio 1,Indicador 1.1,Línea 1,Atributo A
+P2,Pregunta de ejemplo 2,Dominio 2,Indicador 2.1,Línea 2,Atributo B
+P3,Pregunta de ejemplo 3,Dominio 3,Indicador 3.2,Línea 3,Atributo C
