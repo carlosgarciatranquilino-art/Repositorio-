@@ -1,0 +1,107 @@
+---
+title: "Análisis de Necesidades de Formación Docente"
+subtitle: "Subsecretaría de Educación Media Superior del Estado de México"
+author: "Generado automáticamente"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# Cargar librerías necesarias
+library(tidyverse)
+library(ggplot2)
+library(tidytext)    # Para análisis de preguntas abiertas
+library(wordcloud2)  # Para nubes de palabras
+library(kableExtra)  # Para tablas bonitas
+library(broom)       # Para mostrar resultados de modelos estadísticos
+
+# Intentar cargar los datos limpios generados en la Fase 1
+if(file.exists("datos_limpios.rds") & file.exists("matriz_dimensiones.rds")){
+  datos <- readRDS("datos_limpios.rds")
+  matriz <- readRDS("matriz_dimensiones.rds")
+} else {
+  stop("No se encontraron los datos limpios. Por favor ejecuta el script 01_preparacion_datos.R primero.")
+}
+```
+
+## 1. Contexto General de los Docentes
+
+En esta sección presentamos un resumen estadístico de la población docente que respondió al instrumento.
+
+```{r contexto}
+# NOTA: Ajustar nombres de columnas según corresponda a tus datos reales.
+# Aquí un ejemplo de cómo generar un gráfico descriptivo
+if("subdireccion_regional" %in% names(datos)) {
+  datos %>%
+    count(subdireccion_regional) %>%
+    ggplot(aes(x = reorder(subdireccion_regional, n), y = n)) +
+    geom_col(fill = "#56212F") + # Usando color institucional
+    coord_flip() +
+    theme_minimal() +
+    labs(title = "Participación por Subdirección Regional",
+         x = "Subdirección Regional", y = "Cantidad de Docentes")
+}
+```
+
+## 2. Necesidades de Formación (Escala Likert)
+
+Análisis descriptivo de las necesidades formativas identificadas por los docentes, agrupadas por las dimensiones de la normativa vigente.
+
+```{r likert_descriptivo}
+# Aquí iría el código para pivotar las 22 preguntas de Likert
+# cruzar con la matriz de dimensiones y sacar promedios.
+# (Dependerá de los nombres exactos de tus columnas, pero la lógica será:)
+#
+# datos_likert <- datos %>%
+#   select(id_docente, starts_with("p_")) %>%
+#   pivot_longer(-id_docente, names_to = "pregunta_id", values_to = "respuesta") %>%
+#   left_join(matriz, by = "pregunta_id")
+#
+# Luego agrupar y promediar por dimensión.
+```
+
+## 3. Análisis Inferencial (Directrices para Política Educativa)
+
+Buscamos identificar si las necesidades de formación varían significativamente según las características del docente (por ejemplo, entre docentes con formación pedagógica vs. disciplinar, o según su situación laboral).
+
+```{r inferencial}
+# Ejemplo de código para una prueba T de Student (comparando dos grupos)
+# o un ANOVA (si comparamos Subdirecciones Regionales).
+#
+# if("formacion_profesional" %in% names(datos) && "puntaje_dimension1" %in% names(datos)){
+#   t_test_result <- t.test(puntaje_dimension1 ~ formacion_profesional, data = datos)
+#   tidy(t_test_result) %>%
+#     kbl(caption = "Prueba T: Necesidades Dimensión 1 según Formación") %>%
+#     kable_styling()
+# }
+```
+
+## 4. Análisis Cualitativo (Preguntas Abiertas)
+
+A continuación, analizamos las expresiones libres de los docentes mediante técnicas de minería de textos para identificar las temáticas recurrentes que solicitan.
+
+```{r mineria_texto}
+# Suponiendo que hay una columna llamada `tematica_abierta`
+# if("tematica_abierta" %in% names(datos)){
+#   tokens <- datos %>%
+#     unnest_tokens(word, tematica_abierta) %>%
+#     anti_join(get_stopwords(language = "es")) # Quitar palabras comunes
+#
+#   frecuencias <- tokens %>%
+#     count(word, sort = TRUE) %>%
+#     head(50)
+#
+#   wordcloud2(frecuencias, size = 1.5, color = "#9F2241")
+# }
+```
+
+## Conclusiones Preliminares
+
+*El texto de conclusiones se generará dinámicamente con base en los resultados anteriores.*
