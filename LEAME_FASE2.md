@@ -6,7 +6,7 @@ Esta fase toma los datos limpios de la Fase 1 y genera un reporte estadístico e
 1. Haber ejecutado exitosamente la **Fase 1**. Deben existir los archivos `datos_limpios.rds` y `matriz_dimensiones.rds` en tu carpeta de trabajo.
 2. Instalar paquetes adicionales de R para la generación de reportes. En la consola de R, copia, pega y ejecuta esta línea:
    ```R
-   install.packages(c("rmarkdown", "tidytext", "wordcloud2", "kableExtra", "broom"))
+   install.packages(c("rmarkdown", "tidytext", "stopwords", "wordcloud2", "kableExtra", "broom"))
    ```
 
 ## Paso 1: Configurar el Reporte (Opcional, pero Recomendado)
