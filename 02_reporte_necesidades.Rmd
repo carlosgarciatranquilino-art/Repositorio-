@@ -114,10 +114,11 @@ resumen_dominio <- datos_likert %>%
   arrange(desc(promedio))
 
 if(nrow(resumen_dominio) > 0){
-  dominio_top <- resumen_dominio$dominio_marco_excelencia[1]
+  dominio_top <- enc2utf8(as.character(resumen_dominio$dominio_marco_excelencia[1]))
   cat(paste0("<p style='font-size: 16px; margin-bottom: 20px;'><strong>Síntesis Descriptiva:</strong> Al agrupar las respuestas de los docentes de acuerdo al Marco para la Excelencia (USICAMM), se identifica que el <strong>", dominio_top, "</strong> representa la principal necesidad de formación en la población encuestada, requiriendo atención prioritaria en el diseño de programas estatales.</p>"))
 
   resumen_dominio %>%
+    mutate(dominio_marco_excelencia = enc2utf8(as.character(dominio_marco_excelencia))) %>%
     rename(`Dominio (USICAMM)` = dominio_marco_excelencia, `Nivel Promedio (1-5)` = promedio) %>%
     mutate(`Nivel Promedio (1-5)` = round(`Nivel Promedio (1-5)`, 2)) %>%
     kbl(caption = "Necesidades de Formación Prioritarias por Dominio") %>%
@@ -133,10 +134,11 @@ resumen_linea <- datos_likert %>%
   arrange(desc(promedio))
 
 if(nrow(resumen_linea) > 0){
-  linea_top <- resumen_linea$lineas_tematicas_orientaciones_cosac[1]
+  linea_top <- enc2utf8(as.character(resumen_linea$lineas_tematicas_orientaciones_cosac[1]))
   cat(paste0("<p style='font-size: 16px; margin-top: 30px; margin-bottom: 20px;'>En cuanto a las orientaciones de la COSAC, la línea temática con mayor demanda es: <strong>", linea_top, "</strong>. Esta tendencia debe ser considerada como eje articulador en la planeación de cursos.</p>"))
 
   resumen_linea %>%
+    mutate(lineas_tematicas_orientaciones_cosac = enc2utf8(as.character(lineas_tematicas_orientaciones_cosac))) %>%
     rename(`Línea Temática (COSAC)` = lineas_tematicas_orientaciones_cosac, `Nivel Promedio (1-5)` = promedio) %>%
     mutate(`Nivel Promedio (1-5)` = round(`Nivel Promedio (1-5)`, 2)) %>%
     kbl(caption = "Necesidades de Formación por Línea Temática") %>%
@@ -155,6 +157,7 @@ resumen_indicador <- datos_likert %>%
 if(nrow(resumen_indicador) > 0){
   cat("<h4 style='color: #56212F; margin-top: 30px;'>Top 5 Indicadores Críticos (USICAMM)</h4>")
   resumen_indicador %>%
+    mutate(indicador_dominio_marco_excelencia = enc2utf8(as.character(indicador_dominio_marco_excelencia))) %>%
     rename(`Indicador Específico` = indicador_dominio_marco_excelencia, `Nivel Promedio (1-5)` = promedio) %>%
     mutate(`Nivel Promedio (1-5)` = round(`Nivel Promedio (1-5)`, 2)) %>%
     kbl() %>%
