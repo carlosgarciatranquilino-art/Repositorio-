@@ -45,13 +45,12 @@ En esta sección presentamos un resumen estadístico de la población docente qu
 if("subdireccion_regional" %in% names(datos)) {
   # Cambia "subdireccion_regional" por el nombre de tu columna en las siguientes líneas
   datos %>%
-    count(subdireccion_regional) %>%
-    ggplot(aes(x = reorder(subdireccion_regional, n), y = n)) +
-    geom_col(fill = "#56212F") + # Usando color institucional (Vino)
-    coord_flip() +
+    # Usamos fct_infreq para ordenar automáticamente de mayor a menor sin usar variables temporales
+    ggplot(aes(y = forcats::fct_infreq(as.character(subdireccion_regional)))) +
+    geom_bar(fill = "#56212F") + # Usando color institucional (Vino)
     theme_minimal() +
     labs(title = "Participación por Subdirección Regional",
-         x = "Subdirección Regional", y = "Cantidad de Docentes")
+         y = "Subdirección Regional", x = "Cantidad de Docentes")
 } else {
   cat("Gráfica no generada: No se encontró la columna 'subdireccion_regional'. \nRevisa los nombres con names(datos) y actualiza el código en este chunk.")
 }
