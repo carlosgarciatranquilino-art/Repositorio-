@@ -51,10 +51,15 @@ matriz <- read_csv("matriz_dimensiones.csv") %>%
 # ------------------------------------------------------------------------------
 # Aquí nos aseguramos de que las variables de contexto sean factores (categorías)
 # para facilitar el análisis agrupado.
-# (Ajusta los nombres de las columnas según cómo quedaron después de clean_names)
 
-# Ajuste automático de tipos de datos según los nombres reales
+# IMPORTANTE: A veces Google Sheets mezcla texto y números en la misma columna,
+# haciendo que R la lea como una "lista". Convertimos todo a texto simple (character)
+# ANTES de pasarlo a factor o numérico para evitar el error "tipo no implementado 'list'".
+
 datos_limpios <- datos_limpios %>%
+  # Primero convertimos cualquier columna de tipo lista a caracter simple
+  mutate(across(everything(), as.character)) %>%
+  # Luego asignamos los tipos correctos
   mutate(
     plantel = as.factor(plantel),
     c_c_t = as.factor(c_c_t),
