@@ -97,24 +97,38 @@ puntajes_globales <- datos_likert %>%
   summarise(puntaje_necesidad_global = mean(respuesta, na.rm = TRUE), .groups = "drop")
 
 # 1. Comparación por Naturaleza de Formación
-if(length(unique(na.omit(puntajes_globales$naturaleza_formacion))) >= 2) {
-  t_test_formacion <- t.test(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
+num_grupos_formacion <- length(unique(na.omit(puntajes_globales$naturaleza_formacion)))
 
+if(num_grupos_formacion == 2) {
+  # Si hay exactamente 2 grupos, usamos Prueba T de Student
+  t_test_formacion <- t.test(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
   tidy(t_test_formacion) %>%
     select(estimate, statistic, p.value, conf.low, conf.high) %>%
     kbl(caption = "Prueba T: Diferencias en Necesidad Global según Naturaleza de Formación") %>%
+    kable_styling()
+} else if (num_grupos_formacion > 2) {
+  # Si hay 3 o más grupos, usamos ANOVA
+  anova_formacion <- aov(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
+  tidy(anova_formacion) %>%
+    kbl(caption = "ANOVA: Diferencias en Necesidad Global según Naturaleza de Formación") %>%
     kable_styling()
 } else {
   cat("No hay suficientes grupos en Naturaleza de Formación para realizar prueba estadística.\n")
 }
 
 # 2. Comparación por Situación Laboral
-if(length(unique(na.omit(puntajes_globales$situacion_laboral))) >= 2) {
-  t_test_laboral <- t.test(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
+num_grupos_laboral <- length(unique(na.omit(puntajes_globales$situacion_laboral)))
 
+if(num_grupos_laboral == 2) {
+  t_test_laboral <- t.test(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
   tidy(t_test_laboral) %>%
     select(estimate, statistic, p.value, conf.low, conf.high) %>%
     kbl(caption = "Prueba T: Diferencias en Necesidad Global según Situación Laboral") %>%
+    kable_styling()
+} else if (num_grupos_laboral > 2) {
+  anova_laboral <- aov(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
+  tidy(anova_laboral) %>%
+    kbl(caption = "ANOVA: Diferencias en Necesidad Global según Situación Laboral") %>%
     kable_styling()
 }
 ```
