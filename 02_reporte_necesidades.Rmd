@@ -11,6 +11,36 @@ output:
     code_folding: hide
 ---
 
+<style>
+  body {
+    background-color: #f9f9f9;
+  }
+  h1, h2, h3, h4 {
+    color: #56212F;
+    font-weight: bold;
+  }
+  .list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
+    background-color: #9F2241 !important;
+    border-color: #9F2241 !important;
+  }
+  a {
+    color: #977E5B;
+  }
+  .btn-default {
+    background-color: #BC955B;
+    color: white;
+    border-color: #BC955B;
+  }
+  .btn-default:hover {
+    background-color: #977E5B;
+    color: white;
+  }
+  table th {
+    background-color: #D6D1CA !important;
+    color: #56212F !important;
+  }
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
@@ -35,22 +65,24 @@ if(file.exists("datos_limpios.rds") & file.exists("matriz_dimensiones.rds")){
 
 En esta sección presentamos un resumen estadístico de la población docente que respondió al instrumento.
 
-```{r contexto}
-# NOTA IMPORTANTE PARA EL USUARIO:
-# Ajusta la variable `columna_subdireccion` al nombre exacto de la columna en tus datos.
-# Puedes ver los nombres exactos ejecutando `names(datos)` en la consola.
-# Por defecto está configurada como "subdireccion_regional". Si tu columna se llama diferente,
-# cámbiala en las líneas siguientes.
-
+```{r contexto, fig.width=10, fig.height=7}
 if("subdireccion_regional" %in% names(datos)) {
-  # Cambia "subdireccion_regional" por el nombre de tu columna en las siguientes líneas
-  datos %>%
-    # Usamos fct_infreq para ordenar automáticamente de mayor a menor sin usar variables temporales
-    ggplot(aes(y = forcats::fct_infreq(as.character(subdireccion_regional)))) +
-    geom_bar(fill = "#56212F") + # Usando color institucional (Vino)
-    theme_minimal() +
+  # Para evitar que el texto se amontone, limpiamos los NAs y recortamos el texto a 40 caracteres por línea.
+  datos_limpios_contexto <- datos %>% filter(!is.na(subdireccion_regional))
+
+  grafica_contexto <- datos_limpios_contexto %>%
+    ggplot(aes(x = forcats::fct_infreq(stringr::str_wrap(as.character(subdireccion_regional), width = 40)))) +
+    geom_bar(fill = "#9F2241") + # Usando Rojo Vino Institucional
+    coord_flip() + # Volteamos la gráfica para que las etiquetas se lean de izquierda a derecha
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(color = "#56212F", face = "bold"),
+      axis.text.y = element_text(size = 11, color = "black")
+    ) +
     labs(title = "Participación por Subdirección Regional",
-         y = "Subdirección Regional", x = "Cantidad de Docentes")
+         x = "Subdirección Regional", y = "Cantidad de Docentes")
+
+  print(grafica_contexto)
 } else {
   cat("Gráfica no generada: No se encontró la columna 'subdireccion_regional'. \nRevisa los nombres con names(datos) y actualiza el código en este chunk.")
 }
@@ -60,76 +92,149 @@ if("subdireccion_regional" %in% names(datos)) {
 
 Análisis descriptivo de las necesidades formativas identificadas por los docentes, agrupadas por los Dominios del Marco de Excelencia (USICAMM) y las Líneas Temáticas (COSAC).
 
-```{r likert_descriptivo}
+```{r likert_descriptivo, results='asis'}
 # Convertimos las columnas de preguntas (p1 a p22) a formato largo,
 # forzamos a numérico para sacar promedios y cruzamos con la matriz.
-# Para evitar errores si la matriz se guardó con "P" mayúscula, unificamos a minúscula.
 
 matriz_limpia <- matriz %>%
   mutate(pregunta_id = tolower(pregunta_id))
 
 datos_likert <- datos %>%
-  # Agregamos un identificador de fila (docente) para no perder el contexto
   mutate(id_docente = row_number()) %>%
   select(id_docente, subdireccion_regional, naturaleza_formacion, situacion_laboral, matches("^p[0-9]+$")) %>%
   pivot_longer(cols = matches("^p[0-9]+$"), names_to = "pregunta_id", values_to = "respuesta") %>%
   mutate(respuesta = as.numeric(respuesta)) %>%
   left_join(matriz_limpia, by = "pregunta_id")
 
-# Tabla de promedios por Dominio USICAMM
-datos_likert %>%
+# 1. Análisis por Dominio USICAMM
+resumen_dominio <- datos_likert %>%
   filter(!is.na(dominio_marco_excelencia)) %>%
-  group_by(`Dominio (USICAMM)` = dominio_marco_excelencia) %>%
-  summarise(`Nivel Promedio de Necesidad (1-5)` = round(mean(respuesta, na.rm = TRUE), 2)) %>%
-  arrange(desc(`Nivel Promedio de Necesidad (1-5)`)) %>%
-  kbl(caption = "Necesidades de Formación Prioritarias por Dominio del Marco de Excelencia") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+  group_by(dominio_marco_excelencia) %>%
+  summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
+  arrange(desc(promedio))
+
+if(nrow(resumen_dominio) > 0){
+  dominio_top <- resumen_dominio$dominio_marco_excelencia[1]
+  cat(paste0("<p style='font-size: 16px; margin-bottom: 20px;'><strong>Síntesis Descriptiva:</strong> Al agrupar las respuestas de los docentes de acuerdo al Marco para la Excelencia (USICAMM), se identifica que el <strong>", dominio_top, "</strong> representa la principal necesidad de formación en la población encuestada, requiriendo atención prioritaria en el diseño de programas estatales.</p>"))
+
+  resumen_dominio %>%
+    rename(`Dominio (USICAMM)` = dominio_marco_excelencia, `Nivel Promedio (1-5)` = promedio) %>%
+    mutate(`Nivel Promedio (1-5)` = round(`Nivel Promedio (1-5)`, 2)) %>%
+    kbl(caption = "Necesidades de Formación Prioritarias por Dominio") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
+    row_spec(1, bold = T, color = "white", background = "#9F2241") %>% print()
+}
+
+# 2. Análisis por Línea Temática COSAC
+resumen_linea <- datos_likert %>%
+  filter(!is.na(lineas_tematicas_orientaciones_cosac)) %>%
+  group_by(lineas_tematicas_orientaciones_cosac) %>%
+  summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
+  arrange(desc(promedio))
+
+if(nrow(resumen_linea) > 0){
+  linea_top <- resumen_linea$lineas_tematicas_orientaciones_cosac[1]
+  cat(paste0("<p style='font-size: 16px; margin-top: 30px; margin-bottom: 20px;'>En cuanto a las orientaciones de la COSAC, la línea temática con mayor demanda es: <strong>", linea_top, "</strong>. Esta tendencia debe ser considerada como eje articulador en la planeación de cursos.</p>"))
+
+  resumen_linea %>%
+    rename(`Línea Temática (COSAC)` = lineas_tematicas_orientaciones_cosac, `Nivel Promedio (1-5)` = promedio) %>%
+    mutate(`Nivel Promedio (1-5)` = round(`Nivel Promedio (1-5)`, 2)) %>%
+    kbl(caption = "Necesidades de Formación por Línea Temática") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
+    row_spec(1, bold = T, color = "white", background = "#BC955B") %>% print()
+}
+
+# 3. Top 5 Indicadores Críticos
+resumen_indicador <- datos_likert %>%
+  filter(!is.na(indicador_dominio_marco_excelencia)) %>%
+  group_by(indicador_dominio_marco_excelencia) %>%
+  summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
+  arrange(desc(promedio)) %>%
+  head(5)
+
+if(nrow(resumen_indicador) > 0){
+  cat("<h4 style='color: #56212F; margin-top: 30px;'>Top 5 Indicadores Críticos (USICAMM)</h4>")
+  resumen_indicador %>%
+    rename(`Indicador Específico` = indicador_dominio_marco_excelencia, `Nivel Promedio (1-5)` = promedio) %>%
+    mutate(`Nivel Promedio (1-5)` = round(`Nivel Promedio (1-5)`, 2)) %>%
+    kbl() %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
+    row_spec(1:5, background = "#fcf8e3") %>% print()
+}
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)
 
 Buscamos identificar si las necesidades de formación varían significativamente según las características del docente (por ejemplo, entre docentes con formación pedagógica vs. disciplinar, o según su situación laboral).
 
-```{r inferencial}
+```{r inferencial, results='asis'}
+# Función auxiliar para interpretar p-values
+interpretar_p_value <- function(p_val, variable_name) {
+  if (is.na(p_val)) return("")
+  if (p_val < 0.05) {
+    return(paste0("<p style='color: #9F2241;'><strong>Interpretación de Política Educativa:</strong> Existe una diferencia estadísticamente significativa (p < 0.05) en las necesidades de formación de acuerdo a su <em>", variable_name, "</em>. Esto sugiere que <strong>se deben diseñar rutas de formación diferenciadas</strong> y específicas para los distintos grupos, ya que sus prioridades no son las mismas.</p>"))
+  } else {
+    return(paste0("<p style='color: #56212F;'><strong>Interpretación de Política Educativa:</strong> No se encontró evidencia estadística (p > 0.05) de que las necesidades varíen significativamente según su <em>", variable_name, "</em>. Esto indica que <strong>se puede aplicar un programa de formación estandarizado</strong> para todos los docentes independientemente de esta característica, optimizando recursos estatales.</p>"))
+  }
+}
+
 # Calculamos un puntaje global de necesidad por docente
 puntajes_globales <- datos_likert %>%
   group_by(id_docente, naturaleza_formacion, situacion_laboral) %>%
   summarise(puntaje_necesidad_global = mean(respuesta, na.rm = TRUE), .groups = "drop")
 
+cat("<h3>A. Análisis por Naturaleza de la Formación</h3>")
 # 1. Comparación por Naturaleza de Formación
 num_grupos_formacion <- length(unique(na.omit(puntajes_globales$naturaleza_formacion)))
 
 if(num_grupos_formacion == 2) {
-  # Si hay exactamente 2 grupos, usamos Prueba T de Student
   t_test_formacion <- t.test(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
+  p_val <- t_test_formacion$p.value
+
+  cat(interpretar_p_value(p_val, "Naturaleza de Formación"))
+
   tidy(t_test_formacion) %>%
     select(estimate, statistic, p.value, conf.low, conf.high) %>%
-    kbl(caption = "Prueba T: Diferencias en Necesidad Global según Naturaleza de Formación") %>%
-    kable_styling()
+    kbl(caption = "Prueba T: Naturaleza de Formación") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
 } else if (num_grupos_formacion > 2) {
-  # Si hay 3 o más grupos, usamos ANOVA
   anova_formacion <- aov(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
+  p_val <- summary(anova_formacion)[[1]][["Pr(>F)"]][1]
+
+  cat(interpretar_p_value(p_val, "Naturaleza de Formación"))
+
   tidy(anova_formacion) %>%
-    kbl(caption = "ANOVA: Diferencias en Necesidad Global según Naturaleza de Formación") %>%
-    kable_styling()
+    kbl(caption = "ANOVA: Naturaleza de Formación") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
 } else {
-  cat("No hay suficientes grupos en Naturaleza de Formación para realizar prueba estadística.\n")
+  cat("<p>No hay suficientes grupos en Naturaleza de Formación para realizar prueba estadística.</p>")
 }
 
+cat("<hr><h3>B. Análisis por Situación Laboral</h3>")
 # 2. Comparación por Situación Laboral
 num_grupos_laboral <- length(unique(na.omit(puntajes_globales$situacion_laboral)))
 
 if(num_grupos_laboral == 2) {
   t_test_laboral <- t.test(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
+  p_val <- t_test_laboral$p.value
+
+  cat(interpretar_p_value(p_val, "Situación Laboral"))
+
   tidy(t_test_laboral) %>%
     select(estimate, statistic, p.value, conf.low, conf.high) %>%
-    kbl(caption = "Prueba T: Diferencias en Necesidad Global según Situación Laboral") %>%
-    kable_styling()
+    kbl(caption = "Prueba T: Situación Laboral") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
 } else if (num_grupos_laboral > 2) {
   anova_laboral <- aov(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
+  p_val <- summary(anova_laboral)[[1]][["Pr(>F)"]][1]
+
+  cat(interpretar_p_value(p_val, "Situación Laboral"))
+
   tidy(anova_laboral) %>%
-    kbl(caption = "ANOVA: Diferencias en Necesidad Global según Situación Laboral") %>%
-    kable_styling()
+    kbl(caption = "ANOVA: Situación Laboral") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
+} else {
+  cat("<p>No hay suficientes grupos en Situación Laboral para realizar prueba estadística.</p>")
 }
 ```
 
@@ -137,12 +242,12 @@ if(num_grupos_laboral == 2) {
 
 A continuación, analizamos las expresiones libres de los docentes mediante técnicas de minería de textos para identificar las temáticas recurrentes que solicitan.
 
-```{r mineria_texto}
+```{r mineria_texto, results='asis'}
 # Análisis de la columna 'tematica_prioritaria'
 if("tematica_prioritaria" %in% names(datos)) {
   # Definimos algunas stopwords (palabras vacías) extra comunes en español
   palabras_vacias <- tibble(word = c(get_stopwords(language = "es")$word,
-                                     "docente", "docentes", "alumnos", "escuela", "clases"))
+                                     "docente", "docentes", "alumnos", "escuela", "clases", "hacer", "ser", "como", "mas"))
 
   tokens <- datos %>%
     select(tematica_prioritaria) %>%
@@ -155,12 +260,28 @@ if("tematica_prioritaria" %in% names(datos)) {
     filter(n > 1) %>% # Filtrar para que solo salgan palabras repetidas
     head(40)
 
-  # Si hay suficientes palabras, genera la nube
+  # Si hay suficientes palabras, genera la nube y la prosa
   if(nrow(frecuencias) > 0){
-    wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9")
+    top_3_palabras <- frecuencias$word[1:min(3, nrow(frecuencias))]
+
+    cat(paste0("<div style='background-color: #DDC8A4; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #56212F;'>",
+               "<strong>Recomendación para Líneas Temáticas (COSAC):</strong> ",
+               "Al analizar las respuestas libres de los docentes mediante minería de textos, se detectó que las temáticas emergentes más recurrentes y urgentes giran en torno a los conceptos: <strong>'",
+               paste(top_3_palabras, collapse = "', '"),
+               "'</strong>. Se sugiere enfáticamente crear cápsulas de micro-aprendizaje o talleres focalizados que aborden estas inquietudes de manera transversal a los dominios del Marco de Excelencia.",
+               "</div>"))
+
   } else {
-    cat("No hay suficientes palabras clave en las temáticas prioritarias para generar una nube.")
+    cat("<p>No hay suficientes palabras clave repetidas en las temáticas prioritarias para generar un análisis de texto.</p>")
   }
+}
+```
+
+```{r nube_render, echo=FALSE}
+# Separamos el widget html (wordcloud) en un chunk diferente sin results='asis'
+# para garantizar que knitr cargue correctamente las dependencias de javascript.
+if("tematica_prioritaria" %in% names(datos) && exists("frecuencias") && nrow(frecuencias) > 0) {
+  wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9")
 }
 ```
 
