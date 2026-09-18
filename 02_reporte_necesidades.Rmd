@@ -178,10 +178,11 @@ interpretar_p_value <- function(p_val, variable_name) {
   }
 }
 
-# Calculamos un puntaje global de necesidad por docente
+# Calculamos un puntaje global de necesidad por docente y traemos las nuevas variables
 puntajes_globales <- datos_likert %>%
   group_by(id_docente, naturaleza_formacion, situacion_laboral) %>%
-  summarise(puntaje_necesidad_global = mean(respuesta, na.rm = TRUE), .groups = "drop")
+  summarise(puntaje_necesidad_global = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+  left_join(datos %>% mutate(id_docente = row_number()) %>% select(id_docente, anos_de_experiencia, frec_entornos_virtuales), by = "id_docente")
 
 cat("<h3>A. Análisis por Naturaleza de la Formación</h3>")
 # 1. Comparación por Naturaleza de Formación
@@ -235,6 +236,41 @@ if(num_grupos_laboral == 2) {
     kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
 } else {
   cat("<p>No hay suficientes grupos en Situación Laboral para realizar prueba estadística.</p>")
+}
+
+cat("<hr><h3>C. Análisis por Años de Experiencia y Entornos Virtuales</h3>")
+# 3. Correlación: Años de Experiencia
+if("anos_de_experiencia" %in% names(puntajes_globales)) {
+  # Limpiamos NAs para la correlación
+  datos_cor <- puntajes_globales %>% filter(!is.na(anos_de_experiencia) & !is.na(puntaje_necesidad_global))
+  if(nrow(datos_cor) > 2) {
+    prueba_cor <- cor.test(datos_cor$anos_de_experiencia, datos_cor$puntaje_necesidad_global, method = "pearson")
+    p_val_cor <- prueba_cor$p.value
+    estimador <- prueba_cor$estimate
+
+    if (p_val_cor < 0.05) {
+      direccion <- ifelse(estimador > 0, "aumentan", "disminuyen")
+      cat(paste0("<p style='color: #9F2241;'><strong>Interpretación de Años de Experiencia:</strong> Existe una correlación significativa (p < 0.05). Esto significa que a medida que los docentes tienen más años de experiencia, sus necesidades de formación reportadas <strong>", direccion, "</strong>. Se recomienda ajustar la complejidad o enfoque de los cursos según la antigüedad de la plantilla.</p>"))
+    } else {
+      cat("<p style='color: #56212F;'><strong>Interpretación de Años de Experiencia:</strong> No se encontró una correlación estadística significativa. La antigüedad del docente no parece ser un factor determinante en su nivel general de necesidad de formación.</p>")
+    }
+  }
+}
+
+# 4. ANOVA: Frecuencia de Entornos Virtuales
+if("frec_entornos_virtuales" %in% names(puntajes_globales)) {
+  num_grupos_virtuales <- length(unique(na.omit(puntajes_globales$frec_entornos_virtuales)))
+
+  if(num_grupos_virtuales >= 2) {
+    if(num_grupos_virtuales == 2) {
+      t_test_virt <- t.test(puntaje_necesidad_global ~ frec_entornos_virtuales, data = puntajes_globales)
+      p_val_virt <- t_test_virt$p.value
+    } else {
+      anova_virt <- aov(puntaje_necesidad_global ~ frec_entornos_virtuales, data = puntajes_globales)
+      p_val_virt <- summary(anova_virt)[[1]][["Pr(>F)"]][1]
+    }
+    cat(interpretar_p_value(p_val_virt, "Frecuencia de Uso de Entornos Virtuales"))
+  }
 }
 ```
 

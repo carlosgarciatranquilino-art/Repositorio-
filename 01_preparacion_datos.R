@@ -60,6 +60,7 @@ datos_limpios <- datos_limpios %>%
     c_c_t = as.factor(c_c_t),
     zona_escolar = as.factor(zona_escolar),
     subdireccion_regional = as.factor(subdireccion_regional),
+    anos_de_experiencia = as.numeric(anos_de_experiencia), # Forzamos a numérico para futuros cálculos
     naturaleza_formacion = as.factor(naturaleza_formacion),
     situacion_laboral = as.factor(situacion_laboral),
     curriculum = as.factor(curriculum),
