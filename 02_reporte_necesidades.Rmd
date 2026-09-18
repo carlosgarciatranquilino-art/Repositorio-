@@ -61,20 +61,29 @@ if("subdireccion_regional" %in% names(datos)) {
 Análisis descriptivo de las necesidades formativas identificadas por los docentes, agrupadas por los Dominios del Marco de Excelencia (USICAMM) y las Líneas Temáticas (COSAC).
 
 ```{r likert_descriptivo}
-# Aquí iría el código para pivotar las 22 preguntas de Likert,
-# cruzar con la matriz de dimensiones y sacar promedios.
-# (Dependerá de los nombres exactos de tus columnas, pero la lógica será:)
-#
-# datos_likert <- datos %>%
-#   select(id_docente, starts_with("p_")) %>%
-#   pivot_longer(-id_docente, names_to = "pregunta_id", values_to = "respuesta") %>%
-#   left_join(matriz, by = "pregunta_id")
-#
-# Luego agrupar y promediar por dominio_marco_excelencia o lineas_tematicas_orientaciones_cosac:
-#
-# datos_resumen_dominio <- datos_likert %>%
-#   group_by(dominio_marco_excelencia) %>%
-#   summarise(promedio_necesidad = mean(respuesta, na.rm = TRUE))
+# Convertimos las columnas de preguntas (p1 a p22) a formato largo,
+# forzamos a numérico para sacar promedios y cruzamos con la matriz.
+# Para evitar errores si la matriz se guardó con "P" mayúscula, unificamos a minúscula.
+
+matriz_limpia <- matriz %>%
+  mutate(pregunta_id = tolower(pregunta_id))
+
+datos_likert <- datos %>%
+  # Agregamos un identificador de fila (docente) para no perder el contexto
+  mutate(id_docente = row_number()) %>%
+  select(id_docente, subdireccion_regional, naturaleza_formacion, situacion_laboral, matches("^p[0-9]+$")) %>%
+  pivot_longer(cols = matches("^p[0-9]+$"), names_to = "pregunta_id", values_to = "respuesta") %>%
+  mutate(respuesta = as.numeric(respuesta)) %>%
+  left_join(matriz_limpia, by = "pregunta_id")
+
+# Tabla de promedios por Dominio USICAMM
+datos_likert %>%
+  filter(!is.na(dominio_marco_excelencia)) %>%
+  group_by(`Dominio (USICAMM)` = dominio_marco_excelencia) %>%
+  summarise(`Nivel Promedio de Necesidad (1-5)` = round(mean(respuesta, na.rm = TRUE), 2)) %>%
+  arrange(desc(`Nivel Promedio de Necesidad (1-5)`)) %>%
+  kbl(caption = "Necesidades de Formación Prioritarias por Dominio del Marco de Excelencia") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)
@@ -82,15 +91,32 @@ Análisis descriptivo de las necesidades formativas identificadas por los docent
 Buscamos identificar si las necesidades de formación varían significativamente según las características del docente (por ejemplo, entre docentes con formación pedagógica vs. disciplinar, o según su situación laboral).
 
 ```{r inferencial}
-# Ejemplo de código para una prueba T de Student (comparando dos grupos)
-# o un ANOVA (si comparamos Subdirecciones Regionales).
-#
-# if("formacion_profesional" %in% names(datos) && "puntaje_dimension1" %in% names(datos)){
-#   t_test_result <- t.test(puntaje_dimension1 ~ formacion_profesional, data = datos)
-#   tidy(t_test_result) %>%
-#     kbl(caption = "Prueba T: Necesidades Dimensión 1 según Formación") %>%
-#     kable_styling()
-# }
+# Calculamos un puntaje global de necesidad por docente
+puntajes_globales <- datos_likert %>%
+  group_by(id_docente, naturaleza_formacion, situacion_laboral) %>%
+  summarise(puntaje_necesidad_global = mean(respuesta, na.rm = TRUE), .groups = "drop")
+
+# 1. Comparación por Naturaleza de Formación
+if(length(unique(na.omit(puntajes_globales$naturaleza_formacion))) >= 2) {
+  t_test_formacion <- t.test(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
+
+  tidy(t_test_formacion) %>%
+    select(estimate, statistic, p.value, conf.low, conf.high) %>%
+    kbl(caption = "Prueba T: Diferencias en Necesidad Global según Naturaleza de Formación") %>%
+    kable_styling()
+} else {
+  cat("No hay suficientes grupos en Naturaleza de Formación para realizar prueba estadística.\n")
+}
+
+# 2. Comparación por Situación Laboral
+if(length(unique(na.omit(puntajes_globales$situacion_laboral))) >= 2) {
+  t_test_laboral <- t.test(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
+
+  tidy(t_test_laboral) %>%
+    select(estimate, statistic, p.value, conf.low, conf.high) %>%
+    kbl(caption = "Prueba T: Diferencias en Necesidad Global según Situación Laboral") %>%
+    kable_styling()
+}
 ```
 
 ## 4. Análisis Cualitativo (Preguntas Abiertas)
@@ -98,18 +124,30 @@ Buscamos identificar si las necesidades de formación varían significativamente
 A continuación, analizamos las expresiones libres de los docentes mediante técnicas de minería de textos para identificar las temáticas recurrentes que solicitan.
 
 ```{r mineria_texto}
-# Suponiendo que hay una columna llamada `tematica_abierta`
-# if("tematica_abierta" %in% names(datos)){
-#   tokens <- datos %>%
-#     unnest_tokens(word, tematica_abierta) %>%
-#     anti_join(get_stopwords(language = "es")) # Quitar palabras comunes
-#
-#   frecuencias <- tokens %>%
-#     count(word, sort = TRUE) %>%
-#     head(50)
-#
-#   wordcloud2(frecuencias, size = 1.5, color = "#9F2241")
-# }
+# Análisis de la columna 'tematica_prioritaria'
+if("tematica_prioritaria" %in% names(datos)) {
+  # Definimos algunas stopwords (palabras vacías) extra comunes en español
+  palabras_vacias <- tibble(word = c(get_stopwords(language = "es")$word,
+                                     "docente", "docentes", "alumnos", "escuela", "clases"))
+
+  tokens <- datos %>%
+    select(tematica_prioritaria) %>%
+    drop_na() %>%
+    unnest_tokens(word, tematica_prioritaria) %>%
+    anti_join(palabras_vacias, by = "word")
+
+  frecuencias <- tokens %>%
+    count(word, sort = TRUE) %>%
+    filter(n > 1) %>% # Filtrar para que solo salgan palabras repetidas
+    head(40)
+
+  # Si hay suficientes palabras, genera la nube
+  if(nrow(frecuencias) > 0){
+    wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9")
+  } else {
+    cat("No hay suficientes palabras clave en las temáticas prioritarias para generar una nube.")
+  }
+}
 ```
 
 ## Conclusiones Preliminares

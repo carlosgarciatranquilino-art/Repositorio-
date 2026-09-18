@@ -13,16 +13,22 @@ library(ggplot2)
 # los datos están en la misma carpeta.
 if(file.exists("../datos_limpios.rds")){
   datos <- readRDS("../datos_limpios.rds")
+  matriz <- readRDS("../matriz_dimensiones.rds")
 } else if (file.exists("datos_limpios.rds")) {
   datos <- readRDS("datos_limpios.rds")
+  matriz <- readRDS("matriz_dimensiones.rds")
 } else {
-  # Si no hay datos, creamos un dataset falso para que la app no falle al abrir
-  datos <- data.frame(
-    subdireccion_regional = sample(c("Norte", "Sur", "Valle de Toluca", "Oriente"), 100, replace = T),
-    formacion_profesional = sample(c("Pedagógica", "Disciplinar"), 100, replace = T),
-    puntaje_necesidad = rnorm(100, mean = 3, sd = 1)
-  )
+  stop("No se encontraron los datos. Ejecuta la Fase 1 primero.")
 }
+
+# Preparar datos cruzados de una vez
+matriz_limpia <- matriz %>% mutate(pregunta_id = tolower(pregunta_id))
+datos_largos <- datos %>%
+  mutate(id_docente = row_number()) %>%
+  select(id_docente, subdireccion_regional, naturaleza_formacion, matches("^p[0-9]+$")) %>%
+  pivot_longer(cols = matches("^p[0-9]+$"), names_to = "pregunta_id", values_to = "respuesta") %>%
+  mutate(respuesta = as.numeric(respuesta)) %>%
+  left_join(matriz_limpia, by = "pregunta_id")
 
 # 2. Interfaz de Usuario (UI)
 ui <- dashboardPage(
@@ -39,8 +45,8 @@ ui <- dashboardPage(
     h4("Filtros", style = "margin-left: 15px;"),
     selectInput("filtro_subdireccion", "Subdirección Regional:",
                 choices = c("Todas", unique(as.character(datos$subdireccion_regional)))),
-    selectInput("filtro_formacion", "Formación Profesional:",
-                choices = c("Todas", unique(as.character(datos$formacion_profesional))))
+    selectInput("filtro_formacion", "Naturaleza de Formación:",
+                choices = c("Todas", unique(as.character(datos$naturaleza_formacion))))
   ),
   dashboardBody(
     # CSS personalizado para colores institucionales (Vino y Ocre)
@@ -61,17 +67,20 @@ ui <- dashboardPage(
               fluidRow(
                 box(title = "Participación por Subdirección", status = "primary", solidHeader = TRUE,
                     plotOutput("plot_subdireccion")),
-                box(title = "Formación Profesional", status = "warning", solidHeader = TRUE,
+                box(title = "Naturaleza de la Formación", status = "warning", solidHeader = TRUE,
                     plotOutput("plot_formacion"))
               )
       ),
-      # Pestaña 2: Dominios y Líneas (Ejemplo)
+      # Pestaña 2: Dominios y Líneas
       tabItem(tabName = "dimensiones",
-              h2("Análisis Específico (Ejemplo)"),
+              h2("Necesidades de Formación Prioritarias"),
               fluidRow(
-                box(width = 12, status = "danger",
-                    p("Aquí se conectarán los resultados cruzados con la Matriz de Dominios (USICAMM)
-                      y Líneas Temáticas (COSAC) una vez que se estructuren los datos reales de la Fase 1."))
+                box(width = 12, title = "Promedio de Necesidad por Dominio (USICAMM)", status = "danger", solidHeader = TRUE,
+                    plotOutput("plot_dominios"))
+              ),
+              fluidRow(
+                box(width = 12, title = "Promedio de Necesidad por Línea Temática (COSAC)", status = "warning", solidHeader = TRUE,
+                    plotOutput("plot_lineas"))
               )
       )
     )
@@ -81,14 +90,26 @@ ui <- dashboardPage(
 # 3. Lógica del Servidor (Server)
 server <- function(input, output) {
 
-  # Datos reactivos basados en los filtros
+  # Datos reactivos basados en los filtros (para métricas generales)
   datos_filtrados <- reactive({
     df <- datos
     if(input$filtro_subdireccion != "Todas"){
       df <- df %>% filter(subdireccion_regional == input$filtro_subdireccion)
     }
     if(input$filtro_formacion != "Todas"){
-      df <- df %>% filter(formacion_profesional == input$filtro_formacion)
+      df <- df %>% filter(naturaleza_formacion == input$filtro_formacion)
+    }
+    return(df)
+  })
+
+  # Datos reactivos cruzados con matriz (para Likert)
+  datos_largos_filtrados <- reactive({
+    df <- datos_largos
+    if(input$filtro_subdireccion != "Todas"){
+      df <- df %>% filter(subdireccion_regional == input$filtro_subdireccion)
+    }
+    if(input$filtro_formacion != "Todas"){
+      df <- df %>% filter(naturaleza_formacion == input$filtro_formacion)
     }
     return(df)
   })
@@ -99,31 +120,54 @@ server <- function(input, output) {
   })
 
   output$promedio_general <- renderValueBox({
-    # Simulando el cálculo de un promedio global
-    promedio <- round(mean(datos_filtrados()$puntaje_necesidad, na.rm = TRUE), 2)
+    promedio <- round(mean(datos_largos_filtrados()$respuesta, na.rm = TRUE), 2)
     valueBox(promedio, "Nivel de Necesidad (1-5)", icon = icon("graduation-cap"), color = "yellow")
   })
 
-  # Gráficas
+  # Gráficas Contexto
   output$plot_subdireccion <- renderPlot({
     datos_filtrados() %>%
-      count(subdireccion_regional) %>%
-      ggplot(aes(x = reorder(subdireccion_regional, n), y = n)) +
-      geom_col(fill = "#56212F") +
-      coord_flip() +
+      ggplot(aes(y = forcats::fct_infreq(as.character(subdireccion_regional)))) +
+      geom_bar(fill = "#56212F") +
       theme_minimal() +
-      labs(x = "", y = "Docentes")
+      labs(x = "Docentes", y = "")
   })
 
   output$plot_formacion <- renderPlot({
     datos_filtrados() %>%
-      count(formacion_profesional) %>%
-      ggplot(aes(x = formacion_profesional, y = n, fill = formacion_profesional)) +
-      geom_col() +
-      scale_fill_manual(values = c("#9F2241", "#BC955B")) +
+      ggplot(aes(x = naturaleza_formacion, fill = naturaleza_formacion)) +
+      geom_bar() +
+      scale_fill_manual(values = c("#9F2241", "#BC955B", "#D6D1CA")) +
       theme_minimal() +
       theme(legend.position = "none") +
       labs(x = "", y = "Docentes")
+  })
+
+  # Gráficas de Análisis de Necesidades
+  output$plot_dominios <- renderPlot({
+    datos_largos_filtrados() %>%
+      filter(!is.na(dominio_marco_excelencia)) %>%
+      group_by(dominio_marco_excelencia) %>%
+      summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
+      ggplot(aes(x = reorder(dominio_marco_excelencia, promedio), y = promedio)) +
+      geom_col(fill = "#9F2241") +
+      coord_flip() +
+      theme_minimal() +
+      labs(x = "Dominio", y = "Nivel Promedio de Necesidad") +
+      ylim(0, 5)
+  })
+
+  output$plot_lineas <- renderPlot({
+    datos_largos_filtrados() %>%
+      filter(!is.na(lineas_tematicas_orientaciones_cosac)) %>%
+      group_by(lineas_tematicas_orientaciones_cosac) %>%
+      summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
+      ggplot(aes(x = reorder(lineas_tematicas_orientaciones_cosac, promedio), y = promedio)) +
+      geom_col(fill = "#BC955B") +
+      coord_flip() +
+      theme_minimal() +
+      labs(x = "Línea Temática", y = "Nivel Promedio de Necesidad") +
+      ylim(0, 5)
   })
 }
 

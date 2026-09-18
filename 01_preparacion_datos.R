@@ -53,16 +53,18 @@ matriz <- read_csv("matriz_dimensiones.csv") %>%
 # para facilitar el análisis agrupado.
 # (Ajusta los nombres de las columnas según cómo quedaron después de clean_names)
 
-# Ejemplo de limpieza (Tendrás que ajustar los nombres exactos de acuerdo a tu Excel):
-# datos_limpios <- datos_limpios %>%
-#   mutate(
-#     plantel = as.factor(plantel),
-#     cct = as.factor(cct),
-#     zona_escolar = as.factor(zona_escolar),
-#     subdireccion_regional = as.factor(subdireccion_regional),
-#     formacion_profesional = as.factor(formacion_profesional), # Pedagógica o Disciplinar
-#     situacion_laboral = as.factor(situacion_laboral)          # Definitivo o Determinado
-#   )
+# Ajuste automático de tipos de datos según los nombres reales
+datos_limpios <- datos_limpios %>%
+  mutate(
+    plantel = as.factor(plantel),
+    c_c_t = as.factor(c_c_t),
+    zona_escolar = as.factor(zona_escolar),
+    subdireccion_regional = as.factor(subdireccion_regional),
+    naturaleza_formacion = as.factor(naturaleza_formacion),
+    situacion_laboral = as.factor(situacion_laboral),
+    curriculum = as.factor(curriculum),
+    frec_entornos_virtuales = as.factor(frec_entornos_virtuales)
+  )
 
 # ------------------------------------------------------------------------------
 # 7. Guardar Datos Preparados para Fases Posteriores
