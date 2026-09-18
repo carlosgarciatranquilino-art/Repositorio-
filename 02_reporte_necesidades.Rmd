@@ -36,17 +36,24 @@ if(file.exists("datos_limpios.rds") & file.exists("matriz_dimensiones.rds")){
 En esta sección presentamos un resumen estadístico de la población docente que respondió al instrumento.
 
 ```{r contexto}
-# NOTA: Ajustar nombres de columnas según corresponda a tus datos reales.
-# Aquí un ejemplo de cómo generar un gráfico descriptivo
+# NOTA IMPORTANTE PARA EL USUARIO:
+# Ajusta la variable `columna_subdireccion` al nombre exacto de la columna en tus datos.
+# Puedes ver los nombres exactos ejecutando `names(datos)` en la consola.
+# Por defecto está configurada como "subdireccion_regional". Si tu columna se llama diferente,
+# cámbiala en las líneas siguientes.
+
 if("subdireccion_regional" %in% names(datos)) {
+  # Cambia "subdireccion_regional" por el nombre de tu columna en las siguientes líneas
   datos %>%
     count(subdireccion_regional) %>%
     ggplot(aes(x = reorder(subdireccion_regional, n), y = n)) +
-    geom_col(fill = "#56212F") + # Usando color institucional
+    geom_col(fill = "#56212F") + # Usando color institucional (Vino)
     coord_flip() +
     theme_minimal() +
     labs(title = "Participación por Subdirección Regional",
          x = "Subdirección Regional", y = "Cantidad de Docentes")
+} else {
+  cat("Gráfica no generada: No se encontró la columna 'subdireccion_regional'. \nRevisa los nombres con names(datos) y actualiza el código en este chunk.")
 }
 ```
 
