@@ -27,7 +27,7 @@ datos <- datos %>% mutate(id_docente = row_number())
 # Preparar datos cruzados de una vez
 matriz_limpia <- matriz %>% mutate(pregunta_id = tolower(pregunta_id))
 datos_largos <- datos %>%
-  select(id_docente, subdireccion_regional, naturaleza_formacion, matches("^p[0-9]+$")) %>%
+  select(id_docente, subdireccion_regional, sistema_educativo, naturaleza_formacion, situacion_laboral, anos_de_experiencia, matches("^p[0-9]+$")) %>%
   pivot_longer(cols = matches("^p[0-9]+$"), names_to = "pregunta_id", values_to = "respuesta") %>%
   mutate(respuesta = as.numeric(respuesta)) %>%
   left_join(matriz_limpia, by = "pregunta_id")
