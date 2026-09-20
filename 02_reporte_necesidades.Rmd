@@ -295,6 +295,25 @@ datos_likert %>%
   mutate_if(is.numeric, ~round(., 2)) %>%
   kbl() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
+
+cat("<hr><h3>4.3 Dominio vs Antigüedad (Análisis de Brecha Generacional)</h3>")
+cat("<p>Clasifica a la plantilla en tres estadios de desarrollo docente (Novatos, Intermedios y Veteranos) para identificar si las áreas de oportunidad metodológica están ligadas al relevo generacional.</p>")
+
+datos_likert %>%
+  filter(!is.na(dominio_marco_excelencia) & !is.na(anos_de_experiencia)) %>%
+  mutate(etapa_carrera = case_when(
+    anos_de_experiencia < 5 ~ "1. Novatos (< 5 años)",
+    anos_de_experiencia >= 5 & anos_de_experiencia <= 15 ~ "2. Intermedios (5-15 años)",
+    anos_de_experiencia > 15 ~ "3. Veteranos (> 15 años)",
+    TRUE ~ "No definido"
+  )) %>%
+  group_by(dominio_marco_excelencia, etapa_carrera) %>%
+  summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+  mutate(dominio_marco_excelencia = enc2utf8(as.character(dominio_marco_excelencia))) %>%
+  pivot_wider(names_from = etapa_carrera, values_from = promedio) %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  kbl() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)

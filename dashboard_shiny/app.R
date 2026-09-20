@@ -41,7 +41,8 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Resumen General", tabName = "resumen", icon = icon("dashboard")),
       menuItem("Análisis por Dominio/Línea", tabName = "dimensiones", icon = icon("chart-bar")),
-      menuItem("Prioridad Ejecutiva", tabName = "ejecutivo", icon = icon("bullseye"))
+      menuItem("Prioridad Ejecutiva", tabName = "ejecutivo", icon = icon("bullseye")),
+      menuItem("Desglose por Pregunta", tabName = "preguntas", icon = icon("list-ol"))
     ),
     # Filtros dinámicos
     hr(),
@@ -101,6 +102,23 @@ ui <- dashboardPage(
                 valueBoxOutput("top_indicador", width = 12),
                 valueBoxOutput("top_linea", width = 12),
                 valueBoxOutput("top_atributo", width = 12)
+              )
+      ),
+      # Nueva Pestaña 4: Desglose Quirúrgico por Reactivo
+      tabItem(tabName = "preguntas",
+              h2("Desglose Quirúrgico por Pregunta"),
+              p("Análisis detallado de cada reactivo (P1 a P22) según los filtros aplicados."),
+              fluidRow(
+                box(width = 12, status = "danger", solidHeader = TRUE, title = "Seleccione la pregunta a analizar:",
+                    selectInput("filtro_pregunta", "", choices = unique(toupper(matriz_limpia$pregunta_id)))
+                )
+              ),
+              fluidRow(
+                box(width = 12, title = "Detalle del Reactivo", status = "primary", solidHeader = TRUE,
+                    h4(textOutput("texto_pregunta_actual"), style = "color: #56212F; font-weight: bold;"),
+                    hr(),
+                    plotOutput("plot_pregunta_individual")
+                )
               )
       )
     )
@@ -235,6 +253,33 @@ server <- function(input, output) {
     res <- datos_largos_filtrados() %>% filter(!is.na(atributos_docencia_orientaciones_cosac)) %>% group_by(atributos_docencia_orientaciones_cosac) %>% summarise(p=mean(respuesta, na.rm=T)) %>% arrange(desc(p))
     val <- if(nrow(res)>0) enc2utf8(as.character(res[[1]][1])) else "N/D"
     valueBox(val, "Atributo de Docencia Crítico", icon = icon("chalkboard-teacher"), color = "maroon")
+  })
+
+  # Desglose Quirúrgico por Pregunta
+  output$texto_pregunta_actual <- renderText({
+    preg_id <- tolower(input$filtro_pregunta)
+    texto <- matriz_limpia %>% filter(pregunta_id == preg_id) %>% pull(texto_pregunta)
+    if(length(texto) > 0) enc2utf8(as.character(texto[1])) else "Pregunta no encontrada."
+  })
+
+  output$plot_pregunta_individual <- renderPlot({
+    req(nrow(datos_largos_filtrados()) > 0)
+    preg_id <- tolower(input$filtro_pregunta)
+
+    datos_largos_filtrados() %>%
+      filter(pregunta_id == preg_id) %>%
+      count(respuesta) %>%
+      mutate(pct = round(n / sum(n) * 100, 1),
+             etiqueta = paste0(n, " (", pct, "%)"),
+             respuesta_cat = factor(respuesta, levels = 1:5, labels = c("1 (Nada)", "2 (Poco)", "3 (Regular)", "4 (Bastante)", "5 (Mucho)"))) %>%
+      ggplot(aes(x = respuesta_cat, y = n, fill = respuesta_cat)) +
+      geom_col() +
+      geom_text(aes(label = etiqueta), vjust = -0.5, size = 5, fontface = "bold", color = "black") +
+      scale_fill_manual(values = c("#D6D1CA", "#BC955B", "#977E5B", "#9F2241", "#56212F")) +
+      theme_minimal(base_size = 14) +
+      scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+      labs(x = "Nivel de Necesidad Reportada", y = "Número de Docentes") +
+      theme(legend.position = "none")
   })
 }
 
