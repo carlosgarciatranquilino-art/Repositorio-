@@ -92,29 +92,48 @@ if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
     scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
     labs(title = "Volumen por Subdirección Regional", x = "", y = "Docentes")
 
-  # Zonas más críticas (Calculado en base a datos cruzados posteriores, pero ilustrado aquí como promedio Likert)
-  # Como los datos_likert se arman después, adelantaremos el promedio para las zonas
-  # Extraer p_ para promediar asegurando que son numéricas (Fase 1 las dejó como character por seguridad)
-  p2_data <- datos %>%
-    filter(!is.na(zona_escolar)) %>%
+  # Ranking de Urgencia Regional (Subdirecciones)
+  p1_urgencia_data <- datos %>%
+    filter(!is.na(subdireccion_regional)) %>%
     mutate(across(matches("^p[0-9]+$"), as.numeric)) %>%
     rowwise() %>%
     mutate(promedio_necesidad = mean(c_across(matches("^p[0-9]+$")), na.rm = TRUE)) %>%
     ungroup() %>%
-    group_by(zona_escolar) %>%
+    group_by(subdireccion_regional) %>%
+    summarise(urgencia = mean(promedio_necesidad, na.rm=TRUE)) %>%
+    arrange(desc(urgencia))
+
+  p1_urgencia <- p1_urgencia_data %>%
+    ggplot(aes(x = reorder(stringr::str_wrap(as.character(subdireccion_regional), 30), urgencia), y = urgencia)) +
+    geom_col(fill = "#BC955B") +
+    geom_text(aes(label = round(urgencia, 2)), hjust = -0.2, color = "black", size = 4, fontface="bold") +
+    coord_flip(clip = "off") +
+    theme_minimal() +
+    scale_y_continuous(limits = c(0, 5)) +
+    labs(title = "Índice de Urgencia por Subdirección Regional", subtitle="Promedio de Necesidad de Formación (1-5)", x = "", y = "Nivel Promedio")
+
+  # Zonas más críticas cruzadas con Sistema Educativo
+  p2_data <- datos %>%
+    filter(!is.na(zona_escolar) & !is.na(sistema_educativo)) %>%
+    mutate(across(matches("^p[0-9]+$"), as.numeric)) %>%
+    rowwise() %>%
+    mutate(promedio_necesidad = mean(c_across(matches("^p[0-9]+$")), na.rm = TRUE)) %>%
+    ungroup() %>%
+    mutate(zona_sistema = paste0(zona_escolar, " (", sistema_educativo, ")")) %>%
+    group_by(zona_sistema) %>%
     summarise(urgencia = mean(promedio_necesidad, na.rm=TRUE), muestra=n()) %>%
-    filter(muestra >= 5) %>% # Para evitar zonas con 1 solo docente que sesguen
+    filter(muestra >= 5) %>% # Para evitar zonas con muy pocos docentes que sesguen
     arrange(desc(urgencia)) %>%
     head(10)
 
   p2 <- p2_data %>%
-    ggplot(aes(x = reorder(zona_escolar, urgencia), y = urgencia)) +
+    ggplot(aes(x = reorder(stringr::str_wrap(zona_sistema, 35), urgencia), y = urgencia)) +
     geom_col(fill = "#9F2241") +
-    geom_text(aes(label = round(urgencia, 2)), hjust = -0.2, color = "black", size = 4) +
+    geom_text(aes(label = round(urgencia, 2)), hjust = -0.2, color = "black", size = 4, fontface = "bold") +
     coord_flip(clip = "off") +
     scale_y_continuous(limits = c(0, 5)) +
-    theme_minimal() +
-    labs(title = "Top 10 Zonas Escolares con Mayor Urgencia (Puntaje 1-5)", subtitle = "Promedio de necesidad formativa (min. 5 docentes)", x = "Zona", y = "Nivel Promedio")
+    theme_minimal(base_size = 13) +
+    labs(title = "Top 10 Zonas Críticas con Mayor Urgencia", subtitle = "Promedio de necesidad formativa por Zona y Sistema (min. 5 docentes)", x = "Zona Escolar (Sistema)", y = "Nivel Promedio de Urgencia (1-5)")
 
   # Mostrar tablas descriptivas integrales
   cat("\n<h4>Resumen Organizativo Detallado</h4>\n\n")
@@ -128,6 +147,8 @@ if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
   # Imprimir las gráficas
   cat("\n")
   print(p1)
+  cat("\n")
+  print(p1_urgencia)
   cat("\n")
   print(p2)
   cat("\n")
@@ -540,5 +561,16 @@ promedio_estatal <- round(mean(datos_likert$respuesta, na.rm = TRUE), 2)
 dominio_critico <- as.character(resumen_dominio$dominio_marco_excelencia[1])
 linea_critica <- as.character(resumen_linea$lineas_tematicas_orientaciones_cosac[1])
 
-cat(paste0("\n<div style='background-color: #56212F; color: white; padding: 20px; border-radius: 8px;'>\n<h3 style='color: #DDC8A4; margin-top: 0;'>Panorama de Inteligencia Estratégica</h3>\n<p style='font-size: 16px;'>El presente diagnóstico recabó la voz de <strong>", docentes_totales, " docentes</strong> del Estado de México. El Índice Estatal de Necesidad de Formación se sitúa en <strong>", promedio_estatal, " / 5.0</strong>.</p>\n<ul style='font-size: 16px; margin-top: 15px;'>\n<li><strong>Foco USICAMM:</strong> El <em>", dominio_critico, "</em> es estadísticamente la dimensión con mayor área de oportunidad. Se requiere diseño instruccional inmediato enfocado a estos indicadores.</li>\n<li><strong>Directriz COSAC:</strong> La prioridad temática de los programas formativos 2024-2025 debe alinearse estrictamente a la línea de <em>\"", linea_critica, "\"</em>.</li>\n</ul>\n<p style='font-size: 16px; margin-top: 15px;'><strong>Recomendación Ejecutiva:</strong> El análisis inferencial demuestra que la plantilla docente mexiquense <strong>no es homogénea</strong>. Para maximizar el Retorno de Inversión (ROI) del presupuesto educativo, es imperativo abandonar modelos estandarizados de capacitación masiva y transitar hacia rutas formativas focalizadas (micro-learning) que crucen el <em>Sistema Educativo</em> y la <em>Naturaleza de la Formación</em> del docente.</p>\n</div>\n\n"))
+top_zona_critica <- if(exists("p2_data") && nrow(p2_data) > 0) p2_data$zona_sistema[1] else "las zonas marginadas"
+
+cat(paste0("\n<div style='background-color: #56212F; color: white; padding: 20px; border-radius: 8px;'>\n<h3 style='color: #DDC8A4; margin-top: 0;'>Panorama de Inteligencia Estratégica</h3>\n<p style='font-size: 16px;'>El presente diagnóstico recabó la voz de <strong>", docentes_totales, " docentes</strong> del Estado de México. El Índice Estatal de Necesidad de Formación se sitúa en <strong>", promedio_estatal, " / 5.0</strong>.</p>\n<ul style='font-size: 16px; margin-top: 15px;'>\n<li><strong>Foco USICAMM:</strong> El requerimiento formativo se concentra abrumadoramente en el <em>", dominio_critico, "</em>.</li>\n<li><strong>Directriz COSAC:</strong> La prioridad temática para el próximo diseño instruccional debe alinearse a la línea de <em>\"", linea_critica, "\"</em>.</li>\n</ul>\n</div>\n\n"))
+
+cat("\n<h3>Políticas de Intervención Recomendadas</h3>\n")
+cat("<p style='font-size: 16px; text-align: justify;'>Con base en la arquitectura de datos generada y el análisis inferencial, se proponen 3 directrices ejecutivas para maximizar el Retorno de Inversión (ROI) del presupuesto educativo estatal:</p>\n")
+
+cat(paste0("\n<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>\n<h4 style='color: #BC955B; margin-top: 0;'>1. Nodos de Excelencia (Focalización Geográfica)</h4>\n<p style='font-size: 16px;'>En lugar de lanzar diplomados masivos genéricos, se sugiere instrumentar un modelo híbrido abriendo 'Sedes Piloto' presenciales exclusivamente en los focos rojos estadísticos. La prioridad número 1 para aperturar este esfuerzo es la <strong>", top_zona_critica, "</strong>, la cual demostró la mayor carencia operativa en todo el Estado.</p>\n</div>\n\n"))
+
+cat("\n<div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>\n<h4 style='color: #9F2241; margin-top: 0;'>2. Mentoría Inversa (Brecha Generacional)</h4>\n<p style='font-size: 16px;'>Aprovechar el perfil de la propia plantilla a costo cero. Diseñar un esquema de colaboración cruzada donde los docentes <em>'Novatos'</em> (altamente capacitados en TIC y Entornos Virtuales) funjan como capacitadores de los docentes <em>'Veteranos'</em>, mientras que estos últimos se convierten en tutores de los Novatos en los dominios didácticos y de control de grupo observados en el Marco de Excelencia.</p>\n</div>\n\n")
+
+cat("\n<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>\n<h4 style='color: #BC955B; margin-top: 0;'>3. Rutas Formativas Adaptativas (Situación Laboral)</h4>\n<p style='font-size: 16px;'>Diseñar dos catálogos de formación paralelos. <strong>A) Ruta de Inducción:</strong> Focalizada en docentes con contratos por Tiempo Determinado, centrándose en normatividad, llenado de formatos y reglas USICAMM para coadyuvar a su estabilidad. <strong>B) Ruta de Vanguardia:</strong> Para la plantilla Definitiva, liberándolos de la carga burocrática y ofreciendo cursos avanzados (ej. habilidades socioemocionales, metodologías activas).</p>\n</div>\n\n")
 ```
