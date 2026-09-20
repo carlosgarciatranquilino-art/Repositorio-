@@ -52,6 +52,8 @@ ui <- dashboardPage(
                 choices = c("Todas", unique(as.character(datos$subdireccion_regional)))),
     selectInput("filtro_formacion", "Naturaleza de Formación:",
                 choices = c("Todas", unique(as.character(datos$naturaleza_formacion)))),
+    selectInput("filtro_laboral", "Situación Laboral:",
+                choices = c("Todas", unique(as.character(datos$situacion_laboral)))),
     numericInput("filtro_experiencia", "Años de Experiencia (Máximo):",
                 value = 50, min = 0, max = 100)
   ),
@@ -119,6 +121,9 @@ server <- function(input, output) {
     }
     if(input$filtro_formacion != "Todas"){
       df <- df %>% filter(naturaleza_formacion == input$filtro_formacion)
+    }
+    if(input$filtro_laboral != "Todas"){
+      df <- df %>% filter(situacion_laboral == input$filtro_laboral)
     }
     return(df)
   })

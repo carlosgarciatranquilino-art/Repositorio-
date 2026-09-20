@@ -269,9 +269,9 @@ if(nrow(resumen_indicador) > 0){
     row_spec(1:5, background = "#fcf8e3") %>% print()
 }
 
-# 4. Matriz de Calor: Dominio vs Naturaleza de Formación
-cat("<br><h4>Matriz de Priorización: Dominio vs Perfil de Origen</h4>")
-cat("<p>Este cruce bivariado permite focalizar el esfuerzo presupuestal. Identifica qué dominio requiere mayor intervención según si el docente tiene formación disciplinar o pedagógica.</p>")
+# 4. Matrices de Priorización y Focalización de Recursos
+cat("<br><h4>4.1 Dominio vs Perfil de Origen (Naturaleza de Formación)</h4>")
+cat("<p>Identifica qué dominio requiere mayor intervención según si el docente tiene formación disciplinar o pedagógica.</p>")
 
 datos_likert %>%
   filter(!is.na(dominio_marco_excelencia) & !is.na(naturaleza_formacion)) %>%
@@ -283,6 +283,18 @@ datos_likert %>%
   kbl() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
 
+cat("<br><h4>4.2 Dominio vs Situación Laboral (Estabilidad Contractual)</h4>")
+cat("<p>Analiza cómo cambia la prioridad de capacitación dependiendo de si el docente cuenta con una base definitiva o un contrato determinado, lo que ayuda a planear inducciones vs. actualizaciones.</p>")
+
+datos_likert %>%
+  filter(!is.na(dominio_marco_excelencia) & !is.na(situacion_laboral)) %>%
+  group_by(dominio_marco_excelencia, situacion_laboral) %>%
+  summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+  mutate(dominio_marco_excelencia = enc2utf8(as.character(dominio_marco_excelencia))) %>%
+  pivot_wider(names_from = situacion_laboral, values_from = promedio) %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  kbl() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)
@@ -415,10 +427,11 @@ A continuación, analizamos las expresiones libres de los docentes mediante téc
 
 ```{r mineria_texto, results='asis'}
 # Análisis de la columna 'tematica_prioritaria'
+palabras_vacias <- tibble(word = c(get_stopwords(language = "es")$word,
+                                   "docente", "docentes", "alumnos", "escuela", "clases", "hacer", "ser", "como", "mas"))
+
+cat("<h3>4.1 Temáticas Prioritarias (Necesidades Específicas)</h3>")
 if("tematica_prioritaria" %in% names(datos)) {
-  # Definimos algunas stopwords (palabras vacías) extra comunes en español
-  palabras_vacias <- tibble(word = c(get_stopwords(language = "es")$word,
-                                     "docente", "docentes", "alumnos", "escuela", "clases", "hacer", "ser", "como", "mas"))
 
   tokens <- datos %>%
     select(tematica_prioritaria) %>%
@@ -431,28 +444,62 @@ if("tematica_prioritaria" %in% names(datos)) {
     filter(n > 1) %>% # Filtrar para que solo salgan palabras repetidas
     head(40)
 
-  # Si hay suficientes palabras, genera la nube y la prosa
+  # Si hay suficientes palabras, genera la prosa
   if(nrow(frecuencias) > 0){
     top_3_palabras <- frecuencias$word[1:min(3, nrow(frecuencias))]
 
     cat(paste0("<div style='background-color: #DDC8A4; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #56212F;'>",
                "<strong>Recomendación para Líneas Temáticas (COSAC):</strong> ",
-               "Al analizar las respuestas libres de los docentes mediante minería de textos, se detectó que las temáticas emergentes más recurrentes y urgentes giran en torno a los conceptos: <strong>'",
+               "Al analizar las respuestas libres de los docentes, se detectó que las temáticas emergentes más recurrentes giran en torno a los conceptos: <strong>'",
                paste(top_3_palabras, collapse = "', '"),
-               "'</strong>. Se sugiere enfáticamente crear cápsulas de micro-aprendizaje o talleres focalizados que aborden estas inquietudes de manera transversal a los dominios del Marco de Excelencia.",
-               "</div>"))
-
+               "'</strong>. Se sugiere crear cápsulas de micro-aprendizaje que aborden estas inquietudes de manera transversal.</div>"))
   } else {
-    cat("<p>No hay suficientes palabras clave repetidas en las temáticas prioritarias para generar un análisis de texto.</p>")
+    cat("<p>No hay suficientes palabras clave en las temáticas prioritarias.</p>")
+  }
+}
+
+cat("<hr><h3>4.2 El Sentir Docente (Clima Organizacional)</h3>")
+if("comentarios_finales" %in% names(datos)) {
+
+  tokens_sentir <- datos %>%
+    select(comentarios_finales) %>%
+    drop_na() %>%
+    unnest_tokens(word, comentarios_finales) %>%
+    anti_join(palabras_vacias, by = "word")
+
+  frecuencias_sentir <- tokens_sentir %>%
+    count(word, sort = TRUE) %>%
+    filter(n > 1) %>%
+    head(40)
+
+  if(nrow(frecuencias_sentir) > 0){
+    top_3_sentir <- frecuencias_sentir$word[1:min(3, nrow(frecuencias_sentir))]
+
+    cat(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>",
+               "<strong>Termómetro del Clima Docente:</strong> ",
+               "A través de la sección de comentarios abiertos, el personal expresó inquietudes y reflexiones. Las palabras más mencionadas por la plantilla frente a este proceso formativo fueron: <strong>'",
+               paste(top_3_sentir, collapse = "', '"),
+               "'</strong>. Monitorear estos conceptos es vital para asegurar que la oferta de formación sea recibida con apertura y no como una carga administrativa adicional.</div>"))
+  } else {
+    cat("<p>No hubo suficientes comentarios finales para generar un análisis cualitativo.</p>")
   }
 }
 ```
 
-```{r nube_render, echo=FALSE}
+```{r nube_render, echo=FALSE, fig.width=10, fig.height=5}
 # Separamos el widget html (wordcloud) en un chunk diferente sin results='asis'
-# para garantizar que knitr cargue correctamente las dependencias de javascript.
+# Usaremos par() o un layout simple para no complicar dependencias, o imprimimos secuencialmente.
+
 if("tematica_prioritaria" %in% names(datos) && exists("frecuencias") && nrow(frecuencias) > 0) {
-  wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9")
+  cat("<h4 align='center'>Nube de Temáticas Prioritarias</h4>")
+  htmltools::tagList(wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9"))
+}
+```
+
+```{r nube_render_sentir, echo=FALSE, fig.width=10, fig.height=5}
+if("comentarios_finales" %in% names(datos) && exists("frecuencias_sentir") && nrow(frecuencias_sentir) > 0) {
+  cat("<h4 align='center'>Nube del Sentir Docente (Comentarios)</h4>")
+  htmltools::tagList(wordcloud2(frecuencias_sentir, size = 1.0, color = "#56212F", backgroundColor = "#f9f9f9"))
 }
 ```
 
