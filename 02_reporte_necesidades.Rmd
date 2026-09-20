@@ -74,8 +74,7 @@ if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
   # Resumen narrativo
   top_sub <- datos %>% count(subdireccion_regional, sort=TRUE) %>% head(1)
 
-  cat(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>
-             <strong>Diagnóstico de Cobertura:</strong> La mayor concentración de respuestas proviene de la Subdirección <strong>", top_sub$subdireccion_regional, "</strong> (", top_sub$n, " docentes). Esto indica la viabilidad de iniciar pruebas piloto de programas formativos en esta región dada su alta representatividad y disposición participativa. A continuación se desglosan las frecuencias operativas.</div>"))
+  cat(paste0("\n<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>\n<strong>Diagnóstico de Cobertura:</strong> La mayor concentración de respuestas proviene de la Subdirección <strong>", top_sub$subdireccion_regional, "</strong> (", top_sub$n, " docentes). Esto indica la viabilidad de iniciar pruebas piloto de programas formativos en esta región dada su alta representatividad y disposición participativa. A continuación se desglosan las frecuencias operativas.\n</div>\n\n"))
 
   # Calculamos conteos antes para poner etiquetas con porcentaje
   datos_sub <- datos %>%
@@ -118,7 +117,7 @@ if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
     labs(title = "Top 10 Zonas Escolares con Mayor Urgencia (Puntaje 1-5)", subtitle = "Promedio de necesidad formativa (min. 5 docentes)", x = "Zona", y = "Nivel Promedio")
 
   # Mostrar tablas descriptivas integrales
-  cat("<h4>Resumen Organizativo Detallado</h4>")
+  cat("\n<h4>Resumen Organizativo Detallado</h4>\n\n")
   datos %>%
     group_by(`Sistema Educativo` = sistema_educativo) %>%
     summarise(`Total Docentes` = n()) %>%
@@ -127,8 +126,11 @@ if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
     kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
 
   # Imprimir las gráficas
+  cat("\n")
   print(p1)
+  cat("\n")
   print(p2)
+  cat("\n")
 }
 ```
 
@@ -175,16 +177,20 @@ if(all(c("curriculum", "anos_de_experiencia", "naturaleza_formacion", "frec_ento
 
   # Combinar ambas gráficas en una vista
   # Usaremos cowplot o un simple par() - Para no agregar dependencias, las imprimimos separadas pero optimizadas.
+  cat("\n")
   print(p_exp)
+  cat("\n")
   print(p_tec)
+  cat("\n")
 
   # Tabla Cruzada: Curriculum vs Formación
-  cat("<br><h4>Distribución de Áreas del Marco Curricular Común por Tipo de Formación</h4>")
+  cat("\n<br><h4>Distribución de Áreas del Marco Curricular Común por Tipo de Formación</h4>\n\n")
   datos %>%
     filter(!is.na(curriculum) & !is.na(naturaleza_formacion)) %>%
     count(`Área Curricular` = curriculum, `Formación Base` = naturaleza_formacion) %>%
     pivot_wider(names_from = `Formación Base`, values_from = n, values_fill = 0) %>%
     kbl() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
+  cat("\n")
 }
 ```
 
@@ -215,7 +221,7 @@ resumen_dominio <- datos_likert %>%
 
 if(nrow(resumen_dominio) > 0){
   dominio_top <- enc2utf8(as.character(resumen_dominio$dominio_marco_excelencia[1]))
-  cat(paste0("<p style='font-size: 16px; margin-bottom: 20px;'><strong>Síntesis Descriptiva:</strong> Al agrupar las respuestas de los docentes de acuerdo al Marco para la Excelencia (USICAMM), se identifica que el <strong>", dominio_top, "</strong> representa la principal necesidad de formación en la población encuestada, requiriendo atención prioritaria en el diseño de programas estatales.</p>"))
+  cat(paste0("\n<p style='font-size: 16px; margin-bottom: 20px;'><strong>Síntesis Descriptiva:</strong> Al agrupar las respuestas de los docentes de acuerdo al Marco para la Excelencia (USICAMM), se identifica que el <strong>", dominio_top, "</strong> representa la principal necesidad de formación en la población encuestada, requiriendo atención prioritaria en el diseño de programas estatales.</p>\n\n"))
 
   resumen_dominio %>%
     mutate(dominio_marco_excelencia = enc2utf8(as.character(dominio_marco_excelencia))) %>%
@@ -224,6 +230,7 @@ if(nrow(resumen_dominio) > 0){
     kbl(caption = "Necesidades de Formación Prioritarias por Dominio") %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
     row_spec(1, bold = T, color = "white", background = "#9F2241") %>% print()
+  cat("\n")
 }
 
 # 2. Análisis por Línea Temática COSAC
@@ -235,7 +242,7 @@ resumen_linea <- datos_likert %>%
 
 if(nrow(resumen_linea) > 0){
   linea_top <- enc2utf8(as.character(resumen_linea$lineas_tematicas_orientaciones_cosac[1]))
-  cat(paste0("<p style='font-size: 16px; margin-top: 30px; margin-bottom: 20px;'>En cuanto a las orientaciones de la COSAC, la línea temática con mayor demanda es: <strong>", linea_top, "</strong>. Esta tendencia debe ser considerada como eje articulador en la planeación de cursos.</p>"))
+  cat(paste0("\n<p style='font-size: 16px; margin-top: 30px; margin-bottom: 20px;'>En cuanto a las orientaciones de la COSAC, la línea temática con mayor demanda es: <strong>", linea_top, "</strong>. Esta tendencia debe ser considerada como eje articulador en la planeación de cursos.</p>\n\n"))
 
   resumen_linea %>%
     mutate(lineas_tematicas_orientaciones_cosac = enc2utf8(as.character(lineas_tematicas_orientaciones_cosac))) %>%
@@ -244,6 +251,7 @@ if(nrow(resumen_linea) > 0){
     kbl(caption = "Necesidades de Formación por Línea Temática") %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
     row_spec(1, bold = T, color = "white", background = "#BC955B") %>% print()
+  cat("\n")
 }
 
 # 3. Top 5 Indicadores Críticos y Diagnóstico Temático
@@ -255,10 +263,10 @@ resumen_indicador <- datos_likert %>%
   head(5)
 
 if(nrow(resumen_indicador) > 0){
-  cat("<h4 style='color: #56212F; margin-top: 30px;'>Top 5 Indicadores Críticos (Micro-diagnóstico)</h4>")
+  cat("\n<h4 style='color: #56212F; margin-top: 30px;'>Top 5 Indicadores Críticos (Micro-diagnóstico)</h4>\n\n")
 
   indicador_critico <- enc2utf8(as.character(resumen_indicador$indicador_dominio_marco_excelencia[1]))
-  cat(paste0("<p style='font-size: 15px;'>Al profundizar a nivel de <strong>Indicadores del Marco de Excelencia</strong>, el punto más vulnerable reportado es: <em>\"", indicador_critico, "\"</em>. Cualquier programa de formación diseñado por la Subsecretaría debe incluir un módulo específico para atender esta competencia.</p>"))
+  cat(paste0("\n<p style='font-size: 15px;'>Al profundizar a nivel de <strong>Indicadores del Marco de Excelencia</strong>, el punto más vulnerable reportado es: <em>\"", indicador_critico, "\"</em>. Cualquier programa de formación diseñado por la Subsecretaría debe incluir un módulo específico para atender esta competencia.</p>\n\n"))
 
   resumen_indicador %>%
     mutate(indicador_dominio_marco_excelencia = enc2utf8(as.character(indicador_dominio_marco_excelencia))) %>%
@@ -267,11 +275,12 @@ if(nrow(resumen_indicador) > 0){
     kbl() %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
     row_spec(1:5, background = "#fcf8e3") %>% print()
+  cat("\n")
 }
 
 # 4. Matrices de Priorización y Focalización de Recursos
-cat("<br><h4>4.1 Dominio vs Perfil de Origen (Naturaleza de Formación)</h4>")
-cat("<p>Identifica qué dominio requiere mayor intervención según si el docente tiene formación disciplinar o pedagógica.</p>")
+cat("\n<br><h4>4.1 Dominio vs Perfil de Origen (Naturaleza de Formación)</h4>\n")
+cat("\n<p>Identifica qué dominio requiere mayor intervención según si el docente tiene formación disciplinar o pedagógica.</p>\n\n")
 
 datos_likert %>%
   filter(!is.na(dominio_marco_excelencia) & !is.na(naturaleza_formacion)) %>%
@@ -283,8 +292,10 @@ datos_likert %>%
   kbl() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
 
-cat("<br><h4>4.2 Dominio vs Situación Laboral (Estabilidad Contractual)</h4>")
-cat("<p>Analiza cómo cambia la prioridad de capacitación dependiendo de si el docente cuenta con una base definitiva o un contrato determinado, lo que ayuda a planear inducciones vs. actualizaciones.</p>")
+  cat("\n")
+
+cat("\n<br><h4>4.2 Dominio vs Situación Laboral (Estabilidad Contractual)</h4>\n")
+cat("\n<p>Analiza cómo cambia la prioridad de capacitación dependiendo de si el docente cuenta con una base definitiva o un contrato determinado, lo que ayuda a planear inducciones vs. actualizaciones.</p>\n\n")
 
 datos_likert %>%
   filter(!is.na(dominio_marco_excelencia) & !is.na(situacion_laboral)) %>%
@@ -295,9 +306,10 @@ datos_likert %>%
   mutate_if(is.numeric, ~round(., 2)) %>%
   kbl() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
+  cat("\n")
 
-cat("<hr><h3>4.3 Dominio vs Antigüedad (Análisis de Brecha Generacional)</h3>")
-cat("<p>Clasifica a la plantilla en tres estadios de desarrollo docente (Novatos, Intermedios y Veteranos) para identificar si las áreas de oportunidad metodológica están ligadas al relevo generacional.</p>")
+cat("\n<hr><h3>4.3 Dominio vs Antigüedad (Análisis de Brecha Generacional)</h3>\n")
+cat("\n<p>Clasifica a la plantilla en tres estadios de desarrollo docente (Novatos, Intermedios y Veteranos) para identificar si las áreas de oportunidad metodológica están ligadas al relevo generacional.</p>\n\n")
 
 datos_likert %>%
   filter(!is.na(dominio_marco_excelencia) & !is.na(anos_de_experiencia)) %>%
@@ -314,6 +326,7 @@ datos_likert %>%
   mutate_if(is.numeric, ~round(., 2)) %>%
   kbl() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
+  cat("\n")
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)
@@ -337,15 +350,9 @@ interpretar_p_value <- function(p_val, variable_name, model_data, group_var) {
     grupo_min <- as.character(medias[[1]][nrow(medias)])
     val_min <- round(medias[[2]][nrow(medias)], 2)
 
-    return(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>
-      <h4 style='color: #9F2241; margin-top: 0;'>Directriz de Intervención (", variable_name, ")</h4>
-      <p style='font-size: 16px; text-align: justify;'>Con un nivel de confianza del 95% (p < 0.05), el modelado estadístico confirma que las necesidades formativas experimentan un sesgo significativo dependiendo de esta variable. El subgrupo poblacional que acusa la mayor vulnerabilidad y que exige intervención prioritaria es: <strong>'", grupo_max, "'</strong> (Índice de severidad: ", val_max, " / 5.0), lo que contrasta estadísticamente con el sector '", grupo_min, "' (", val_min, ").</p>
-      <p style='font-size: 16px; text-align: justify;'><strong>Recomendación Operativa:</strong> Se instruye a las direcciones académicas focalizar el diseño instruccional y la canalización presupuestal inicial hacia el grupo de mayor riesgo, evitando la dispersión de recursos en programas genéricos de talla única.</p></div>"))
+    return(paste0("\n<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>\n<h4 style='color: #9F2241; margin-top: 0;'>Directriz de Intervención (", variable_name, ")</h4>\n<p style='font-size: 16px; text-align: justify;'>Con un nivel de confianza del 95% (p < 0.05), el modelado estadístico confirma que las necesidades formativas experimentan un sesgo significativo dependiendo de esta variable. El subgrupo poblacional que acusa la mayor vulnerabilidad y que exige intervención prioritaria es: <strong>'", grupo_max, "'</strong> (Índice de severidad: ", val_max, " / 5.0), lo que contrasta estadísticamente con el sector '", grupo_min, "' (", val_min, ").</p>\n<p style='font-size: 16px; text-align: justify;'><strong>Recomendación Operativa:</strong> Se instruye a las direcciones académicas focalizar el diseño instruccional y la canalización presupuestal inicial hacia el grupo de mayor riesgo, evitando la dispersión de recursos en programas genéricos de talla única.</p>\n</div>\n\n"))
   } else {
-    return(paste0("<div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #D6D1CA; margin-bottom: 20px;'>
-      <h4 style='color: #56212F; margin-top: 0;'>Análisis de Homogeneidad Estructural (", variable_name, ")</h4>
-      <p style='font-size: 16px; text-align: justify;'>Las métricas de varianza revelan que las fluctuaciones observadas no poseen significancia estadística (p > 0.05). En otras palabras, el comportamiento de la plantilla docente frente a sus requerimientos de formación es sorprendentemente transversal y homogéneo respecto a esta variable.</p>
-      <p style='font-size: 16px; text-align: justify;'><strong>Recomendación Operativa:</strong> Este escenario avala la pertinencia administrativa de desplegar convocatorias y plataformas de capacitación de cobertura universal estandarizada, reduciendo considerablemente los costos logísticos y de fragmentación instruccional.</p></div>"))
+    return(paste0("\n<div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #D6D1CA; margin-bottom: 20px;'>\n<h4 style='color: #56212F; margin-top: 0;'>Análisis de Homogeneidad Estructural (", variable_name, ")</h4>\n<p style='font-size: 16px; text-align: justify;'>Las métricas de varianza revelan que las fluctuaciones observadas no poseen significancia estadística (p > 0.05). En otras palabras, el comportamiento de la plantilla docente frente a sus requerimientos de formación es sorprendentemente transversal y homogéneo respecto a esta variable.</p>\n<p style='font-size: 16px; text-align: justify;'><strong>Recomendación Operativa:</strong> Este escenario avala la pertinencia administrativa de desplegar convocatorias y plataformas de capacitación de cobertura universal estandarizada, reduciendo considerablemente los costos logísticos y de fragmentación instruccional.</p>\n</div>\n\n"))
   }
 }
 
@@ -355,7 +362,7 @@ puntajes_globales <- datos_likert %>%
   summarise(puntaje_necesidad_global = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
   left_join(datos %>% mutate(id_docente = row_number()) %>% select(id_docente, anos_de_experiencia, frec_entornos_virtuales), by = "id_docente")
 
-cat("<h3>A. Análisis por Naturaleza de la Formación</h3>")
+cat("\n<h3>A. Análisis por Naturaleza de la Formación</h3>\n\n")
 # 1. Comparación por Naturaleza de Formación
 num_grupos_formacion <- length(unique(na.omit(puntajes_globales$naturaleza_formacion)))
 
@@ -406,10 +413,10 @@ if(num_grupos_laboral == 2) {
     kbl(caption = "ANOVA: Situación Laboral") %>%
     kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
 } else {
-  cat("<p>No hay suficientes grupos en Situación Laboral para realizar prueba estadística.</p>")
+  cat("\n<p>No hay suficientes grupos en Situación Laboral para realizar prueba estadística.</p>\n\n")
 }
 
-cat("<hr><h3>C. Análisis por Años de Experiencia y Entornos Virtuales</h3>")
+cat("\n<hr><h3>C. Análisis por Años de Experiencia y Entornos Virtuales</h3>\n\n")
 # 3. Correlación: Años de Experiencia
 if("anos_de_experiencia" %in% names(puntajes_globales)) {
   # Limpiamos NAs para la correlación
@@ -421,9 +428,9 @@ if("anos_de_experiencia" %in% names(puntajes_globales)) {
 
     if (p_val_cor < 0.05) {
       direccion <- ifelse(estimador > 0, "aumentan", "disminuyen")
-      cat(paste0("<p style='color: #9F2241;'><strong>Interpretación de Años de Experiencia:</strong> Existe una correlación significativa (p < 0.05). Esto significa que a medida que los docentes tienen más años de experiencia, sus necesidades de formación reportadas <strong>", direccion, "</strong>. Se recomienda ajustar la complejidad o enfoque de los cursos según la antigüedad de la plantilla.</p>"))
+      cat(paste0("\n<p style='color: #9F2241;'><strong>Interpretación de Años de Experiencia:</strong> Existe una correlación significativa (p < 0.05). Esto significa que a medida que los docentes tienen más años de experiencia, sus necesidades de formación reportadas <strong>", direccion, "</strong>. Se recomienda ajustar la complejidad o enfoque de los cursos según la antigüedad de la plantilla.</p>\n\n"))
     } else {
-      cat("<p style='color: #56212F;'><strong>Interpretación de Años de Experiencia:</strong> No se encontró una correlación estadística significativa. La antigüedad del docente no parece ser un factor determinante en su nivel general de necesidad de formación.</p>")
+      cat("\n<p style='color: #56212F;'><strong>Interpretación de Años de Experiencia:</strong> No se encontró una correlación estadística significativa. La antigüedad del docente no parece ser un factor determinante en su nivel general de necesidad de formación.</p>\n\n")
     }
   }
 }
@@ -454,7 +461,7 @@ A continuación, analizamos las expresiones libres de los docentes mediante téc
 palabras_vacias <- tibble(word = c(get_stopwords(language = "es")$word,
                                    "docente", "docentes", "alumnos", "escuela", "clases", "hacer", "ser", "como", "mas"))
 
-cat("<h3>4.1 Temáticas Prioritarias (Necesidades Específicas)</h3>")
+cat("\n<h3>4.1 Temáticas Prioritarias (Necesidades Específicas)</h3>\n\n")
 if("tematica_prioritaria" %in% names(datos)) {
 
   tokens <- datos %>%
@@ -472,17 +479,15 @@ if("tematica_prioritaria" %in% names(datos)) {
   if(nrow(frecuencias) > 0){
     top_3_palabras <- frecuencias$word[1:min(3, nrow(frecuencias))]
 
-    cat(paste0("<div style='background-color: #DDC8A4; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #56212F;'>",
-               "<strong>Recomendación para Líneas Temáticas (COSAC):</strong> ",
-               "Al analizar las respuestas libres de los docentes, se detectó que las temáticas emergentes más recurrentes giran en torno a los conceptos: <strong>'",
+    cat(paste0("\n<div style='background-color: #DDC8A4; padding: 15px; border-radius: 5px; margin-bottom: 20px; color: #56212F;'>\n<strong>Recomendación para Líneas Temáticas (COSAC):</strong> Al analizar las respuestas libres de los docentes, se detectó que las temáticas emergentes más recurrentes giran en torno a los conceptos: <strong>'",
                paste(top_3_palabras, collapse = "', '"),
-               "'</strong>. Se sugiere crear cápsulas de micro-aprendizaje que aborden estas inquietudes de manera transversal.</div>"))
+               "'</strong>. Se sugiere crear cápsulas de micro-aprendizaje que aborden estas inquietudes de manera transversal.\n</div>\n\n"))
   } else {
-    cat("<p>No hay suficientes palabras clave en las temáticas prioritarias.</p>")
+    cat("\n<p>No hay suficientes palabras clave en las temáticas prioritarias.</p>\n\n")
   }
 }
 
-cat("<hr><h3>4.2 El Sentir Docente (Clima Organizacional)</h3>")
+cat("\n<hr><h3>4.2 El Sentir Docente (Clima Organizacional)</h3>\n\n")
 if("comentarios_finales" %in% names(datos)) {
 
   tokens_sentir <- datos %>%
@@ -499,30 +504,29 @@ if("comentarios_finales" %in% names(datos)) {
   if(nrow(frecuencias_sentir) > 0){
     top_3_sentir <- frecuencias_sentir$word[1:min(3, nrow(frecuencias_sentir))]
 
-    cat(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>",
-               "<strong>Termómetro del Clima Docente:</strong> ",
-               "A través de la sección de comentarios abiertos, el personal expresó inquietudes y reflexiones. Las palabras más mencionadas por la plantilla frente a este proceso formativo fueron: <strong>'",
+    cat(paste0("\n<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>\n<strong>Termómetro del Clima Docente:</strong> A través de la sección de comentarios abiertos, el personal expresó inquietudes y reflexiones. Las palabras más mencionadas por la plantilla frente a este proceso formativo fueron: <strong>'",
                paste(top_3_sentir, collapse = "', '"),
-               "'</strong>. Monitorear estos conceptos es vital para asegurar que la oferta de formación sea recibida con apertura y no como una carga administrativa adicional.</div>"))
+               "'</strong>. Monitorear estos conceptos es vital para asegurar que la oferta de formación sea recibida con apertura y no como una carga administrativa adicional.\n</div>\n\n"))
   } else {
-    cat("<p>No hubo suficientes comentarios finales para generar un análisis cualitativo.</p>")
+    cat("\n<p>No hubo suficientes comentarios finales para generar un análisis cualitativo.</p>\n\n")
   }
 }
 ```
 
+<h4 align='center'>Nube de Temáticas Prioritarias</h4>
+
 ```{r nube_render, echo=FALSE, fig.width=10, fig.height=5}
 # Separamos el widget html (wordcloud) en un chunk diferente sin results='asis'
-# Usaremos par() o un layout simple para no complicar dependencias, o imprimimos secuencialmente.
-
+# Quitamos los cat() con HTML raw dentro del chunk normal para evitar que RMarkdown los imprima como texto plano
 if("tematica_prioritaria" %in% names(datos) && exists("frecuencias") && nrow(frecuencias) > 0) {
-  cat("<h4 align='center'>Nube de Temáticas Prioritarias</h4>")
   htmltools::tagList(wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9"))
 }
 ```
 
+<h4 align='center'>Nube del Sentir Docente (Comentarios)</h4>
+
 ```{r nube_render_sentir, echo=FALSE, fig.width=10, fig.height=5}
 if("comentarios_finales" %in% names(datos) && exists("frecuencias_sentir") && nrow(frecuencias_sentir) > 0) {
-  cat("<h4 align='center'>Nube del Sentir Docente (Comentarios)</h4>")
   htmltools::tagList(wordcloud2(frecuencias_sentir, size = 1.0, color = "#56212F", backgroundColor = "#f9f9f9"))
 }
 ```
@@ -536,17 +540,5 @@ promedio_estatal <- round(mean(datos_likert$respuesta, na.rm = TRUE), 2)
 dominio_critico <- as.character(resumen_dominio$dominio_marco_excelencia[1])
 linea_critica <- as.character(resumen_linea$lineas_tematicas_orientaciones_cosac[1])
 
-cat(paste0("
-<div style='background-color: #56212F; color: white; padding: 20px; border-radius: 8px;'>
-  <h3 style='color: #DDC8A4; margin-top: 0;'>Panorama de Inteligencia Estratégica</h3>
-  <p style='font-size: 16px;'>El presente diagnóstico recabó la voz de <strong>", docentes_totales, " docentes</strong> del Estado de México. El Índice Estatal de Necesidad de Formación se sitúa en <strong>", promedio_estatal, " / 5.0</strong>.</p>
-
-  <ul style='font-size: 16px; margin-top: 15px;'>
-    <li><strong>Foco USICAMM:</strong> El <em>", dominio_critico, "</em> es estadísticamente la dimensión con mayor área de oportunidad. Se requiere diseño instruccional inmediato enfocado a estos indicadores.</li>
-    <li><strong>Directriz COSAC:</strong> La prioridad temática de los programas formativos 2024-2025 debe alinearse estrictamente a la línea de <em>\"", linea_critica, "\"</em>.</li>
-  </ul>
-
-  <p style='font-size: 16px; margin-top: 15px;'><strong>Recomendación Ejecutiva:</strong> El análisis inferencial demuestra que la plantilla docente mexiquense <strong>no es homogénea</strong>. Para maximizar el Retorno de Inversión (ROI) del presupuesto educativo, es imperativo abandonar modelos estandarizados de capacitación masiva y transitar hacia rutas formativas focalizadas (micro-learning) que crucen el <em>Sistema Educativo</em> y la <em>Naturaleza de la Formación</em> del docente.</p>
-</div>
-"))
+cat(paste0("\n<div style='background-color: #56212F; color: white; padding: 20px; border-radius: 8px;'>\n<h3 style='color: #DDC8A4; margin-top: 0;'>Panorama de Inteligencia Estratégica</h3>\n<p style='font-size: 16px;'>El presente diagnóstico recabó la voz de <strong>", docentes_totales, " docentes</strong> del Estado de México. El Índice Estatal de Necesidad de Formación se sitúa en <strong>", promedio_estatal, " / 5.0</strong>.</p>\n<ul style='font-size: 16px; margin-top: 15px;'>\n<li><strong>Foco USICAMM:</strong> El <em>", dominio_critico, "</em> es estadísticamente la dimensión con mayor área de oportunidad. Se requiere diseño instruccional inmediato enfocado a estos indicadores.</li>\n<li><strong>Directriz COSAC:</strong> La prioridad temática de los programas formativos 2024-2025 debe alinearse estrictamente a la línea de <em>\"", linea_critica, "\"</em>.</li>\n</ul>\n<p style='font-size: 16px; margin-top: 15px;'><strong>Recomendación Ejecutiva:</strong> El análisis inferencial demuestra que la plantilla docente mexiquense <strong>no es homogénea</strong>. Para maximizar el Retorno de Inversión (ROI) del presupuesto educativo, es imperativo abandonar modelos estandarizados de capacitación masiva y transitar hacia rutas formativas focalizadas (micro-learning) que crucen el <em>Sistema Educativo</em> y la <em>Naturaleza de la Formación</em> del docente.</p>\n</div>\n\n"))
 ```
