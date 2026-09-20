@@ -61,30 +61,92 @@ if(file.exists("datos_limpios.rds") & file.exists("matriz_dimensiones.rds")){
 }
 ```
 
-## 1. Contexto General de los Docentes
+## 1. Contexto General de los Docentes (Visión 360°)
 
-En esta sección presentamos un resumen estadístico de la población docente que respondió al instrumento.
+El conocimiento profundo de la estructura y características de la plantilla docente es el primer pilar para la toma de decisiones estratégicas. En esta sección se analiza la cobertura del instrumento cruzando las variables sociodemográficas y laborales reportadas.
 
-```{r contexto, fig.width=10, fig.height=7}
-if("subdireccion_regional" %in% names(datos)) {
-  # Para evitar que el texto se amontone, limpiamos los NAs y recortamos el texto a 40 caracteres por línea.
-  datos_limpios_contexto <- datos %>% filter(!is.na(subdireccion_regional))
+### 1.1 Cobertura Geográfica y Estructura Organizacional
 
-  grafica_contexto <- datos_limpios_contexto %>%
-    ggplot(aes(x = forcats::fct_infreq(stringr::str_wrap(as.character(subdireccion_regional), width = 40)))) +
-    geom_bar(fill = "#9F2241") + # Usando Rojo Vino Institucional
-    coord_flip() + # Volteamos la gráfica para que las etiquetas se lean de izquierda a derecha
-    theme_minimal(base_size = 14) +
-    theme(
-      plot.title = element_text(color = "#56212F", face = "bold"),
-      axis.text.y = element_text(size = 11, color = "black")
-    ) +
-    labs(title = "Participación por Subdirección Regional",
-         x = "Subdirección Regional", y = "Cantidad de Docentes")
+```{r contexto_organizacional, results='asis', fig.width=10, fig.height=10}
+# Generamos un panel combinado de Subdirección Regional y Zona Escolar
+if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
 
-  print(grafica_contexto)
-} else {
-  cat("Gráfica no generada: No se encontró la columna 'subdireccion_regional'. \nRevisa los nombres con names(datos) y actualiza el código en este chunk.")
+  # Resumen narrativo
+  top_sub <- datos %>% count(subdireccion_regional, sort=TRUE) %>% head(1)
+
+  cat(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>
+             <strong>Diagnóstico de Cobertura:</strong> La mayor concentración de respuestas proviene de la Subdirección <strong>", top_sub$subdireccion_regional, "</strong> (", top_sub$n, " docentes). Esto indica la viabilidad de iniciar pruebas piloto de programas formativos en esta región dada su alta representatividad y disposición participativa. A continuación se desglosan las frecuencias operativas.</div>"))
+
+  p1 <- datos %>%
+    filter(!is.na(subdireccion_regional)) %>%
+    ggplot(aes(x = forcats::fct_rev(forcats::fct_infreq(stringr::str_wrap(as.character(subdireccion_regional), 30))))) +
+    geom_bar(fill = "#56212F") +
+    coord_flip() +
+    theme_minimal() +
+    labs(title = "Volumen por Subdirección Regional", x = "", y = "Docentes")
+
+  p2 <- datos %>%
+    filter(!is.na(zona_escolar)) %>%
+    count(zona_escolar) %>%
+    top_n(15, n) %>%
+    ggplot(aes(x = reorder(zona_escolar, n), y = n)) +
+    geom_col(fill = "#9F2241") +
+    coord_flip() +
+    theme_minimal() +
+    labs(title = "Top 15 Zonas Escolares con Mayor Participación", x = "Zona", y = "Docentes")
+
+  # Mostrar tablas descriptivas integrales
+  cat("<h4>Resumen Organizativo Detallado</h4>")
+  datos %>%
+    group_by(`Sistema Educativo` = sistema_educativo) %>%
+    summarise(`Total Docentes` = n()) %>%
+    mutate(`% Participación` = paste0(round((`Total Docentes` / sum(`Total Docentes`)) * 100, 1), "%")) %>%
+    arrange(desc(`Total Docentes`)) %>%
+    kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% print()
+
+  # Imprimir las gráficas
+  print(p1)
+  print(p2)
+}
+```
+
+### 1.2 Perfil Académico, Laboral y Tecnológico
+
+Comprender la antigüedad y la carga curricular permite anticipar si las necesidades de formación están orientadas a la actualización en nuevas metodologías (para docentes veteranos) o a la nivelación pedagógica básica (para perfiles disciplinares de reciente ingreso).
+
+```{r contexto_perfil, results='asis', fig.width=12, fig.height=6}
+if(all(c("curriculum", "anos_de_experiencia", "naturaleza_formacion", "frec_entornos_virtuales") %in% names(datos))) {
+
+  promedio_exp <- round(mean(datos$anos_de_experiencia, na.rm = TRUE), 1)
+
+  cat(paste0("<p style='font-size: 15px; color: #333;'><strong>Perfil Demográfico:</strong> La plantilla encuestada cuenta con un promedio de <strong>", promedio_exp, " años de experiencia</strong>. A nivel metodológico, esto sugiere la necesidad de implementar estrategias de formación estilo <em>\"Andragogía\"</em> (educación para adultos profesionales), reconociendo sus saberes previos en lugar de cursos teóricos básicos.</p>"))
+
+  # Histograma de Experiencia
+  p_exp <- ggplot(datos, aes(x = anos_de_experiencia)) +
+    geom_histogram(binwidth = 2, fill = "#BC955B", color = "white") +
+    theme_minimal() +
+    labs(title = "Distribución de Años de Experiencia", x = "Años", y = "Frecuencia")
+
+  # Distribución de Entornos Virtuales
+  p_tec <- datos %>%
+    filter(!is.na(frec_entornos_virtuales)) %>%
+    ggplot(aes(x = forcats::fct_infreq(as.character(frec_entornos_virtuales)))) +
+    geom_bar(fill = "#977E5B") +
+    theme_minimal() +
+    labs(title = "Uso de Entornos Virtuales", x = "Frecuencia", y = "Docentes")
+
+  # Combinar ambas gráficas en una vista
+  # Usaremos cowplot o un simple par() - Para no agregar dependencias, las imprimimos separadas pero optimizadas.
+  print(p_exp)
+  print(p_tec)
+
+  # Tabla Cruzada: Curriculum vs Formación
+  cat("<br><h4>Distribución de Áreas del Marco Curricular Común por Tipo de Formación</h4>")
+  datos %>%
+    filter(!is.na(curriculum) & !is.na(naturaleza_formacion)) %>%
+    count(`Área Curricular` = curriculum, `Formación Base` = naturaleza_formacion) %>%
+    pivot_wider(names_from = `Formación Base`, values_from = n, values_fill = 0) %>%
+    kbl() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
 }
 ```
 
@@ -146,7 +208,7 @@ if(nrow(resumen_linea) > 0){
     row_spec(1, bold = T, color = "white", background = "#BC955B") %>% print()
 }
 
-# 3. Top 5 Indicadores Críticos
+# 3. Top 5 Indicadores Críticos y Diagnóstico Temático
 resumen_indicador <- datos_likert %>%
   filter(!is.na(indicador_dominio_marco_excelencia)) %>%
   group_by(indicador_dominio_marco_excelencia) %>%
@@ -155,7 +217,11 @@ resumen_indicador <- datos_likert %>%
   head(5)
 
 if(nrow(resumen_indicador) > 0){
-  cat("<h4 style='color: #56212F; margin-top: 30px;'>Top 5 Indicadores Críticos (USICAMM)</h4>")
+  cat("<h4 style='color: #56212F; margin-top: 30px;'>Top 5 Indicadores Críticos (Micro-diagnóstico)</h4>")
+
+  indicador_critico <- enc2utf8(as.character(resumen_indicador$indicador_dominio_marco_excelencia[1]))
+  cat(paste0("<p style='font-size: 15px;'>Al profundizar a nivel de <strong>Indicadores del Marco de Excelencia</strong>, el punto más vulnerable reportado es: <em>\"", indicador_critico, "\"</em>. Cualquier programa de formación diseñado por la Subsecretaría debe incluir un módulo específico para atender esta competencia.</p>"))
+
   resumen_indicador %>%
     mutate(indicador_dominio_marco_excelencia = enc2utf8(as.character(indicador_dominio_marco_excelencia))) %>%
     rename(`Indicador Específico` = indicador_dominio_marco_excelencia, `Nivel Promedio (1-5)` = promedio) %>%
@@ -164,6 +230,21 @@ if(nrow(resumen_indicador) > 0){
     kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left") %>%
     row_spec(1:5, background = "#fcf8e3") %>% print()
 }
+
+# 4. Matriz de Calor: Dominio vs Naturaleza de Formación
+cat("<br><h4>Matriz de Priorización: Dominio vs Perfil de Origen</h4>")
+cat("<p>Este cruce bivariado permite focalizar el esfuerzo presupuestal. Identifica qué dominio requiere mayor intervención según si el docente tiene formación disciplinar o pedagógica.</p>")
+
+datos_likert %>%
+  filter(!is.na(dominio_marco_excelencia) & !is.na(naturaleza_formacion)) %>%
+  group_by(dominio_marco_excelencia, naturaleza_formacion) %>%
+  summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+  mutate(dominio_marco_excelencia = enc2utf8(as.character(dominio_marco_excelencia))) %>%
+  pivot_wider(names_from = naturaleza_formacion, values_from = promedio) %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  kbl() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% print()
+
 ```
 
 ## 3. Análisis Inferencial (Directrices para Política Educativa)
@@ -171,13 +252,26 @@ if(nrow(resumen_indicador) > 0){
 Buscamos identificar si las necesidades de formación varían significativamente según las características del docente (por ejemplo, entre docentes con formación pedagógica vs. disciplinar, o según su situación laboral).
 
 ```{r inferencial, results='asis'}
-# Función auxiliar para interpretar p-values
-interpretar_p_value <- function(p_val, variable_name) {
+# Función auxiliar para interpretar p-values y analizar medias
+interpretar_p_value <- function(p_val, variable_name, model_data, group_var) {
   if (is.na(p_val)) return("")
-  if (p_val < 0.05) {
-    return(paste0("<p style='color: #9F2241;'><strong>Interpretación de Política Educativa:</strong> Existe una diferencia estadísticamente significativa (p < 0.05) en las necesidades de formación de acuerdo a su <em>", variable_name, "</em>. Esto sugiere que <strong>se deben diseñar rutas de formación diferenciadas</strong> y específicas para los distintos grupos, ya que sus prioridades no son las mismas.</p>"))
+
+  # Extraer el grupo con mayor necesidad si es significativo
+  if (p_val < 0.05 && !missing(model_data) && !missing(group_var)) {
+    medias <- model_data %>%
+      group_by(!!sym(group_var)) %>%
+      summarise(media = mean(puntaje_necesidad_global, na.rm=TRUE)) %>%
+      arrange(desc(media))
+
+    grupo_max <- as.character(medias[[1]][1])
+    val_max <- round(medias[[2]][1], 2)
+    grupo_min <- as.character(medias[[1]][nrow(medias)])
+    val_min <- round(medias[[2]][nrow(medias)], 2)
+
+    return(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>
+      <strong>Directriz Estratégica (", variable_name, "):</strong> Se confirmó una diferencia estadísticamente significativa (p < 0.05). Esto exige diseñar rutas formativas diferenciadas. Específicamente, el grupo <strong>'", grupo_max, "'</strong> presenta el nivel de urgencia más crítico (Media: ", val_max, "), contrastando con el grupo '", grupo_min, "' (Media: ", val_min, "). Se aconseja priorizar presupuesto y cupos hacia el primer grupo.</div>"))
   } else {
-    return(paste0("<p style='color: #56212F;'><strong>Interpretación de Política Educativa:</strong> No se encontró evidencia estadística (p > 0.05) de que las necesidades varíen significativamente según su <em>", variable_name, "</em>. Esto indica que <strong>se puede aplicar un programa de formación estandarizado</strong> para todos los docentes independientemente de esta característica, optimizando recursos estatales.</p>"))
+    return(paste0("<p style='color: #56212F; font-size: 15px;'><strong>Análisis de Homogeneidad (", variable_name, "):</strong> No se detectaron diferencias estadísticas significativas (p > 0.05). Las necesidades son transversales; por tanto, <strong>procede implementar un esquema de capacitación estandarizado</strong> sin segmentar por esta variable, lo cual optimiza la logística estatal.</p>"))
   }
 }
 
@@ -195,7 +289,7 @@ if(num_grupos_formacion == 2) {
   t_test_formacion <- t.test(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
   p_val <- t_test_formacion$p.value
 
-  cat(interpretar_p_value(p_val, "Naturaleza de Formación"))
+  cat(interpretar_p_value(p_val, "Naturaleza de Formación", puntajes_globales, "naturaleza_formacion"))
 
   tidy(t_test_formacion) %>%
     select(estimate, statistic, p.value, conf.low, conf.high) %>%
@@ -205,7 +299,7 @@ if(num_grupos_formacion == 2) {
   anova_formacion <- aov(puntaje_necesidad_global ~ naturaleza_formacion, data = puntajes_globales)
   p_val <- summary(anova_formacion)[[1]][["Pr(>F)"]][1]
 
-  cat(interpretar_p_value(p_val, "Naturaleza de Formación"))
+  cat(interpretar_p_value(p_val, "Naturaleza de Formación", puntajes_globales, "naturaleza_formacion"))
 
   tidy(anova_formacion) %>%
     kbl(caption = "ANOVA: Naturaleza de Formación") %>%
@@ -222,7 +316,7 @@ if(num_grupos_laboral == 2) {
   t_test_laboral <- t.test(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
   p_val <- t_test_laboral$p.value
 
-  cat(interpretar_p_value(p_val, "Situación Laboral"))
+  cat(interpretar_p_value(p_val, "Situación Laboral", puntajes_globales, "situacion_laboral"))
 
   tidy(t_test_laboral) %>%
     select(estimate, statistic, p.value, conf.low, conf.high) %>%
@@ -232,7 +326,7 @@ if(num_grupos_laboral == 2) {
   anova_laboral <- aov(puntaje_necesidad_global ~ situacion_laboral, data = puntajes_globales)
   p_val <- summary(anova_laboral)[[1]][["Pr(>F)"]][1]
 
-  cat(interpretar_p_value(p_val, "Situación Laboral"))
+  cat(interpretar_p_value(p_val, "Situación Laboral", puntajes_globales, "situacion_laboral"))
 
   tidy(anova_laboral) %>%
     kbl(caption = "ANOVA: Situación Laboral") %>%
@@ -272,7 +366,7 @@ if("frec_entornos_virtuales" %in% names(puntajes_globales)) {
       anova_virt <- aov(puntaje_necesidad_global ~ frec_entornos_virtuales, data = puntajes_globales)
       p_val_virt <- summary(anova_virt)[[1]][["Pr(>F)"]][1]
     }
-    cat(interpretar_p_value(p_val_virt, "Frecuencia de Uso de Entornos Virtuales"))
+    cat(interpretar_p_value(p_val_virt, "Frecuencia de Uso de Entornos Virtuales", puntajes_globales, "frec_entornos_virtuales"))
   }
 }
 ```

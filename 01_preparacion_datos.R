@@ -67,6 +67,7 @@ datos_limpios <- datos_limpios %>%
     plantel = as.factor(plantel),
     c_c_t = as.factor(c_c_t),
     zona_escolar = as.factor(zona_escolar),
+    sistema_educativo = as.factor(sistema_educativo), # Nueva variable agregada por el usuario
     subdireccion_regional = as.factor(subdireccion_regional),
     anos_de_experiencia = as.numeric(anos_de_experiencia), # Forzamos a numérico para futuros cálculos
     naturaleza_formacion = as.factor(naturaleza_formacion),
