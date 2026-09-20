@@ -21,10 +21,12 @@ if(file.exists("../datos_limpios.rds")){
   stop("No se encontraron los datos. Ejecuta la Fase 1 primero.")
 }
 
+# Agregar un identificador único a la base de datos principal para cruces posteriores
+datos <- datos %>% mutate(id_docente = row_number())
+
 # Preparar datos cruzados de una vez
 matriz_limpia <- matriz %>% mutate(pregunta_id = tolower(pregunta_id))
 datos_largos <- datos %>%
-  mutate(id_docente = row_number()) %>%
   select(id_docente, subdireccion_regional, naturaleza_formacion, matches("^p[0-9]+$")) %>%
   pivot_longer(cols = matches("^p[0-9]+$"), names_to = "pregunta_id", values_to = "respuesta") %>%
   mutate(respuesta = as.numeric(respuesta)) %>%
@@ -42,11 +44,16 @@ ui <- dashboardPage(
     ),
     # Filtros dinámicos
     hr(),
-    h4("Filtros", style = "margin-left: 15px;"),
+    h4("Filtros Interactivos", style = "margin-left: 15px; color: #DDC8A4;"),
+    selectInput("filtro_sistema", "Sistema Educativo:",
+                choices = c("Todos", unique(as.character(datos$sistema_educativo)))),
     selectInput("filtro_subdireccion", "Subdirección Regional:",
                 choices = c("Todas", unique(as.character(datos$subdireccion_regional)))),
     selectInput("filtro_formacion", "Naturaleza de Formación:",
-                choices = c("Todas", unique(as.character(datos$naturaleza_formacion))))
+                choices = c("Todas", unique(as.character(datos$naturaleza_formacion)))),
+    sliderInput("filtro_experiencia", "Años de Experiencia (Máximo):",
+                min = 0, max = max(as.numeric(datos$anos_de_experiencia), na.rm=T),
+                value = max(as.numeric(datos$anos_de_experiencia), na.rm=T))
   ),
   dashboardBody(
     # CSS personalizado para colores institucionales (Vino y Ocre)
@@ -92,7 +99,10 @@ server <- function(input, output) {
 
   # Datos reactivos basados en los filtros (para métricas generales)
   datos_filtrados <- reactive({
-    df <- datos
+    df <- datos %>% filter(as.numeric(anos_de_experiencia) <= input$filtro_experiencia)
+    if(input$filtro_sistema != "Todos") {
+      df <- df %>% filter(sistema_educativo == input$filtro_sistema)
+    }
     if(input$filtro_subdireccion != "Todas"){
       df <- df %>% filter(subdireccion_regional == input$filtro_subdireccion)
     }
@@ -104,13 +114,9 @@ server <- function(input, output) {
 
   # Datos reactivos cruzados con matriz (para Likert)
   datos_largos_filtrados <- reactive({
-    df <- datos_largos
-    if(input$filtro_subdireccion != "Todas"){
-      df <- df %>% filter(subdireccion_regional == input$filtro_subdireccion)
-    }
-    if(input$filtro_formacion != "Todas"){
-      df <- df %>% filter(naturaleza_formacion == input$filtro_formacion)
-    }
+    # Usamos la misma lógica en los datos largos (uniéndolos al filtro base)
+    docentes_validos <- datos_filtrados()$id_docente
+    df <- datos_largos %>% filter(id_docente %in% docentes_validos)
     return(df)
   })
 
@@ -124,37 +130,47 @@ server <- function(input, output) {
     valueBox(promedio, "Nivel de Necesidad (1-5)", icon = icon("graduation-cap"), color = "yellow")
   })
 
-  # Gráficas Contexto
+  # Gráficas Contexto (Con Etiquetas)
   output$plot_subdireccion <- renderPlot({
     datos_filtrados() %>%
-      ggplot(aes(y = forcats::fct_infreq(as.character(subdireccion_regional)))) +
-      geom_bar(fill = "#56212F") +
-      theme_minimal() +
-      labs(x = "Docentes", y = "")
+      filter(!is.na(subdireccion_regional)) %>%
+      count(subdireccion_regional) %>%
+      ggplot(aes(x = reorder(stringr::str_wrap(subdireccion_regional, 30), n), y = n)) +
+      geom_col(fill = "#56212F") +
+      geom_text(aes(label = n), hjust = -0.2, color = "black", size = 4) +
+      coord_flip(clip = "off") +
+      theme_minimal(base_size = 14) +
+      labs(x = "", y = "Docentes") +
+      theme(plot.margin = margin(10, 40, 10, 10))
   })
 
   output$plot_formacion <- renderPlot({
     datos_filtrados() %>%
-      ggplot(aes(x = naturaleza_formacion, fill = naturaleza_formacion)) +
-      geom_bar() +
+      filter(!is.na(naturaleza_formacion)) %>%
+      count(naturaleza_formacion) %>%
+      ggplot(aes(x = naturaleza_formacion, y = n, fill = naturaleza_formacion)) +
+      geom_col() +
+      geom_text(aes(label = n), vjust = -0.5, color = "black", size = 5) +
       scale_fill_manual(values = c("#9F2241", "#BC955B", "#D6D1CA")) +
-      theme_minimal() +
-      theme(legend.position = "none") +
+      theme_minimal(base_size = 14) +
+      theme(legend.position = "none", plot.margin = margin(20, 10, 10, 10)) +
       labs(x = "", y = "Docentes")
   })
 
-  # Gráficas de Análisis de Necesidades
+  # Gráficas de Análisis de Necesidades (Con Etiquetas y Ajustes)
   output$plot_dominios <- renderPlot({
     datos_largos_filtrados() %>%
       filter(!is.na(dominio_marco_excelencia)) %>%
       group_by(dominio_marco_excelencia) %>%
       summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
-      ggplot(aes(x = reorder(dominio_marco_excelencia, promedio), y = promedio)) +
+      ggplot(aes(x = reorder(stringr::str_wrap(dominio_marco_excelencia, 40), promedio), y = promedio)) +
       geom_col(fill = "#9F2241") +
-      coord_flip() +
-      theme_minimal() +
+      geom_text(aes(label = round(promedio, 2)), hjust = -0.2, size = 5, fontface = "bold") +
+      coord_flip(clip = "off") +
+      theme_minimal(base_size = 14) +
       labs(x = "Dominio", y = "Nivel Promedio de Necesidad") +
-      ylim(0, 5)
+      scale_y_continuous(limits = c(0, 5)) +
+      theme(plot.margin = margin(10, 30, 10, 10))
   })
 
   output$plot_lineas <- renderPlot({
@@ -162,12 +178,14 @@ server <- function(input, output) {
       filter(!is.na(lineas_tematicas_orientaciones_cosac)) %>%
       group_by(lineas_tematicas_orientaciones_cosac) %>%
       summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
-      ggplot(aes(x = reorder(lineas_tematicas_orientaciones_cosac, promedio), y = promedio)) +
+      ggplot(aes(x = reorder(stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 40), promedio), y = promedio)) +
       geom_col(fill = "#BC955B") +
-      coord_flip() +
-      theme_minimal() +
+      geom_text(aes(label = round(promedio, 2)), hjust = -0.2, size = 5, fontface = "bold") +
+      coord_flip(clip = "off") +
+      theme_minimal(base_size = 14) +
       labs(x = "Línea Temática", y = "Nivel Promedio de Necesidad") +
-      ylim(0, 5)
+      scale_y_continuous(limits = c(0, 5)) +
+      theme(plot.margin = margin(10, 30, 10, 10))
   })
 }
 

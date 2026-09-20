@@ -77,23 +77,40 @@ if(all(c("subdireccion_regional", "zona_escolar") %in% names(datos))) {
   cat(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #BC955B; margin-bottom: 20px;'>
              <strong>Diagnóstico de Cobertura:</strong> La mayor concentración de respuestas proviene de la Subdirección <strong>", top_sub$subdireccion_regional, "</strong> (", top_sub$n, " docentes). Esto indica la viabilidad de iniciar pruebas piloto de programas formativos en esta región dada su alta representatividad y disposición participativa. A continuación se desglosan las frecuencias operativas.</div>"))
 
-  p1 <- datos %>%
-    filter(!is.na(subdireccion_regional)) %>%
-    ggplot(aes(x = forcats::fct_rev(forcats::fct_infreq(stringr::str_wrap(as.character(subdireccion_regional), 30))))) +
-    geom_bar(fill = "#56212F") +
-    coord_flip() +
+  # Calculamos conteos antes para poner etiquetas
+  datos_sub <- datos %>% filter(!is.na(subdireccion_regional)) %>% count(subdireccion_regional)
+
+  p1 <- datos_sub %>%
+    ggplot(aes(x = reorder(stringr::str_wrap(as.character(subdireccion_regional), 30), n), y = n)) +
+    geom_col(fill = "#56212F") +
+    geom_text(aes(label = n), hjust = -0.2, color = "black", size = 4) +
+    coord_flip(clip = "off") +
     theme_minimal() +
     labs(title = "Volumen por Subdirección Regional", x = "", y = "Docentes")
 
-  p2 <- datos %>%
+  # Zonas más críticas (Calculado en base a datos cruzados posteriores, pero ilustrado aquí como promedio Likert)
+  # Como los datos_likert se arman después, adelantaremos el promedio para las zonas
+  # Extraer p_ para promediar asegurando que son numéricas (Fase 1 las dejó como character por seguridad)
+  p2_data <- datos %>%
     filter(!is.na(zona_escolar)) %>%
-    count(zona_escolar) %>%
-    top_n(15, n) %>%
-    ggplot(aes(x = reorder(zona_escolar, n), y = n)) +
+    mutate(across(matches("^p[0-9]+$"), as.numeric)) %>%
+    rowwise() %>%
+    mutate(promedio_necesidad = mean(c_across(matches("^p[0-9]+$")), na.rm = TRUE)) %>%
+    ungroup() %>%
+    group_by(zona_escolar) %>%
+    summarise(urgencia = mean(promedio_necesidad, na.rm=TRUE), muestra=n()) %>%
+    filter(muestra >= 5) %>% # Para evitar zonas con 1 solo docente que sesguen
+    arrange(desc(urgencia)) %>%
+    head(10)
+
+  p2 <- p2_data %>%
+    ggplot(aes(x = reorder(zona_escolar, urgencia), y = urgencia)) +
     geom_col(fill = "#9F2241") +
-    coord_flip() +
+    geom_text(aes(label = round(urgencia, 2)), hjust = -0.2, color = "black", size = 4) +
+    coord_flip(clip = "off") +
+    scale_y_continuous(limits = c(0, 5)) +
     theme_minimal() +
-    labs(title = "Top 15 Zonas Escolares con Mayor Participación", x = "Zona", y = "Docentes")
+    labs(title = "Top 10 Zonas Escolares con Mayor Urgencia (Puntaje 1-5)", subtitle = "Promedio de necesidad formativa (min. 5 docentes)", x = "Zona", y = "Nivel Promedio")
 
   # Mostrar tablas descriptivas integrales
   cat("<h4>Resumen Organizativo Detallado</h4>")
@@ -121,19 +138,29 @@ if(all(c("curriculum", "anos_de_experiencia", "naturaleza_formacion", "frec_ento
 
   cat(paste0("<p style='font-size: 15px; color: #333;'><strong>Perfil Demográfico:</strong> La plantilla encuestada cuenta con un promedio de <strong>", promedio_exp, " años de experiencia</strong>. A nivel metodológico, esto sugiere la necesidad de implementar estrategias de formación estilo <em>\"Andragogía\"</em> (educación para adultos profesionales), reconociendo sus saberes previos en lugar de cursos teóricos básicos.</p>"))
 
-  # Histograma de Experiencia
-  p_exp <- ggplot(datos, aes(x = anos_de_experiencia)) +
-    geom_histogram(binwidth = 2, fill = "#BC955B", color = "white") +
-    theme_minimal() +
-    labs(title = "Distribución de Años de Experiencia", x = "Años", y = "Frecuencia")
+  # Promedio de Experiencia por Sistema Educativo (Gráfica analítica vs dispersión)
+  if("sistema_educativo" %in% names(datos)) {
+    p_exp_data <- datos %>% filter(!is.na(sistema_educativo) & !is.na(anos_de_experiencia)) %>% group_by(sistema_educativo) %>% summarise(promedio = mean(anos_de_experiencia))
+    p_exp <- p_exp_data %>%
+      ggplot(aes(x = reorder(sistema_educativo, promedio), y = promedio)) +
+      geom_col(fill = "#BC955B") +
+      geom_text(aes(label = round(promedio, 1)), hjust = -0.2, size = 4) +
+      coord_flip(clip = "off") +
+      theme_minimal() +
+      labs(title = "Promedio de Antigüedad por Sistema Educativo", x = "Sistema", y = "Años Promedio")
+  } else {
+    p_exp <- ggplot(datos, aes(x = anos_de_experiencia)) + geom_histogram(binwidth = 2, fill = "#BC955B", color = "white") + theme_minimal()
+  }
 
-  # Distribución de Entornos Virtuales
-  p_tec <- datos %>%
-    filter(!is.na(frec_entornos_virtuales)) %>%
-    ggplot(aes(x = forcats::fct_infreq(as.character(frec_entornos_virtuales)))) +
-    geom_bar(fill = "#977E5B") +
+  # Distribución de Entornos Virtuales con Etiquetas
+  datos_virt <- datos %>% filter(!is.na(frec_entornos_virtuales)) %>% count(frec_entornos_virtuales)
+  p_tec <- datos_virt %>%
+    ggplot(aes(x = reorder(as.character(frec_entornos_virtuales), n), y = n)) +
+    geom_col(fill = "#977E5B") +
+    geom_text(aes(label = n), hjust = -0.2, size = 4) +
+    coord_flip(clip = "off") +
     theme_minimal() +
-    labs(title = "Uso de Entornos Virtuales", x = "Frecuencia", y = "Docentes")
+    labs(title = "Frecuencia de Uso de Entornos Virtuales", x = "Frecuencia", y = "Docentes")
 
   # Combinar ambas gráficas en una vista
   # Usaremos cowplot o un simple par() - Para no agregar dependencias, las imprimimos separadas pero optimizadas.
@@ -418,6 +445,26 @@ if("tematica_prioritaria" %in% names(datos) && exists("frecuencias") && nrow(fre
 }
 ```
 
-## Conclusiones Preliminares
+## 5. Resumen Ejecutivo (Conclusiones de Impacto)
 
-*El texto de conclusiones se generará dinámicamente con base en los resultados anteriores.*
+```{r conclusiones, results='asis'}
+# Calculamos variables clave
+docentes_totales <- nrow(datos)
+promedio_estatal <- round(mean(datos_likert$respuesta, na.rm = TRUE), 2)
+dominio_critico <- as.character(resumen_dominio$dominio_marco_excelencia[1])
+linea_critica <- as.character(resumen_linea$lineas_tematicas_orientaciones_cosac[1])
+
+cat(paste0("
+<div style='background-color: #56212F; color: white; padding: 20px; border-radius: 8px;'>
+  <h3 style='color: #DDC8A4; margin-top: 0;'>Panorama de Inteligencia Estratégica</h3>
+  <p style='font-size: 16px;'>El presente diagnóstico recabó la voz de <strong>", docentes_totales, " docentes</strong> del Estado de México. El Índice Estatal de Necesidad de Formación se sitúa en <strong>", promedio_estatal, " / 5.0</strong>.</p>
+
+  <ul style='font-size: 16px; margin-top: 15px;'>
+    <li><strong>Foco USICAMM:</strong> El <em>", dominio_critico, "</em> es estadísticamente la dimensión con mayor área de oportunidad. Se requiere diseño instruccional inmediato enfocado a estos indicadores.</li>
+    <li><strong>Directriz COSAC:</strong> La prioridad temática de los programas formativos 2024-2025 debe alinearse estrictamente a la línea de <em>\"", linea_critica, "\"</em>.</li>
+  </ul>
+
+  <p style='font-size: 16px; margin-top: 15px;'><strong>Recomendación Ejecutiva:</strong> El análisis inferencial demuestra que la plantilla docente mexiquense <strong>no es homogénea</strong>. Para maximizar el Retorno de Inversión (ROI) del presupuesto educativo, es imperativo abandonar modelos estandarizados de capacitación masiva y transitar hacia rutas formativas focalizadas (micro-learning) que crucen el <em>Sistema Educativo</em> y la <em>Naturaleza de la Formación</em> del docente.</p>
+</div>
+"))
+```
