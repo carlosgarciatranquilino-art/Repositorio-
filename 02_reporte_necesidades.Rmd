@@ -302,7 +302,7 @@ datos_likert %>%
 Buscamos identificar si las necesidades de formación varían significativamente según las características del docente (por ejemplo, entre docentes con formación pedagógica vs. disciplinar, o según su situación laboral).
 
 ```{r inferencial, results='asis'}
-# Función auxiliar para interpretar p-values y analizar medias
+# Función auxiliar para interpretar p-values y analizar medias con prosa ejecutiva
 interpretar_p_value <- function(p_val, variable_name, model_data, group_var) {
   if (is.na(p_val)) return("")
 
@@ -319,9 +319,14 @@ interpretar_p_value <- function(p_val, variable_name, model_data, group_var) {
     val_min <- round(medias[[2]][nrow(medias)], 2)
 
     return(paste0("<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>
-      <strong>Directriz Estratégica (", variable_name, "):</strong> Se confirmó una diferencia estadísticamente significativa (p < 0.05). Esto exige diseñar rutas formativas diferenciadas. Específicamente, el grupo <strong>'", grupo_max, "'</strong> presenta el nivel de urgencia más crítico (Media: ", val_max, "), contrastando con el grupo '", grupo_min, "' (Media: ", val_min, "). Se aconseja priorizar presupuesto y cupos hacia el primer grupo.</div>"))
+      <h4 style='color: #9F2241; margin-top: 0;'>Directriz de Intervención (", variable_name, ")</h4>
+      <p style='font-size: 16px; text-align: justify;'>Con un nivel de confianza del 95% (p < 0.05), el modelado estadístico confirma que las necesidades formativas experimentan un sesgo significativo dependiendo de esta variable. El subgrupo poblacional que acusa la mayor vulnerabilidad y que exige intervención prioritaria es: <strong>'", grupo_max, "'</strong> (Índice de severidad: ", val_max, " / 5.0), lo que contrasta estadísticamente con el sector '", grupo_min, "' (", val_min, ").</p>
+      <p style='font-size: 16px; text-align: justify;'><strong>Recomendación Operativa:</strong> Se instruye a las direcciones académicas focalizar el diseño instruccional y la canalización presupuestal inicial hacia el grupo de mayor riesgo, evitando la dispersión de recursos en programas genéricos de talla única.</p></div>"))
   } else {
-    return(paste0("<p style='color: #56212F; font-size: 15px;'><strong>Análisis de Homogeneidad (", variable_name, "):</strong> No se detectaron diferencias estadísticas significativas (p > 0.05). Las necesidades son transversales; por tanto, <strong>procede implementar un esquema de capacitación estandarizado</strong> sin segmentar por esta variable, lo cual optimiza la logística estatal.</p>"))
+    return(paste0("<div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #D6D1CA; margin-bottom: 20px;'>
+      <h4 style='color: #56212F; margin-top: 0;'>Análisis de Homogeneidad Estructural (", variable_name, ")</h4>
+      <p style='font-size: 16px; text-align: justify;'>Las métricas de varianza revelan que las fluctuaciones observadas no poseen significancia estadística (p > 0.05). En otras palabras, el comportamiento de la plantilla docente frente a sus requerimientos de formación es sorprendentemente transversal y homogéneo respecto a esta variable.</p>
+      <p style='font-size: 16px; text-align: justify;'><strong>Recomendación Operativa:</strong> Este escenario avala la pertinencia administrativa de desplegar convocatorias y plataformas de capacitación de cobertura universal estandarizada, reduciendo considerablemente los costos logísticos y de fragmentación instruccional.</p></div>"))
   }
 }
 

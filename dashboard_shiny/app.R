@@ -181,18 +181,18 @@ server <- function(input, output) {
       labs(x = "", y = "Docentes")
   })
 
-  # Gráficas de Análisis de Necesidades (Con Etiquetas y Ajustes)
+  # Gráficas de Análisis de Necesidades (Ajuste para títulos extremadamente largos)
   output$plot_dominios <- renderPlot({
     datos_largos_filtrados() %>%
       filter(!is.na(dominio_marco_excelencia)) %>%
       group_by(dominio_marco_excelencia) %>%
       summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
-      ggplot(aes(x = reorder(stringr::str_wrap(dominio_marco_excelencia, 40), promedio), y = promedio)) +
+      ggplot(aes(x = reorder(stringr::str_wrap(dominio_marco_excelencia, 35), promedio), y = promedio)) +
       geom_col(fill = "#9F2241") +
       geom_text(aes(label = round(promedio, 2)), hjust = -0.2, size = 5, fontface = "bold") +
       coord_flip(clip = "off") +
       theme_minimal(base_size = 14) +
-      labs(x = "Dominio", y = "Nivel Promedio de Necesidad") +
+      labs(x = "", y = "Nivel Promedio de Necesidad (1-5)") +
       scale_y_continuous(limits = c(0, 5)) +
       theme(plot.margin = margin(10, 30, 10, 10))
   })
@@ -202,12 +202,12 @@ server <- function(input, output) {
       filter(!is.na(lineas_tematicas_orientaciones_cosac)) %>%
       group_by(lineas_tematicas_orientaciones_cosac) %>%
       summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
-      ggplot(aes(x = reorder(stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 40), promedio), y = promedio)) +
+      ggplot(aes(x = reorder(stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 35), promedio), y = promedio)) +
       geom_col(fill = "#BC955B") +
       geom_text(aes(label = round(promedio, 2)), hjust = -0.2, size = 5, fontface = "bold") +
       coord_flip(clip = "off") +
       theme_minimal(base_size = 14) +
-      labs(x = "Línea Temática", y = "Nivel Promedio de Necesidad") +
+      labs(x = "", y = "Nivel Promedio de Necesidad (1-5)") +
       scale_y_continuous(limits = c(0, 5)) +
       theme(plot.margin = margin(10, 30, 10, 10))
   })
