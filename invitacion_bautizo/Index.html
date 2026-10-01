@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bautizo - Blue Safari</title>
+    <!-- Importando las tipografías -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Paleta de colores */
+        :root {
+            --primary-blue: #A9CDE7;
+            --dusty-blue: #8DA3B5;
+            --bg-crema: #F8F5F0;
+            --text-gray: #6C7A89;
+            --white-glass: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-crema);
+            font-family: 'Quicksand', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Contenedor principal responsivo */
+        .invitation-card {
+            background-image: url('https://img.freepik.com/vector-gratis/acuarela-hojas-eucalipto-fondo_23-2149176162.jpg');
+            background-size: cover;
+            background-position: center;
+            width: 100%;
+            max-width: 500px;
+            min-height: 800px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* Caja de contenido semi-transparente para que el texto sea legible */
+        .content-box {
+            background: var(--white-glass);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            width: 95%;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(141, 163, 181, 0.2);
+            border: 1px solid rgba(169, 205, 231, 0.3);
+            animation: fadeIn 1.5s ease;
+        }
+
+        /* Tipografías */
+        .subtitle {
+            color: var(--text-gray);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .name {
+            font-family: 'Great Vibes', cursive;
+            color: var(--dusty-blue);
+            font-size: 48px;
+            margin: 10px 0;
+            line-height: 1.2;
+        }
+
+        .title-cursive {
+            font-family: 'Great Vibes', cursive;
+            color: var(--dusty-blue);
+            font-size: 32px;
+            margin: 15px 0 5px 0;
+        }
+
+        .details {
+            color: var(--text-gray);
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+
+        /* Estilos para la foto del bebé con filtro Blue Safari */
+        .foto-bebe-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px auto;
+            border-radius: 50%;
+            padding: 5px;
+            background: var(--primary-blue);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .foto-bebe {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            filter: sepia(0.2) hue-rotate(195deg) saturate(0.85) contrast(0.95);
+        }
+
+        /* Botones Interactivos */
+        .btn {
+            display: inline-block;
+            background-color: var(--dusty-blue);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(141, 163, 181, 0.4);
+            border: none;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--dusty-blue);
+            border: 2px solid var(--dusty-blue);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        /* Cuenta Regresiva */
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .time-box {
+            background-color: rgba(255,255,255,0.7);
+            color: var(--dusty-blue);
+            padding: 10px;
+            border-radius: 10px;
+            min-width: 60px;
+            border: 1px solid var(--primary-blue);
+        }
+
+        .time-box span {
+            display: block;
+            font-size: 1.8em;
+            font-family: 'Great Vibes', cursive;
+        }
+
+        .time-box p {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+            margin-top: 5px;
+        }
+
+        /* Caja de Invitado y RSVP */
+        .guest-box {
+            background: rgba(169, 205, 231, 0.15);
+            border: 1px dashed var(--primary-blue);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--dusty-blue);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Ajustes para pantallas muy pequeñas */
+        @media (max-width: 400px) {
+            .name { font-size: 40px; }
+            .content-box { width: 95%; padding: 20px 15px; }
+            .countdown { gap: 5px; }
+            .time-box { min-width: 50px; padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="invitation-card">
+
+        <div class="content-box">
+
+            <!-- Contenedor de la foto de tu hijo -->
+            <div class="foto-bebe-container">
+                <!-- Usando un osito en acuarela temporalmente -->
+                <img src="https://img.freepik.com/vector-gratis/lindo-oso-acuarela-ilustracion_138676-3204.jpg" alt="Dante Selig" class="foto-bebe">
+            </div>
+
+            <div class="subtitle">Acompáñanos al bautizo de</div>
+
+            <!-- Nombre -->
+            <div class="name">Dante Selig</div>
+
+            <!-- Detalles del evento -->
+            <div class="details">
+                <strong>28 de Noviembre de 2026</strong><br>
+
+                <div class="countdown">
+                    <div class="time-box">
+                        <span id="days">00</span>
+                        <p>Días</p>
+                    </div>
+                    <div class="time-box">
+                        <span id="hours">00</span>
+                        <p>Hrs</p>
+                    </div>
+                    <div class="time-box">
+                        <span id="minutes">00</span>
+                        <p>Min</p>
+                    </div>
+                    <div class="time-box">
+                        <span id="seconds">00</span>
+                        <p>Seg</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:25px; margin-bottom: 25px; height: 1px; background:var(--primary-blue); width: 50%; margin-left:auto; margin-right:auto;"></div>
+
+                <div class="title-cursive">Dónde y Cuándo</div>
+
+                <strong>Ceremonia Religiosa - 13:00 hrs</strong><br>
+                Parroquia de Nuestra Señora del Perpetuo Socorro<br>
+                Toluca, Estado de México<br>
+                <a href="https://maps.app.goo.gl/P85X12L329h5B6rL7" target="_blank" class="btn" style="margin-top: 10px; margin-bottom: 20px;">📍 Ver mapa de la iglesia</a><br>
+
+                <strong>Recepción</strong><br>
+                Salón de Eventos Astro Bahía de Todos Los Santos 140<br>
+                Santa Ana Tlapaltitlán, 50020, Méx.<br>
+                <a href="https://maps.app.goo.gl/v31N83rK5K5L8QpW7" target="_blank" class="btn" style="margin-top: 10px;">📍 Ver mapa del salón</a>
+
+                <div style="margin-top:25px; margin-bottom: 25px; height: 1px; background:var(--primary-blue); width: 50%; margin-left:auto; margin-right:auto;"></div>
+
+                <div class="title-cursive">Padres</div>
+                Nadia Ivonne Camacho Díaz<br>
+                & Carlos García Tranquilino<br>
+
+                <div class="title-cursive">Padrino</div>
+                Guillermo García Tranquilino
+            </div>
+
+            <!-- Zona dinámica de Invitados y RSVP -->
+            <div id="invitadoContainer" class="guest-box">
+                <div id="loadingInvitado" class="loader" style="display:block;"></div>
+
+                <div id="mensajeInvitado" style="display:none;">
+                    <div class="title-cursive" id="nombreInvitadoDOM" style="margin-top:0;">Familia...</div>
+                    <p style="color:var(--text-gray); margin-bottom: 15px;">Nos llena de alegría compartir este día contigo.</p>
+                    <p style="color:var(--text-gray); font-size: 1.1em;">Lugares reservados: <strong style="color:var(--dusty-blue); font-size:1.3em;" id="boletosInvitadoDOM">0</strong></p>
+
+                    <div id="rsvpSection" style="margin-top: 20px;">
+                        <div class="subtitle" style="font-size: 12px; margin-bottom:15px;">Confirmación de Asistencia</div>
+
+                        <div id="botonesRsvp">
+                            <button class="btn" onclick="enviarConfirmacion('Sí')">✓ ¡Ahí estaremos!</button>
+                            <button class="btn btn-outline" onclick="enviarConfirmacion('No')">✕ No podremos</button>
+                        </div>
+
+                        <div id="loaderRsvp" class="loader" style="display:none;"></div>
+                        <div id="mensajeRespuesta" style="display:none; margin-top:15px; font-weight:600; color:var(--dusty-blue);"></div>
+                    </div>
+                </div>
+
+                <div id="errorInvitado" style="display:none; color: #c0392b; margin-top: 10px;">
+                    <!-- Mensaje de error -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. LÓGICA DE CUENTA REGRESIVA
+        // ==========================================
+        const countDownDate = new Date("Nov 28, 2026 13:00:00").getTime();
+
+        const x = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerHTML = days < 10 ? "0" + days : days;
+            document.getElementById("hours").innerHTML = hours < 10 ? "0" + hours : hours;
+            document.getElementById("minutes").innerHTML = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("seconds").innerHTML = seconds < 10 ? "0" + seconds : seconds;
+
+            if (distance < 0) {
+                clearInterval(x);
+                document.querySelector(".countdown").innerHTML = "<div class='title-cursive'>¡Hoy es el gran día!</div>";
+            }
+        }, 1000);
+
+        // ==========================================
+        // 2. LÓGICA DEL INVITADO Y GOOGLE SHEETS
+        // ==========================================
+
+        // Asignamos el valor como string. Si viene nulo desde GAS, será un string vacío.
+        let idInvitado = "<?= idInvitado || '' ?>";
+
+        // Limpiamos espacios que puedan haberse colado
+        idInvitado = idInvitado.trim();
+
+        if (idInvitado !== "" && idInvitado !== "null") {
+            document.getElementById("invitadoContainer").style.display = "block";
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    document.getElementById("loadingInvitado").style.display = "none";
+
+                    if (response.error) {
+                        document.getElementById("errorInvitado").innerText = "No encontramos tu invitación en la lista.";
+                        document.getElementById("errorInvitado").style.display = "block";
+                    } else {
+                        document.getElementById("nombreInvitadoDOM").innerText = response.nombre;
+                        document.getElementById("boletosInvitadoDOM").innerText = response.boletos;
+                        document.getElementById("mensajeInvitado").style.display = "block";
+
+                        if (response.asistencia && response.asistencia !== "") {
+                            mostrarMensaje("Ya hemos recibido tu respuesta: " + response.asistencia);
+                            document.getElementById("botonesRsvp").style.display = "none";
+                        }
+                    }
+                })
+                .obtenerDatosInvitado(idInvitado);
+        }
+
+        function enviarConfirmacion(respuesta) {
+            document.getElementById("botonesRsvp").style.display = "none";
+            document.getElementById("loaderRsvp").style.display = "block";
+            document.getElementById("mensajeRespuesta").style.display = "none";
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    document.getElementById("loaderRsvp").style.display = "none";
+                    if (response.success) {
+                         mostrarMensaje(respuesta === 'Sí' ? "¡Gracias por confirmar! Nos vemos pronto." : "Entendemos, gracias por avisarnos.");
+                    } else {
+                         mostrarMensaje("Hubo un error. Por favor intenta de nuevo.", true);
+                         document.getElementById("botonesRsvp").style.display = "block";
+                    }
+                })
+                .registrarConfirmacion(idInvitado, respuesta, "");
+        }
+
+        function mostrarMensaje(texto, isError = false) {
+            const msgDiv = document.getElementById("mensajeRespuesta");
+            msgDiv.innerText = texto;
+            msgDiv.style.color = isError ? "#c0392b" : "var(--dusty-blue)";
+            msgDiv.style.display = "block";
+        }
+    </script>
+</body>
+</html>
