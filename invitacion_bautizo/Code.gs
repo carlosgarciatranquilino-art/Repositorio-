@@ -59,25 +59,36 @@ function obtenerDatosInvitado(idInvitado) {
     // Suponemos que la fila 0 tiene los encabezados:
     // [0]Nombre_Invitado, [1]Boletos_Asignados, [2]Codigo_Unico, [3]Asistencia_Confirmada
 
+    let ultimoCodigoUnico = "";
+    let ultimosBoletos = "";
+
     for (let i = 1; i < data.length; i++) {
       const nombreInvitado = data[i][0]; // Columna A
-      const codigoUnico = data[i][2]; // Columna C
 
-      // Checamos si coincide con el Código Único
-      if (codigoUnico && limpiarCadena(codigoUnico.toString()) === idLimpio) {
+      // Si la celda de Código Único o Boletos tiene valor, lo guardamos.
+      // Si está vacía (por celdas combinadas), arrastramos el valor anterior.
+      if (data[i][2] && data[i][2] !== "") {
+        ultimoCodigoUnico = data[i][2];
+      }
+      if (data[i][1] && data[i][1] !== "") {
+        ultimosBoletos = data[i][1];
+      }
+
+      // Checamos si coincide con el Código Único de la familia
+      if (ultimoCodigoUnico && limpiarCadena(ultimoCodigoUnico.toString()) === idLimpio) {
         return {
-          nombre: data[i][0],
-          boletos: data[i][1],
+          nombre: ultimoCodigoUnico, // Devolvemos el nombre de la familia/grupo
+          boletos: ultimosBoletos,
           asistencia: data[i][3],
           fila: i + 1
         };
       }
 
-      // Checamos si coincide con el Nombre del Invitado
+      // Checamos si buscaron por el nombre específico de un individuo dentro de la familia
       if (nombreInvitado && limpiarCadena(nombreInvitado.toString()) === idLimpio) {
         return {
-          nombre: data[i][0],
-          boletos: data[i][1],
+          nombre: ultimoCodigoUnico, // Devolvemos el nombre de la familia/grupo
+          boletos: ultimosBoletos,
           asistencia: data[i][3],
           fila: i + 1
         };
@@ -99,13 +110,18 @@ function registrarConfirmacion(idInvitado, confirmacion, mensaje) {
     const sheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL).getSheetByName(SHEET_NAME);
     const data = sheet.getDataRange().getValues();
 
+    let ultimoCodigoUnico = "";
+
     for (let i = 1; i < data.length; i++) {
       const nombreInvitado = data[i][0];
-      const codigoUnico = data[i][2];
+
+      if (data[i][2] && data[i][2] !== "") {
+        ultimoCodigoUnico = data[i][2];
+      }
 
       let matchEncontrado = false;
 
-      if (codigoUnico && limpiarCadena(codigoUnico.toString()) === idLimpio) {
+      if (ultimoCodigoUnico && limpiarCadena(ultimoCodigoUnico.toString()) === idLimpio) {
         matchEncontrado = true;
       } else if (nombreInvitado && limpiarCadena(nombreInvitado.toString()) === idLimpio) {
         matchEncontrado = true;
