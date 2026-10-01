@@ -343,15 +343,13 @@
         // 2. LÓGICA DEL INVITADO Y GOOGLE SHEETS
         // ==========================================
 
-        let idInvitado = null;
-        try {
-            // Importante: Usar <?!= ?> para inyectar el JSON sin que se escapen las comillas HTML
-            idInvitado = <?!= JSON.stringify(idInvitado) ?>;
-        } catch(e) {
-            console.log("No se detectó variable del servidor.");
-        }
+        // Asignamos el valor como string. Si viene nulo desde GAS, será un string vacío.
+        let idInvitado = "<?= idInvitado || '' ?>";
 
-        if (idInvitado) {
+        // Limpiamos espacios que puedan haberse colado
+        idInvitado = idInvitado.trim();
+
+        if (idInvitado !== "" && idInvitado !== "null") {
             document.getElementById("invitadoContainer").style.display = "block";
 
             google.script.run

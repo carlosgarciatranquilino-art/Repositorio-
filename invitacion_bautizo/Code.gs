@@ -10,7 +10,8 @@ const SHEET_NAME = 'Invitados'; // El nombre de la pestaña dentro del Excel
 // ==========================================
 function doGet(e) {
   // Capturamos el parámetro "invitado" de la URL (ej: ?invitado=fam-garcia)
-  const idInvitado = e.parameter.invitado || null;
+  // Si no existe, lo forzamos a string vacío en lugar de null para evitar errores en HtmlService
+  const idInvitado = e.parameter.invitado || "";
 
   // Creamos la plantilla HTML
   const template = HtmlService.createTemplateFromFile('Index');
