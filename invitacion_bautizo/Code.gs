@@ -59,18 +59,27 @@ function obtenerDatosInvitado(idInvitado) {
     // [0]Nombre_Invitado, [1]Boletos_Asignados, [2]Codigo_Unico, [3]Asistencia_Confirmada
 
     for (let i = 1; i < data.length; i++) {
-      const codigoUnico = data[i][2]; // Columna C (índice 2)
+      const nombreInvitado = data[i][0]; // Columna A
+      const codigoUnico = data[i][2]; // Columna C
 
-      if (codigoUnico) {
-        const codigoLimpio = limpiarCadena(codigoUnico.toString());
-        if (codigoLimpio === idLimpio) {
-          return {
-            nombre: data[i][0],
-            boletos: data[i][1],
-            asistencia: data[i][3],
-            fila: i + 1 // Guardamos la fila real de la hoja (empezando en 1)
-          };
-        }
+      // Checamos si coincide con el Código Único
+      if (codigoUnico && limpiarCadena(codigoUnico.toString()) === idLimpio) {
+        return {
+          nombre: data[i][0],
+          boletos: data[i][1],
+          asistencia: data[i][3],
+          fila: i + 1
+        };
+      }
+
+      // Checamos si coincide con el Nombre del Invitado
+      if (nombreInvitado && limpiarCadena(nombreInvitado.toString()) === idLimpio) {
+        return {
+          nombre: data[i][0],
+          boletos: data[i][1],
+          asistencia: data[i][3],
+          fila: i + 1
+        };
       }
     }
 
@@ -90,23 +99,29 @@ function registrarConfirmacion(idInvitado, confirmacion, mensaje) {
     const data = sheet.getDataRange().getValues();
 
     for (let i = 1; i < data.length; i++) {
+      const nombreInvitado = data[i][0];
       const codigoUnico = data[i][2];
 
-      if (codigoUnico) {
-        const codigoLimpio = limpiarCadena(codigoUnico.toString());
-        if (codigoLimpio === idLimpio) {
-          const fila = i + 1;
+      let matchEncontrado = false;
 
-          // Guardamos la confirmación en la columna D (índice 3, columna 4 real)
-          sheet.getRange(fila, 4).setValue(confirmacion);
+      if (codigoUnico && limpiarCadena(codigoUnico.toString()) === idLimpio) {
+        matchEncontrado = true;
+      } else if (nombreInvitado && limpiarCadena(nombreInvitado.toString()) === idLimpio) {
+        matchEncontrado = true;
+      }
 
-          // Si hay una columna extra para un mensaje o nota, la podemos guardar en la E (columna 5)
-          if (mensaje) {
-            sheet.getRange(fila, 5).setValue(mensaje);
-          }
+      if (matchEncontrado) {
+        const fila = i + 1;
 
-          return { success: true };
+        // Guardamos la confirmación en la columna D (índice 3, columna 4 real)
+        sheet.getRange(fila, 4).setValue(confirmacion);
+
+        // Si hay una columna extra para un mensaje o nota, la podemos guardar en la E (columna 5)
+        if (mensaje) {
+          sheet.getRange(fila, 5).setValue(mensaje);
         }
+
+        return { success: true };
       }
     }
 
