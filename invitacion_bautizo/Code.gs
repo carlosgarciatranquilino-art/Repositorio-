@@ -29,12 +29,27 @@ function doGet(e) {
 // ==========================================
 
 /**
+ * Función auxiliar para limpiar cadenas (quita acentos, espacios y pasa a minúsculas)
+ */
+function limpiarCadena(str) {
+  if (!str) return "";
+  // Decode por si viene de la URL (ej. %20)
+  let dec = decodeURIComponent(str);
+  // Elimina acentos y signos diacríticos
+  let normalizada = dec.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // Quita todos los espacios y pasa a minúsculas
+  return normalizada.replace(/\s+/g, "").toLowerCase();
+}
+
+/**
  * Busca al invitado por su código único y retorna sus datos.
  */
 function obtenerDatosInvitado(idInvitado) {
   if (!idInvitado) {
     return { error: 'No se proporcionó código de invitado.' };
   }
+
+  const idLimpio = limpiarCadena(idInvitado);
 
   try {
     const sheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL).getSheetByName(SHEET_NAME);
@@ -46,13 +61,16 @@ function obtenerDatosInvitado(idInvitado) {
     for (let i = 1; i < data.length; i++) {
       const codigoUnico = data[i][2]; // Columna C (índice 2)
 
-      if (codigoUnico && codigoUnico.toString().toLowerCase() === idInvitado.toLowerCase()) {
-        return {
-          nombre: data[i][0],
-          boletos: data[i][1],
-          asistencia: data[i][3],
-          fila: i + 1 // Guardamos la fila real de la hoja (empezando en 1)
-        };
+      if (codigoUnico) {
+        const codigoLimpio = limpiarCadena(codigoUnico.toString());
+        if (codigoLimpio === idLimpio) {
+          return {
+            nombre: data[i][0],
+            boletos: data[i][1],
+            asistencia: data[i][3],
+            fila: i + 1 // Guardamos la fila real de la hoja (empezando en 1)
+          };
+        }
       }
     }
 
@@ -66,6 +84,7 @@ function obtenerDatosInvitado(idInvitado) {
  * Guarda la respuesta del invitado (Sí o No)
  */
 function registrarConfirmacion(idInvitado, confirmacion, mensaje) {
+  const idLimpio = limpiarCadena(idInvitado);
   try {
     const sheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL).getSheetByName(SHEET_NAME);
     const data = sheet.getDataRange().getValues();
@@ -73,18 +92,21 @@ function registrarConfirmacion(idInvitado, confirmacion, mensaje) {
     for (let i = 1; i < data.length; i++) {
       const codigoUnico = data[i][2];
 
-      if (codigoUnico && codigoUnico.toString().toLowerCase() === idInvitado.toLowerCase()) {
-        const fila = i + 1;
+      if (codigoUnico) {
+        const codigoLimpio = limpiarCadena(codigoUnico.toString());
+        if (codigoLimpio === idLimpio) {
+          const fila = i + 1;
 
-        // Guardamos la confirmación en la columna D (índice 3, columna 4 real)
-        sheet.getRange(fila, 4).setValue(confirmacion);
+          // Guardamos la confirmación en la columna D (índice 3, columna 4 real)
+          sheet.getRange(fila, 4).setValue(confirmacion);
 
-        // Si hay una columna extra para un mensaje o nota, la podemos guardar en la E (columna 5)
-        if (mensaje) {
-          sheet.getRange(fila, 5).setValue(mensaje);
+          // Si hay una columna extra para un mensaje o nota, la podemos guardar en la E (columna 5)
+          if (mensaje) {
+            sheet.getRange(fila, 5).setValue(mensaje);
+          }
+
+          return { success: true };
         }
-
-        return { success: true };
       }
     }
 

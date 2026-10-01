@@ -6,13 +6,14 @@
   <title>Bautizo de Dante Selig</title>
   <style>
     :root {
-      --color-fondo: #eef7f9;
-      --color-azul-cielo: #a8d5e2;
-      --color-azul-oscuro: #4a7c8c;
+      --color-fondo: #F8F5F0;
+      --color-azul-pastel: #A9CDE7;
+      --color-azul-grisaceo: #8DA3B5;
+      --color-gris-suave: #6C7A89;
       --color-dorado: #d4af37;
-      --color-texto: #444;
-      --fuente-titulos: 'Playfair Display', serif;
-      --fuente-texto: 'Lato', sans-serif;
+      --color-texto: #6C7A89;
+      --fuente-titulos: 'Great Vibes', cursive;
+      --fuente-texto: 'Quicksand', sans-serif;
     }
 
     * {
@@ -30,11 +31,23 @@
     }
 
     /* TIPOGRAFÍA GOOGLE FONTS */
-    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@300;400;600&display=swap');
 
     h1, h2, h3, .cursive {
       font-family: var(--fuente-titulos);
-      color: var(--color-azul-oscuro);
+      color: var(--color-azul-grisaceo);
+      font-weight: normal;
+    }
+
+    .title-main {
+      font-size: 4.5em; /* Aumentado por ser Great Vibes */
+      margin-bottom: 10px;
+      color: var(--color-azul-grisaceo);
+      line-height: 1.2;
+    }
+
+    .cursive {
+      font-size: 2.5em;
     }
 
     /* CONTENEDOR PRINCIPAL Y FONDOS */
@@ -50,8 +63,7 @@
     .header-bg {
       position: relative;
       width: 100%;
-      height: 250px;
-      background: linear-gradient(180deg, var(--color-azul-cielo) 0%, rgba(255,255,255,1) 100%);
+      height: 200px;
       overflow: hidden;
     }
 
@@ -61,24 +73,49 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('https://img.freepik.com/vector-gratis/acuarela-hojas-tropicales-marco-hojas-palma_52683-35649.jpg');
+      /* Franja acuarela safari/eucalipto superior */
+      background-image: url('https://img.freepik.com/vector-gratis/acuarela-hojas-eucalipto-fondo_23-2149176162.jpg');
       background-size: cover;
-      background-position: top center;
-      opacity: 0.3;
-      mix-blend-mode: multiply;
+      background-position: center bottom;
+      opacity: 0.8;
+      border-bottom: 3px solid var(--color-azul-pastel);
+    }
+
+    .footer-bg {
+      position: relative;
+      width: 100%;
+      height: 150px;
+      overflow: hidden;
+      margin-top: 30px;
+    }
+
+    .hojas-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* Franja acuarela safari/eucalipto inferior */
+      background-image: url('https://img.freepik.com/vector-gratis/acuarela-hojas-eucalipto-fondo_23-2149176162.jpg');
+      background-size: cover;
+      background-position: center top;
+      opacity: 0.8;
+      border-top: 3px solid var(--color-azul-pastel);
+      transform: scaleY(-1); /* Invertido para que las hojas salgan de abajo */
     }
 
     /* IMAGEN PRINCIPAL (OSO) */
     .oso-principal {
-      width: 180px;
+      width: 150px;
       height: auto;
-      margin-top: -90px;
+      margin-top: -75px;
       position: relative;
       z-index: 10;
       border-radius: 50%;
-      background-color: white;
-      padding: 10px;
+      background-color: var(--color-fondo);
+      padding: 5px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border: 2px solid var(--color-azul-pastel);
     }
 
     /* SECCIONES */
@@ -92,7 +129,7 @@
       display: block;
       width: 50px;
       height: 2px;
-      background-color: var(--color-dorado);
+      background-color: var(--color-azul-pastel);
       margin: 30px auto 0;
     }
 
@@ -100,17 +137,14 @@
       display: none;
     }
 
-    .title-main {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-      color: var(--color-azul-oscuro);
-    }
-
     .subtitle {
       font-size: 1.2em;
-      font-style: italic;
-      color: #777;
-      margin-bottom: 25px;
+      font-weight: 300;
+      color: var(--color-gris-suave);
+      margin-bottom: 15px;
+      margin-top: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
     .detalles p {
@@ -124,12 +158,12 @@
       display: inline-block;
       padding: 12px 30px;
       margin: 15px 10px;
-      background-color: var(--color-azul-cielo);
-      color: var(--color-azul-oscuro);
+      background-color: var(--color-fondo);
+      color: var(--color-azul-grisaceo);
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 600;
       border-radius: 30px;
-      border: 2px solid var(--color-azul-oscuro);
+      border: 2px solid var(--color-azul-pastel);
       transition: all 0.3s ease;
       cursor: pointer;
       font-family: var(--fuente-texto);
@@ -137,18 +171,19 @@
     }
 
     .btn:hover {
-      background-color: var(--color-azul-oscuro);
+      background-color: var(--color-azul-pastel);
       color: white;
     }
 
-    .btn-gold {
-      background-color: var(--color-dorado);
-      border-color: var(--color-dorado);
+    .btn-primary {
+      background-color: var(--color-azul-pastel);
+      border-color: var(--color-azul-pastel);
       color: white;
     }
-    .btn-gold:hover {
-      background-color: white;
-      color: var(--color-dorado);
+    .btn-primary:hover {
+      background-color: var(--color-azul-grisaceo);
+      color: white;
+      border-color: var(--color-azul-grisaceo);
     }
 
     /* CUENTA REGRESIVA */
@@ -160,19 +195,20 @@
     }
 
     .time-box {
-      background-color: var(--color-azul-cielo);
-      color: var(--color-azul-oscuro);
+      background-color: white;
+      color: var(--color-azul-grisaceo);
       padding: 15px;
       border-radius: 10px;
       min-width: 70px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 10px rgba(169, 205, 231, 0.3);
+      border: 1px solid var(--color-azul-pastel);
     }
 
     .time-box span {
       display: block;
-      font-size: 2em;
+      font-size: 2.5em;
       font-family: var(--fuente-titulos);
-      font-weight: bold;
+      font-weight: normal;
     }
 
     .time-box p {
@@ -184,8 +220,8 @@
 
     /* MENSAJE PERSONALIZADO INVITADO */
     .invitado-box {
-      background-color: #f8fbfb;
-      border: 1px dashed var(--color-azul-oscuro);
+      background-color: white;
+      border: 1px dashed var(--color-azul-pastel);
       padding: 20px;
       margin: 20px;
       border-radius: 15px;
@@ -194,9 +230,11 @@
     }
 
     .invitado-box h3 {
-      color: var(--color-dorado);
+      color: var(--color-azul-grisaceo);
       margin-bottom: 10px;
-      font-size: 1.5em;
+      font-family: var(--fuente-titulos);
+      font-size: 2.5em;
+      font-weight: normal;
     }
 
     /* ANIMACIONES */
@@ -212,7 +250,7 @@
     /* SPINNER DE CARGA */
     .loader {
       border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--color-azul-oscuro);
+      border-top: 4px solid var(--color-azul-pastel);
       border-radius: 50%;
       width: 30px;
       height: 30px;
@@ -231,13 +269,13 @@
 
   <div class="container fade-in">
 
-    <!-- Encabezado con imagen safari -->
+    <!-- Franja Acuarela Safari Superior -->
     <div class="header-bg">
       <div class="hojas-top"></div>
     </div>
 
-    <!-- Oso principal (Imagen representativa) -->
-    <img src="https://img.freepik.com/vector-gratis/lindo-oso-durmiendo-luna-ilustracion-icono-vector-dibujos-animados-naturaleza-animal-icono-concepto-aislado_138676-4665.jpg" alt="Osito Blue Safari" class="oso-principal">
+    <!-- Oso principal (Acuarela Safari) -->
+    <img src="https://img.freepik.com/vector-gratis/lindo-oso-acuarela-ilustracion_138676-3204.jpg" alt="Osito Acuarela Safari" class="oso-principal">
 
     <!-- Sección Principal -->
     <div class="section">
@@ -250,7 +288,7 @@
         <div id="mensajeInvitado" style="display:none;">
           <h3 id="nombreInvitadoDOM">Familia...</h3>
           <p>Nos llena de alegría compartir este día contigo.</p>
-          <p style="font-size: 1.2em; margin-top: 10px;">Tienes <strong style="color:var(--color-azul-oscuro); font-size:1.3em;" id="boletosInvitadoDOM">0</strong> lugares reservados.</p>
+          <p style="font-size: 1.2em; margin-top: 10px;">Tienes <strong style="color:var(--color-azul-grisaceo); font-size:1.3em;" id="boletosInvitadoDOM">0</strong> lugares reservados.</p>
         </div>
         <div id="errorInvitado" style="display:none; color: red;">
           <!-- Mensaje de error si el código no es válido -->
@@ -315,12 +353,17 @@
       <p style="margin-bottom: 20px;">Por favor, confírmanos si podrás acompañarnos:</p>
 
       <div id="botonesRsvp">
-        <button class="btn btn-gold" onclick="enviarConfirmacion('Sí')">¡Sí, ahí estaremos!</button>
+        <button class="btn btn-primary" onclick="enviarConfirmacion('Sí')">¡Sí, ahí estaremos!</button>
         <button class="btn" onclick="enviarConfirmacion('No')">No podremos asistir</button>
       </div>
 
       <div id="loaderRsvp" class="loader"></div>
-      <div id="mensajeRespuesta" style="display:none; margin-top:20px; font-weight:bold; color:var(--color-azul-oscuro);"></div>
+      <div id="mensajeRespuesta" style="display:none; margin-top:20px; font-weight:600; color:var(--color-azul-grisaceo);"></div>
+    </div>
+
+    <!-- Franja Acuarela Safari Inferior -->
+    <div class="footer-bg">
+      <div class="hojas-bottom"></div>
     </div>
 
   </div>
@@ -348,7 +391,7 @@
 
       if (distance < 0) {
         clearInterval(x);
-        document.querySelector(".countdown").innerHTML = "<h3 style='color:var(--color-azul-oscuro)'>¡Hoy es el gran día!</h3>";
+        document.querySelector(".countdown").innerHTML = "<h3 style='color:var(--color-azul-grisaceo)'>¡Hoy es el gran día!</h3>";
       }
     }, 1000);
 
@@ -360,7 +403,8 @@
     // Si no estamos en el entorno de Google (ej. probando local), será nula o undefined.
     let idInvitado = null;
     try {
-      idInvitado = <?= JSON.stringify(idInvitado) ?>;
+      // Importante: Usar <?!= ?> para inyectar el JSON sin que se escapen las comillas HTML
+      idInvitado = <?!= JSON.stringify(idInvitado) ?>;
     } catch(e) {
       console.log("No se detectó variable del servidor. Ejecución local o error.");
     }
@@ -414,7 +458,7 @@
     function mostrarMensaje(texto, isError = false) {
       const msgDiv = document.getElementById("mensajeRespuesta");
       msgDiv.innerText = texto;
-      msgDiv.style.color = isError ? "red" : "var(--color-azul-oscuro)";
+      msgDiv.style.color = isError ? "#c0392b" : "var(--color-azul-grisaceo)";
       msgDiv.style.display = "block";
     }
   </script>
