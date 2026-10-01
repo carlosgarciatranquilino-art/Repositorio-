@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bautizo de Dante Selig</title>
+  <style>
+    :root {
+      --color-fondo: #eef7f9;
+      --color-azul-cielo: #a8d5e2;
+      --color-azul-oscuro: #4a7c8c;
+      --color-dorado: #d4af37;
+      --color-texto: #444;
+      --fuente-titulos: 'Playfair Display', serif;
+      --fuente-texto: 'Lato', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--fuente-texto);
+      background-color: var(--color-fondo);
+      color: var(--color-texto);
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    /* TIPOGRAFÍA GOOGLE FONTS */
+    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+    h1, h2, h3, .cursive {
+      font-family: var(--fuente-titulos);
+      color: var(--color-azul-oscuro);
+    }
+
+    /* CONTENEDOR PRINCIPAL Y FONDOS */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      position: relative;
+      padding-bottom: 50px;
+    }
+
+    .header-bg {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      background: linear-gradient(180deg, var(--color-azul-cielo) 0%, rgba(255,255,255,1) 100%);
+      overflow: hidden;
+    }
+
+    .hojas-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://img.freepik.com/vector-gratis/acuarela-hojas-tropicales-marco-hojas-palma_52683-35649.jpg');
+      background-size: cover;
+      background-position: top center;
+      opacity: 0.3;
+      mix-blend-mode: multiply;
+    }
+
+    /* IMAGEN PRINCIPAL (OSO) */
+    .oso-principal {
+      width: 180px;
+      height: auto;
+      margin-top: -90px;
+      position: relative;
+      z-index: 10;
+      border-radius: 50%;
+      background-color: white;
+      padding: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    /* SECCIONES */
+    .section {
+      padding: 40px 20px;
+      position: relative;
+    }
+
+    .section::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 2px;
+      background-color: var(--color-dorado);
+      margin: 30px auto 0;
+    }
+
+    .section:last-child::after {
+      display: none;
+    }
+
+    .title-main {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      color: var(--color-azul-oscuro);
+    }
+
+    .subtitle {
+      font-size: 1.2em;
+      font-style: italic;
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .detalles p {
+      margin-bottom: 10px;
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+
+    /* BOTONES */
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      margin: 15px 10px;
+      background-color: var(--color-azul-cielo);
+      color: var(--color-azul-oscuro);
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 30px;
+      border: 2px solid var(--color-azul-oscuro);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-family: var(--fuente-texto);
+      font-size: 1em;
+    }
+
+    .btn:hover {
+      background-color: var(--color-azul-oscuro);
+      color: white;
+    }
+
+    .btn-gold {
+      background-color: var(--color-dorado);
+      border-color: var(--color-dorado);
+      color: white;
+    }
+    .btn-gold:hover {
+      background-color: white;
+      color: var(--color-dorado);
+    }
+
+    /* CUENTA REGRESIVA */
+    .countdown {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .time-box {
+      background-color: var(--color-azul-cielo);
+      color: var(--color-azul-oscuro);
+      padding: 15px;
+      border-radius: 10px;
+      min-width: 70px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .time-box span {
+      display: block;
+      font-size: 2em;
+      font-family: var(--fuente-titulos);
+      font-weight: bold;
+    }
+
+    .time-box p {
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+
+    /* MENSAJE PERSONALIZADO INVITADO */
+    .invitado-box {
+      background-color: #f8fbfb;
+      border: 1px dashed var(--color-azul-oscuro);
+      padding: 20px;
+      margin: 20px;
+      border-radius: 15px;
+      display: none; /* Se muestra con JS */
+      animation: fadeIn 1s ease;
+    }
+
+    .invitado-box h3 {
+      color: var(--color-dorado);
+      margin-bottom: 10px;
+      font-size: 1.5em;
+    }
+
+    /* ANIMACIONES */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 1.5s ease;
+    }
+
+    /* SPINNER DE CARGA */
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--color-azul-oscuro);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container fade-in">
+
+    <!-- Encabezado con imagen safari -->
+    <div class="header-bg">
+      <div class="hojas-top"></div>
+    </div>
+
+    <!-- Oso principal (Imagen representativa) -->
+    <img src="https://img.freepik.com/vector-gratis/lindo-oso-durmiendo-luna-ilustracion-icono-vector-dibujos-animados-naturaleza-animal-icono-concepto-aislado_138676-4665.jpg" alt="Osito Blue Safari" class="oso-principal">
+
+    <!-- Sección Principal -->
+    <div class="section">
+      <p class="subtitle">Acompáñanos a celebrar el bautizo de</p>
+      <h1 class="title-main">Dante Selig</h1>
+
+      <!-- Aquí se inyecta dinámicamente el mensaje del invitado si existe el ID en la URL -->
+      <div id="invitadoContainer" class="invitado-box">
+        <div id="loadingInvitado" class="loader" style="display:block;"></div>
+        <div id="mensajeInvitado" style="display:none;">
+          <h3 id="nombreInvitadoDOM">Familia...</h3>
+          <p>Nos llena de alegría compartir este día contigo.</p>
+          <p style="font-size: 1.2em; margin-top: 10px;">Tienes <strong style="color:var(--color-azul-oscuro); font-size:1.3em;" id="boletosInvitadoDOM">0</strong> lugares reservados.</p>
+        </div>
+        <div id="errorInvitado" style="display:none; color: red;">
+          <!-- Mensaje de error si el código no es válido -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Fecha y Cuenta Regresiva -->
+    <div class="section">
+      <h2 class="cursive">28 de Noviembre de 2026</h2>
+      <div class="countdown">
+        <div class="time-box">
+          <span id="days">00</span>
+          <p>Días</p>
+        </div>
+        <div class="time-box">
+          <span id="hours">00</span>
+          <p>Hrs</p>
+        </div>
+        <div class="time-box">
+          <span id="minutes">00</span>
+          <p>Min</p>
+        </div>
+        <div class="time-box">
+          <span id="seconds">00</span>
+          <p>Seg</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Ubicaciones -->
+    <div class="section detalles">
+      <h2 class="cursive" style="margin-bottom: 20px;">Dónde y Cuándo</h2>
+
+      <h3 style="margin-top: 20px;">Ceremonia Religiosa</h3>
+      <p><strong>13:00 hrs.</strong></p>
+      <p>Parroquia de Nuestra Señora del Perpetuo Socorro</p>
+      <p>Toluca, Estado de México</p>
+      <a href="https://maps.app.goo.gl/P85X12L329h5B6rL7" target="_blank" class="btn">Ver mapa de la iglesia</a>
+      <!-- Nota: Se usa un link genérico de ejemplo, el usuario puede actualizarlo -->
+
+      <h3 style="margin-top: 40px;">Recepción</h3>
+      <p>Salón de Eventos Astro Bahía de Todos Los Santos 140</p>
+      <p>Santa Ana Tlapaltitlán, 50020, Méx.</p>
+      <a href="https://maps.app.goo.gl/v31N83rK5K5L8QpW7" target="_blank" class="btn">Ver mapa de la recepción</a>
+    </div>
+
+    <!-- Sección Padres y Padrinos -->
+    <div class="section detalles">
+      <h2 class="cursive" style="margin-bottom: 20px;">Con la bendición de Dios y nuestros padres</h2>
+      <p>Nadia Ivonne Camacho Díaz</p>
+      <p>&</p>
+      <p>Carlos García Tranquilino</p>
+
+      <h3 style="margin-top: 20px;" class="cursive">Padrino</h3>
+      <p>Guillermo García Tranquilino</p>
+    </div>
+
+    <!-- Sección Confirmación (RSVP) -->
+    <div class="section" id="rsvpSection" style="display:none;">
+      <h2 class="cursive" style="margin-bottom: 20px;">Confirmación de Asistencia</h2>
+      <p style="margin-bottom: 20px;">Por favor, confírmanos si podrás acompañarnos:</p>
+
+      <div id="botonesRsvp">
+        <button class="btn btn-gold" onclick="enviarConfirmacion('Sí')">¡Sí, ahí estaremos!</button>
+        <button class="btn" onclick="enviarConfirmacion('No')">No podremos asistir</button>
+      </div>
+
+      <div id="loaderRsvp" class="loader"></div>
+      <div id="mensajeRespuesta" style="display:none; margin-top:20px; font-weight:bold; color:var(--color-azul-oscuro);"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. LÓGICA DE CUENTA REGRESIVA
+    // ==========================================
+    // Fecha objetivo: 28 de Noviembre de 2026 a las 13:00 hrs
+    const countDownDate = new Date("Nov 28, 2026 13:00:00").getTime();
+
+    const x = setInterval(function() {
+      const now = new Date().getTime();
+      const distance = countDownDate - now;
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").innerHTML = days < 10 ? "0" + days : days;
+      document.getElementById("hours").innerHTML = hours < 10 ? "0" + hours : hours;
+      document.getElementById("minutes").innerHTML = minutes < 10 ? "0" + minutes : minutes;
+      document.getElementById("seconds").innerHTML = seconds < 10 ? "0" + seconds : seconds;
+
+      if (distance < 0) {
+        clearInterval(x);
+        document.querySelector(".countdown").innerHTML = "<h3 style='color:var(--color-azul-oscuro)'>¡Hoy es el gran día!</h3>";
+      }
+    }, 1000);
+
+    // ==========================================
+    // 2. LÓGICA DEL INVITADO Y GOOGLE SHEETS
+    // ==========================================
+
+    // Obtenemos la variable inyectada desde el servidor de Google Apps Script
+    // Si no estamos en el entorno de Google (ej. probando local), será nula o undefined.
+    let idInvitado = null;
+    try {
+      idInvitado = <?= JSON.stringify(idInvitado) ?>;
+    } catch(e) {
+      console.log("No se detectó variable del servidor. Ejecución local o error.");
+    }
+
+    if (idInvitado) {
+      document.getElementById("invitadoContainer").style.display = "block";
+
+      // Llamamos al backend para obtener los datos
+      google.script.run
+        .withSuccessHandler(function(response) {
+          document.getElementById("loadingInvitado").style.display = "none";
+
+          if (response.error) {
+            document.getElementById("errorInvitado").innerText = "El código de invitación no es válido.";
+            document.getElementById("errorInvitado").style.display = "block";
+          } else {
+            document.getElementById("nombreInvitadoDOM").innerText = response.nombre;
+            document.getElementById("boletosInvitadoDOM").innerText = response.boletos;
+            document.getElementById("mensajeInvitado").style.display = "block";
+
+            // Mostrar sección de confirmación
+            document.getElementById("rsvpSection").style.display = "block";
+
+            // Si ya había confirmado antes, mostrarlo
+            if (response.asistencia && response.asistencia !== "") {
+              mostrarMensaje("Tu respuesta actual: " + response.asistencia);
+            }
+          }
+        })
+        .obtenerDatosInvitado(idInvitado);
+    }
+
+    function enviarConfirmacion(respuesta) {
+      document.getElementById("botonesRsvp").style.display = "none";
+      document.getElementById("loaderRsvp").style.display = "block";
+      document.getElementById("mensajeRespuesta").style.display = "none";
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          document.getElementById("loaderRsvp").style.display = "none";
+          if (response.success) {
+             mostrarMensaje(respuesta === 'Sí' ? "¡Gracias por confirmar! Nos vemos pronto." : "Entendemos, gracias por avisarnos.");
+          } else {
+             mostrarMensaje("Hubo un error al guardar. Por favor, intenta de nuevo o contáctanos.", true);
+             document.getElementById("botonesRsvp").style.display = "block";
+          }
+        })
+        .registrarConfirmacion(idInvitado, respuesta, "");
+    }
+
+    function mostrarMensaje(texto, isError = false) {
+      const msgDiv = document.getElementById("mensajeRespuesta");
+      msgDiv.innerText = texto;
+      msgDiv.style.color = isError ? "red" : "var(--color-azul-oscuro)";
+      msgDiv.style.display = "block";
+    }
+  </script>
+</body>
+</html>
