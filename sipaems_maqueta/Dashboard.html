@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SIPAEMS - Tablero Ejecutivo</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <?!= include('CSS'); ?>
+</head>
+<body class="gris-claro-bg">
+
+    <!-- Navegación Superior -->
+    <nav class="sipaems-nav">
+        <div class="nav-wrapper container">
+            <a href="#" class="brand-logo"><i class="material-icons guinda-text left">account_balance</i>SIPAEMS</a>
+            <a href="#" data-target="mobile-demo" class="sidenav-trigger guinda-text"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="#"><i class="material-icons left">notifications</i>Notificaciones</a></li>
+                <li><a href="<?= url ?>?p=login" class="btn guinda-bg waves-effect waves-light">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidenav Mobile -->
+    <ul class="sidenav" id="mobile-demo">
+        <li><div class="user-view">
+            <div class="background guinda-bg"></div>
+            <a href="#name"><span class="white-text name">Secretaría / Subsecretaría</span></a>
+            <a href="#email"><span class="white-text email">Vista Ejecutiva</span></a>
+        </div></li>
+        <li><a href="<?= url ?>?p=login"><i class="material-icons">exit_to_app</i>Cerrar Sesión</a></li>
+    </ul>
+
+    <div class="container margin-top-30">
+        <!-- Encabezado de bienvenida -->
+        <div class="row">
+            <div class="col s12">
+                <h4 class="guinda-text bold">Tablero de Control Estratégico</h4>
+                <p class="grey-text text-darken-1">Visión integral del Sistema de Prospectiva para el Aprendizaje en la Educación Media Superior.</p>
+            </div>
+        </div>
+
+        <!-- KPIs Principales -->
+        <div class="row">
+            <div class="col s12 m3">
+                <div class="card-panel center-align hoverable">
+                    <i class="material-icons medium dorada-text">school</i>
+                    <h5 class="stat-value">1,273</h5>
+                    <span class="grey-text">Planteles Activos</span>
+                </div>
+            </div>
+            <div class="col s12 m3">
+                <div class="card-panel center-align hoverable">
+                    <i class="material-icons medium dorada-text">people</i>
+                    <h5 class="stat-value">29,868</h5>
+                    <span class="grey-text">Docentes Atendidos</span>
+                </div>
+            </div>
+            <div class="col s12 m3">
+                <div class="card-panel center-align hoverable">
+                    <i class="material-icons medium dorada-text">assignment_turned_in</i>
+                    <h5 class="stat-value">85%</h5>
+                    <span class="grey-text">Cumplimiento Eval.</span>
+                </div>
+            </div>
+            <div class="col s12 m3">
+                <div class="card-panel center-align hoverable">
+                    <i class="material-icons medium guinda-text">link</i>
+                    <!-- Alusión al sistema SUGEM -->
+                    <h5 class="stat-value" style="font-size: 1.8rem; padding-top: 10px;">SUGEM</h5>
+                    <span class="grey-text">Indicadores Académicos Sincronizados</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider margin-bottom-20"></div>
+
+        <h5 class="guinda-text bold">Ejes de Operación SIPAEMS</h5>
+        <div class="row">
+            <!-- Eje 1 -->
+            <div class="col s12 m6">
+                <div class="card dashboard-card eje1">
+                    <div class="card-content">
+                        <span class="card-title bold"><i class="material-icons left green-text">assessment</i> Eje 1: Evaluación para el Aprendizaje</span>
+                        <p>Resultados formativos, sumativos y progresivos orientados a la mejora.</p>
+                        <div class="progress green lighten-4">
+                            <div class="determinate green" style="width: 70%"></div>
+                        </div>
+                        <small>Avance del Plan Anual: 70%</small>
+                    </div>
+                    <div class="card-action">
+                        <a href="#" class="guinda-text">Ver detalle del Eje</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eje 2 -->
+            <div class="col s12 m6">
+                <div class="card dashboard-card eje2">
+                    <div class="card-content">
+                        <span class="card-title bold"><i class="material-icons left blue-text">public</i> Eje 2: Cultura de la Evaluación</span>
+                        <p>Apropiación, difusión e intervención pedagógica basada en evidencias.</p>
+                        <div class="progress blue lighten-4">
+                            <div class="determinate blue" style="width: 45%"></div>
+                        </div>
+                        <small>Avance del Plan Anual: 45%</small>
+                    </div>
+                    <div class="card-action">
+                        <a href="#" class="guinda-text">Ver detalle del Eje</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eje 3 (El que desarrollaremos a detalle) -->
+            <div class="col s12 m6">
+                <div class="card dashboard-card eje3">
+                    <div class="card-content">
+                        <span class="card-title bold"><i class="material-icons left orange-text">group_work</i> Eje 3: Desarrollo Profesional Docente</span>
+                        <p>Módulo interactivo de necesidades de formación, capacitación y acompañamiento.</p>
+                        <div class="progress orange lighten-4">
+                            <div class="determinate orange" style="width: 90%"></div>
+                        </div>
+                        <small>Avance del Plan Anual: 90%</small>
+                    </div>
+                    <div class="card-action">
+                        <a href="<?= url ?>?p=eje3" class="btn btn-outline waves-effect">Acceder al Módulo</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eje 4 -->
+            <div class="col s12 m6">
+                <div class="card dashboard-card eje4">
+                    <div class="card-content">
+                        <span class="card-title bold"><i class="material-icons left purple-text">timeline</i> Eje 4: Prospectiva Educativa</span>
+                        <p>Anticipación de escenarios, innovación y toma de decisiones basadas en datos.</p>
+                        <div class="progress purple lighten-4">
+                            <div class="determinate purple" style="width: 30%"></div>
+                        </div>
+                        <small>Avance del Plan Anual: 30%</small>
+                    </div>
+                    <div class="card-action">
+                        <a href="#" class="guinda-text">Ver detalle del Eje</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elemsSidenav = document.querySelectorAll('.sidenav');
+            M.Sidenav.init(elemsSidenav);
+        });
+    </script>
+</body>
+</html>

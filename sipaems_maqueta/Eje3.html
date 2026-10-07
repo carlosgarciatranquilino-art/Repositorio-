@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SIPAEMS - Eje 3: Desarrollo Profesional Docente</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <?!= include('CSS'); ?>
+</head>
+<body class="gris-claro-bg">
+
+    <!-- Navegación Superior -->
+    <nav class="sipaems-nav">
+        <div class="nav-wrapper container">
+            <a href="<?= url ?>?p=dashboard" class="brand-logo"><i class="material-icons guinda-text left">arrow_back</i>Eje 3</a>
+            <a href="#" data-target="mobile-demo" class="sidenav-trigger guinda-text"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="<?= url ?>?p=dashboard"><i class="material-icons left">dashboard</i>Volver al Tablero</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidenav Mobile -->
+    <ul class="sidenav" id="mobile-demo">
+        <li><div class="user-view">
+            <div class="background guinda-bg"></div>
+            <a href="#name"><span class="white-text name">Coordinación Eje 3</span></a>
+            <a href="#email"><span class="white-text email">Desarrollo Profesional</span></a>
+        </div></li>
+        <li><a href="<?= url ?>?p=dashboard"><i class="material-icons">arrow_back</i>Volver al Tablero</a></li>
+    </ul>
+
+    <div class="container margin-top-30">
+        <div class="row">
+            <div class="col s12">
+                <h4 class="guinda-text bold"><i class="material-icons orange-text" style="font-size: 2.2rem; vertical-align: bottom;">group_work</i> Desarrollo Profesional Docente</h4>
+                <p class="grey-text text-darken-1">Panel de administración para el diagnóstico de necesidades, carga de programas de trabajo y visualización de indicadores.</p>
+            </div>
+        </div>
+
+        <!-- Menú de Pestañas del Coordinador -->
+        <div class="row">
+            <div class="col s12">
+                <ul class="tabs tabs-fixed-width z-depth-1">
+                    <li class="tab col s4"><a class="active guinda-text" href="#informe">Tablero R Shiny</a></li>
+                    <li class="tab col s4"><a class="guinda-text" href="#programa">Programa de Trabajo</a></li>
+                    <li class="tab col s4"><a class="guinda-text" href="#captura">Módulo de Captura</a></li>
+                </ul>
+            </div>
+
+            <!-- Tab 1: Informe R Shiny Simulado -->
+            <div id="informe" class="col s12 white margin-top-20" style="padding: 20px; border-radius: 0 0 8px 8px;">
+                <h5 class="bold">Resultados del Diagnóstico de Necesidades</h5>
+                <p>Aquí se integra el análisis interactivo de necesidades de formación desarrollado en R Studio.</p>
+
+                <div class="iframe-container">
+                    <!-- En la plataforma real, aquí iría el URL de la app en shinyapps.io o servidor R -->
+                    <div class="iframe-placeholder">
+                        <i class="material-icons dorada-text" style="font-size: 4rem;">bar_chart</i>
+                        <h5 class="grey-text">Cargando Visualización de R Shiny...</h5>
+                        <p class="grey-text">(Espacio reservado para embeber la aplicación interactiva)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Programa de Trabajo (Sin Código) -->
+            <div id="programa" class="col s12 white margin-top-20" style="padding: 20px; border-radius: 0 0 8px 8px;">
+                <h5 class="bold">Gestor del Programa Anual</h5>
+                <p>Módulo diseñado para que la Coordinación pueda actualizar y publicar documentos y evidencias sin necesidad de conocimientos en programación.</p>
+
+                <div class="row margin-top-30">
+                    <div class="col s12 m6">
+                        <div class="card-panel grey lighten-4 center-align" style="border: 2px dashed #ccc;">
+                            <i class="material-icons medium grey-text">cloud_upload</i>
+                            <h6>Subir Nuevo Documento / PDF</h6>
+                            <p class="grey-text">Arrastra el archivo o haz clic aquí.</p>
+                            <button class="btn guinda-bg waves-effect">Seleccionar Archivo</button>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <h6 class="bold">Documentos Publicados Recientemente</h6>
+                        <ul class="collection">
+                            <li class="collection-item avatar">
+                                <i class="material-icons circle red">picture_as_pdf</i>
+                                <span class="title bold">Programa Anual de Trabajo 2024</span>
+                                <p>Publicado: 12 de Enero 2024</p>
+                                <a href="#!" class="secondary-content"><i class="material-icons guinda-text">download</i></a>
+                            </li>
+                            <li class="collection-item avatar">
+                                <i class="material-icons circle blue">insert_drive_file</i>
+                                <span class="title bold">Evidencias Capacitación Q1</span>
+                                <p>Publicado: 05 de Abril 2024</p>
+                                <a href="#!" class="secondary-content"><i class="material-icons guinda-text">download</i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Módulo de Captura -->
+            <div id="captura" class="col s12 white margin-top-20" style="padding: 20px; border-radius: 0 0 8px 8px;">
+                <h5 class="bold">Creación de Evaluaciones</h5>
+                <p>Generación y distribución de nuevos instrumentos de evaluación para los docentes.</p>
+
+                <form class="margin-top-20">
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <input id="titulo_eval" type="text" class="validate">
+                            <label for="titulo_eval">Título de la Evaluación / Curso</label>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <select>
+                                <option value="" disabled selected>Seleccione Subsistema</option>
+                                <option value="1">Bachillerato General</option>
+                                <option value="2">Bachillerato Tecnológico</option>
+                                <option value="3">Telebachillerato Comunitario</option>
+                                <option value="4">Todos los Subsistemas</option>
+                            </select>
+                            <label>Público Objetivo</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="descripcion" class="materialize-textarea"></textarea>
+                            <label for="descripcion">Descripción y Objetivos</label>
+                        </div>
+                    </div>
+                    <button type="button" class="btn guinda-bg waves-effect right" onclick="M.toast({html: 'Instrumento guardado correctamente'})"><i class="material-icons left">save</i> Guardar Borrador</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elemsSidenav = document.querySelectorAll('.sidenav');
+            M.Sidenav.init(elemsSidenav);
+
+            var elemsTabs = document.querySelectorAll('.tabs');
+            M.Tabs.init(elemsTabs);
+
+            var elemsSelect = document.querySelectorAll('select');
+            M.FormSelect.init(elemsSelect);
+        });
+    </script>
+</body>
+</html>

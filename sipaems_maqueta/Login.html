@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SIPAEMS - Iniciar Sesión</title>
+    <!-- Materialize CSS para componentes limpios -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <?!= include('CSS'); ?>
+</head>
+<body class="login-bg">
+
+    <div class="container login-container">
+        <div class="row">
+            <div class="col s12 m8 offset-m2 l6 offset-l3">
+                <div class="card login-card z-depth-4">
+                    <div class="card-content">
+                        <div class="center-align">
+                            <!-- Logo Placeholder -->
+                            <i class="material-icons large guinda-text">account_balance</i>
+                            <h4 class="guinda-text bold">SIPAEMS</h4>
+                            <p class="grey-text text-darken-1">Sistema de Prospectiva para el Aprendizaje en la Educación Media Superior</p>
+                            <div class="divider margin-top-20 margin-bottom-20"></div>
+                            <span class="card-title">Ingreso al Portal</span>
+                        </div>
+
+                        <form id="loginForm">
+                            <div class="input-field">
+                                <i class="material-icons prefix">person</i>
+                                <select id="roleSelect">
+                                    <option value="" disabled selected>Seleccione su rol de acceso</option>
+                                    <option value="secretario">Secretaría / Subsecretaría (Vista Ejecutiva)</option>
+                                    <option value="eje3">Coordinador Eje 3 (Desarrollo Profesional)</option>
+                                    <option value="plantel">Director de Plantel</option>
+                                </select>
+                                <label>Perfil de Usuario</label>
+                            </div>
+
+                            <div class="input-field">
+                                <i class="material-icons prefix">lock</i>
+                                <input id="password" type="password" class="validate" value="123456" readonly>
+                                <label for="password">Contraseña (Simulada)</label>
+                                <span class="helper-text">Para esta demostración, el acceso es directo seleccionando el rol.</span>
+                            </div>
+
+                            <div class="center-align margin-top-30">
+                                <button class="btn waves-effect waves-light guinda-bg btn-large" type="button" onclick="simularLogin()">
+                                    Ingresar al Sistema
+                                    <i class="material-icons right">send</i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-action center-align dorada-bg white-text">
+                        <span>Gobierno del Estado de México</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('select');
+            M.FormSelect.init(elems);
+        });
+
+        function simularLogin() {
+            const role = document.getElementById('roleSelect').value;
+            if (!role) {
+                M.toast({html: 'Por favor, seleccione un rol de acceso.', classes: 'red rounded'});
+                return;
+            }
+
+            // URL base inyectada desde el backend
+            let baseUrl = "<?= url ?>";
+            // Fallback para visualización local
+            if (!baseUrl || baseUrl === "<?= url ?>") {
+                baseUrl = window.location.href.split('?')[0];
+            }
+
+            M.toast({html: 'Iniciando sesión...', classes: 'green rounded'});
+
+            setTimeout(() => {
+                if(role === 'secretario') {
+                   window.top.location.href = baseUrl + "?p=dashboard";
+                } else if (role === 'eje3') {
+                   window.top.location.href = baseUrl + "?p=eje3";
+                } else {
+                   M.toast({html: 'Vista en construcción para la maqueta.', classes: 'orange rounded'});
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
