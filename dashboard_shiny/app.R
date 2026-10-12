@@ -220,18 +220,30 @@ server <- function(input, output) {
   })
 
   output$plot_indicadores <- renderPlot({
-    datos_largos_filtrados() %>%
+    datos_resumen <- datos_largos_filtrados() %>%
       filter(!is.na(indicador_dominio_marco_excelencia)) %>%
       group_by(indicador_dominio_marco_excelencia) %>%
-      summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
-      ggplot(aes(x = reorder(stringr::str_wrap(indicador_dominio_marco_excelencia, 45), promedio), y = promedio)) +
-      geom_col(fill = "#BC955B") +
+      summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+      arrange(desc(promedio))
+
+    if(nrow(datos_resumen) > 5) {
+      top_3 <- head(datos_resumen, 3) %>% mutate(tipo = "Área Crítica (Top 3)")
+      bottom_2 <- tail(datos_resumen, 2) %>% mutate(tipo = "Fortaleza Operativa (Bottom 2)")
+      datos_plot <- bind_rows(top_3, bottom_2)
+    } else {
+      datos_plot <- datos_resumen %>% mutate(tipo = "Área Crítica (Top 3)")
+    }
+
+    datos_plot %>%
+      ggplot(aes(x = reorder(stringr::str_wrap(indicador_dominio_marco_excelencia, 45), promedio), y = promedio, fill = tipo)) +
+      geom_col() +
       geom_text(aes(label = round(promedio, 2)), hjust = -0.2, size = 5, fontface = "bold") +
       coord_flip(clip = "off") +
       theme_minimal(base_size = 13) +
-      labs(x = "", y = "Nivel Promedio de Necesidad (1-5)") +
+      scale_fill_manual(values = c("Área Crítica (Top 3)" = "#9F2241", "Fortaleza Operativa (Bottom 2)" = "#977E5B")) +
+      labs(x = "", y = "Nivel Promedio de Necesidad (1-5)", fill = "Prioridad") +
       scale_y_continuous(limits = c(0, 5)) +
-      theme(plot.margin = margin(10, 30, 10, 10))
+      theme(plot.margin = margin(10, 30, 10, 10), legend.position = "bottom")
   })
 
   output$plot_cruce_inteligente <- renderPlot({
