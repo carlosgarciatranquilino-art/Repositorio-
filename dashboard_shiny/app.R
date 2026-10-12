@@ -89,8 +89,12 @@ ui <- dashboardPage(
                     plotOutput("plot_dominios"))
               ),
               fluidRow(
-                box(width = 12, title = "Promedio de Necesidad por Línea Temática (COSAC)", status = "warning", solidHeader = TRUE,
-                    plotOutput("plot_lineas"))
+                box(width = 12, title = "Promedio de Necesidad por Indicador Operativo (USICAMM)", status = "warning", solidHeader = TRUE,
+                    plotOutput("plot_indicadores", height = "500px"))
+              ),
+              fluidRow(
+                box(width = 12, title = "Matriz Estratégica de Cruce: Indicadores (USICAMM) vs Líneas (COSAC)", status = "primary", solidHeader = TRUE,
+                    plotOutput("plot_cruce_inteligente", height = "600px"))
               )
       ),
       # Nueva Pestaña 3: Inteligencia Ejecutiva
@@ -215,19 +219,49 @@ server <- function(input, output) {
       theme(plot.margin = margin(10, 30, 10, 10))
   })
 
-  output$plot_lineas <- renderPlot({
+  output$plot_indicadores <- renderPlot({
     datos_largos_filtrados() %>%
-      filter(!is.na(lineas_tematicas_orientaciones_cosac)) %>%
-      group_by(lineas_tematicas_orientaciones_cosac) %>%
+      filter(!is.na(indicador_dominio_marco_excelencia)) %>%
+      group_by(indicador_dominio_marco_excelencia) %>%
       summarise(promedio = mean(respuesta, na.rm = TRUE)) %>%
-      ggplot(aes(x = reorder(stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 35), promedio), y = promedio)) +
+      ggplot(aes(x = reorder(stringr::str_wrap(indicador_dominio_marco_excelencia, 45), promedio), y = promedio)) +
       geom_col(fill = "#BC955B") +
       geom_text(aes(label = round(promedio, 2)), hjust = -0.2, size = 5, fontface = "bold") +
       coord_flip(clip = "off") +
-      theme_minimal(base_size = 14) +
+      theme_minimal(base_size = 13) +
       labs(x = "", y = "Nivel Promedio de Necesidad (1-5)") +
       scale_y_continuous(limits = c(0, 5)) +
       theme(plot.margin = margin(10, 30, 10, 10))
+  })
+
+  output$plot_cruce_inteligente <- renderPlot({
+    req(nrow(datos_largos_filtrados()) > 0)
+
+    # Preparamos datos para la matriz de calor (Burbujas)
+    datos_burbujas <- datos_largos_filtrados() %>%
+      filter(!is.na(indicador_dominio_marco_excelencia) & !is.na(lineas_tematicas_orientaciones_cosac)) %>%
+      group_by(indicador_dominio_marco_excelencia, lineas_tematicas_orientaciones_cosac) %>%
+      summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop")
+
+    # Creamos el Bubble Chart
+    ggplot(datos_burbujas, aes(x = stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 20),
+                               y = stringr::str_wrap(indicador_dominio_marco_excelencia, 35))) +
+      geom_point(aes(size = promedio, color = promedio), alpha = 0.85) +
+      geom_text(aes(label = round(promedio, 1)), color = "white", size = 3.5, fontface = "bold") +
+      scale_color_gradient(low = "#DDC8A4", high = "#56212F") +
+      scale_size(range = c(8, 22), guide = "none") +
+      theme_minimal(base_size = 13) +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 11, face = "bold", color = "#333333"),
+        axis.text.y = element_text(size = 11, color = "#333333"),
+        panel.grid.major = element_line(color = "#e0e0e0", linetype = "dashed"),
+        legend.position = "right"
+      ) +
+      labs(
+        x = "Línea Temática (COSAC)",
+        y = "Indicador (USICAMM)",
+        color = "Urgencia\n(1-5)"
+      )
   })
 
   # Cajas de Inteligencia Ejecutiva (Top 1)
