@@ -134,17 +134,19 @@ ui <- dashboardPage(
       # Nueva Pestaña 5: Análisis Transversal
       tabItem(tabName = "transversal",
               h2("Modelo de Formación Transversal"),
-              p("Este análisis interactivo calcula las prioridades operativas más altas (Top 1 y Top 2) con base en los filtros laterales y genera un diseño instruccional que relaciona el indicador de mayor necesidad con sus atributos y líneas transversales asociadas."),
+              p("Este análisis interactivo evalúa tanto las áreas de oportunidad más críticas (Top 2 Prioridades) como las competencias mejor evaluadas (Bottom 2 Fortalezas Estatales) con base en los filtros laterales. El objetivo es estructurar un diseño instruccional que relacione los indicadores con sus atributos y líneas transversales."),
               fluidRow(
                 box(width = 12, status = "danger", solidHeader = FALSE,
                     uiOutput("prosa_transversal")
                 )
               ),
               fluidRow(
-                box(width = 6, title = "Ecosistema de Red", status = "primary", solidHeader = TRUE,
-                    plotOutput("plot_red_transversal", height = "500px")),
-                box(width = 6, title = "Ruta de Implementación Instruccional (Sankey)", status = "warning", solidHeader = TRUE,
-                    sankeyNetworkOutput("plot_sankey_transversal", height = "500px"))
+                box(width = 12, title = "Ecosistema de Red", status = "primary", solidHeader = TRUE,
+                    plotOutput("plot_red_transversal", height = "800px"))
+              ),
+              fluidRow(
+                box(width = 12, title = "Ruta de Implementación Instruccional (Sankey)", status = "warning", solidHeader = TRUE,
+                    sankeyNetworkOutput("plot_sankey_transversal", height = "800px"))
               )
       )
     )
@@ -364,43 +366,66 @@ server <- function(input, output) {
 
   # --- NUEVO: Lógica del Análisis Transversal ---
 
-  top_2_indicadores <- reactive({
+  extremos_indicadores <- reactive({
     req(nrow(datos_largos_filtrados()) > 0)
-    datos_largos_filtrados() %>%
+    df_resumen <- datos_largos_filtrados() %>%
       filter(!is.na(indicador_dominio_marco_excelencia)) %>%
       group_by(indicador_dominio_marco_excelencia, dominio_marco_excelencia, pregunta_id) %>%
       summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
-      arrange(desc(promedio)) %>%
-      head(2)
+      arrange(desc(promedio))
+
+    if(nrow(df_resumen) > 4) {
+      top_2 <- head(df_resumen, 2) %>% mutate(categoria_extremo = "Prioridad Crítica", index = row_number())
+      bottom_2 <- tail(df_resumen, 2) %>% mutate(categoria_extremo = "Fortaleza Estatal", index = row_number())
+      bind_rows(top_2, bottom_2)
+    } else {
+      df_resumen %>% mutate(categoria_extremo = "Prioridad Crítica", index = row_number())
+    }
   })
 
   output$prosa_transversal <- renderUI({
     req(nrow(matriz_trans) > 0)
-    top_2 <- top_2_indicadores()
-    req(nrow(top_2) > 0)
+    datos_extremos <- extremos_indicadores()
+    req(nrow(datos_extremos) > 0)
 
     html_out <- ""
 
-    for(i in 1:nrow(top_2)) {
-      indicador <- top_2$indicador_dominio_marco_excelencia[i]
-      dominio <- top_2$dominio_marco_excelencia[i]
-      pregunta <- top_2$pregunta_id[i]
-      promedio <- round(top_2$promedio[i], 2)
+    for(i in 1:nrow(datos_extremos)) {
+      indicador <- datos_extremos$indicador_dominio_marco_excelencia[i]
+      dominio <- datos_extremos$dominio_marco_excelencia[i]
+      pregunta <- datos_extremos$pregunta_id[i]
+      promedio <- round(datos_extremos$promedio[i], 2)
+      cat_extremo <- datos_extremos$categoria_extremo[i]
+      idx <- datos_extremos$index[i]
 
       relaciones <- matriz_trans %>% filter(tolower(Pregunta_ID) == tolower(pregunta))
       lineas <- relaciones %>% filter(tolower(Categoria) %in% c("linea", "línea", "linea tematica", "línea temática")) %>% pull(Valor_Transversal)
       atributos <- relaciones %>% filter(tolower(Categoria) %in% c("atributo")) %>% pull(Valor_Transversal)
 
+      # Estilos por tipo
+      if(cat_extremo == "Prioridad Crítica") {
+        b_color <- "#fcf8e3"
+        b_border <- "#9F2241"
+        h_color <- "#9F2241"
+        texto_intro <- paste0("Para resolver esta <strong>necesidad crítica</strong>, la formación deberá enmarcarse en el eje central de <strong>", dominio, "</strong>. El objetivo de aprendizaje específico deberá centrarse de lleno en <strong>", indicador, "</strong>.")
+        texto_trans <- "Sin embargo, para garantizar un impacto integral, el programa formativo debe tejer de manera transversal los siguientes componentes complementarios: "
+      } else {
+        b_color <- "#f0fdf4"
+        b_border <- "#977E5B"
+        h_color <- "#977E5B"
+        texto_intro <- paste0("Esta área representa una <strong>fortaleza estatal consolidada</strong>. La práctica docente ya domina el eje de <strong>", dominio, "</strong> con alta solvencia en <strong>", indicador, "</strong>.")
+        texto_trans <- "Para capitalizar esta fortaleza, se sugiere utilizar a estos docentes como tutores (mentoría inversa) para transferir a otros colegas los siguientes elementos transversales: "
+      }
+
       prosa <- paste0(
-        "<div style='background-color: #fcf8e3; padding: 15px; border-left: 5px solid #9F2241; margin-bottom: 15px;'>",
-        "<h4 style='color: #9F2241; margin-top: 0;'>Prioridad Top ", i, ": ", indicador, "</h4>",
-        "<p><strong>Nivel de Necesidad Filtrado:</strong> ", promedio, " / 5.0</p>",
-        "<p style='text-align: justify;'>Para resolver esta necesidad crítica, la formación deberá enmarcarse en el eje central de <strong>", dominio, "</strong>. ",
-        "El objetivo de aprendizaje específico deberá centrarse de lleno en <strong>", indicador, "</strong>. "
+        "<div style='background-color: ", b_color, "; padding: 15px; border-left: 5px solid ", b_border, "; margin-bottom: 15px;'>",
+        "<h4 style='color: ", h_color, "; margin-top: 0;'>", cat_extremo, " #", idx, ": ", indicador, "</h4>",
+        "<p><strong>Puntaje Promedio:</strong> ", promedio, " / 5.0</p>",
+        "<p style='text-align: justify;'>", texto_intro, " "
       )
 
       if(length(lineas) > 0 || length(atributos) > 0) {
-        prosa <- paste0(prosa, "Sin embargo, para garantizar un impacto integral, el programa formativo debe tejer de manera transversal los siguientes componentes complementarios: ")
+        prosa <- paste0(prosa, texto_trans)
         if(length(lineas) > 0) {
           prosa <- paste0(prosa, "alineándose estratégicamente con las líneas de <em>", paste(lineas, collapse = ", "), "</em>")
           if(length(atributos) > 0) prosa <- paste0(prosa, "; y ") else prosa <- paste0(prosa, ".")
@@ -421,59 +446,79 @@ server <- function(input, output) {
 
   output$plot_red_transversal <- renderPlot({
     req(nrow(matriz_trans) > 0)
-    top_2 <- top_2_indicadores()
-    req(nrow(top_2) > 0)
+    datos_extremos <- extremos_indicadores()
+    req(nrow(datos_extremos) > 0)
 
     enlaces <- data.frame(origen = character(), destino = character(), tipo = character(), stringsAsFactors = FALSE)
 
-    for(i in 1:nrow(top_2)) {
-      indicador <- as.character(top_2$indicador_dominio_marco_excelencia[i])
-      pregunta <- as.character(top_2$pregunta_id[i])
-      ind_corto <- paste0("Top ", i, "\n", stringr::str_sub(indicador, 1, 30), "...")
+    for(i in 1:nrow(datos_extremos)) {
+      indicador <- as.character(datos_extremos$indicador_dominio_marco_excelencia[i])
+      pregunta <- as.character(datos_extremos$pregunta_id[i])
+      promedio <- round(datos_extremos$promedio[i], 2)
+      cat_extremo <- datos_extremos$categoria_extremo[i]
+      idx <- datos_extremos$index[i]
+
+      tipo_nodo <- if(cat_extremo == "Prioridad Crítica") "Indicador Crítico" else "Fortaleza Estatal"
+      ind_corto <- paste0(tipo_nodo, " #", idx, "\n", stringr::str_sub(indicador, 1, 30), "...\n(Promedio: ", promedio, ")")
 
       relaciones <- matriz_trans %>% filter(tolower(Pregunta_ID) == tolower(pregunta))
 
       if(nrow(relaciones) > 0) {
         for(j in 1:nrow(relaciones)) {
-          enlaces <- rbind(enlaces, data.frame(origen = ind_corto, destino = relaciones$Valor_Transversal[j], tipo = relaciones$Categoria[j]))
+          enlaces <- rbind(enlaces, data.frame(origen = ind_corto, destino = relaciones$Valor_Transversal[j], tipo = relaciones$Categoria[j], tipo_origen = tipo_nodo))
         }
       }
     }
 
     req(nrow(enlaces) > 0)
     grafo <- graph_from_data_frame(d = enlaces, directed = FALSE)
+
+    # Asignar tipos a los nodos para el coloreo
     V(grafo)$tipo <- "Transversal"
-    V(grafo)$tipo[V(grafo)$name %in% enlaces$origen] <- "Indicador Crítico"
+    # Filtrar nodos origen que son críticos o fortalezas
+    nodos_criticos <- enlaces %>% filter(tipo_origen == "Indicador Crítico") %>% pull(origen) %>% unique()
+    nodos_fortalezas <- enlaces %>% filter(tipo_origen == "Fortaleza Estatal") %>% pull(origen) %>% unique()
+
+    V(grafo)$tipo[V(grafo)$name %in% nodos_criticos] <- "Indicador Crítico"
+    V(grafo)$tipo[V(grafo)$name %in% nodos_fortalezas] <- "Fortaleza Estatal"
 
     set.seed(42)
     ggraph(grafo, layout = "fr") +
       geom_edge_link(aes(edge_alpha = 0.5), edge_width = 1, color = "#DDC8A4") +
       geom_node_point(aes(color = tipo, size = tipo)) +
-      geom_node_text(aes(label = name), repel = TRUE, size = 4, fontface = "bold") +
-      scale_color_manual(values = c("Indicador Crítico" = "#9F2241", "Transversal" = "#56212F")) +
-      scale_size_manual(values = c("Indicador Crítico" = 10, "Transversal" = 6)) +
+      geom_node_text(aes(label = name), repel = TRUE, size = 4.5, fontface = "bold") +
+      scale_color_manual(values = c("Indicador Crítico" = "#9F2241", "Fortaleza Estatal" = "#977E5B", "Transversal" = "#56212F")) +
+      scale_size_manual(values = c("Indicador Crítico" = 12, "Fortaleza Estatal" = 12, "Transversal" = 6)) +
       theme_void() +
-      theme(legend.position = "bottom", legend.title = element_blank())
+      theme(legend.position = "bottom", legend.title = element_blank(), legend.text = element_text(size=12))
   })
 
   output$plot_sankey_transversal <- renderSankeyNetwork({
     req(nrow(matriz_trans) > 0)
-    top_2 <- top_2_indicadores()
-    req(nrow(top_2) > 0)
+    datos_extremos <- extremos_indicadores()
+    req(nrow(datos_extremos) > 0)
 
     enlaces_sankey <- data.frame(origen = character(), destino = character(), valor = numeric(), stringsAsFactors = FALSE)
 
-    for(i in 1:nrow(top_2)) {
-      dominio <- as.character(top_2$dominio_marco_excelencia[i])
-      indicador <- paste0("Top ", i, ": ", stringr::str_sub(as.character(top_2$indicador_dominio_marco_excelencia[i]), 1, 40), "...")
-      pregunta <- as.character(top_2$pregunta_id[i])
+    for(i in 1:nrow(datos_extremos)) {
+      dominio <- as.character(datos_extremos$dominio_marco_excelencia[i])
+      indicador <- as.character(datos_extremos$indicador_dominio_marco_excelencia[i])
+      pregunta <- as.character(datos_extremos$pregunta_id[i])
+      promedio <- round(datos_extremos$promedio[i], 2)
+      cat_extremo <- datos_extremos$categoria_extremo[i]
+      idx <- datos_extremos$index[i]
 
-      enlaces_sankey <- rbind(enlaces_sankey, data.frame(origen = stringr::str_sub(dominio, 1, 30), destino = indicador, valor = 3))
+      prefijo <- if(cat_extremo == "Prioridad Crítica") "Crit." else "Fort."
+      ind_formateado <- paste0(prefijo, " ", idx, ": ", stringr::str_sub(indicador, 1, 40), "... (", promedio, ")")
+      dom_formateado <- stringr::str_sub(dominio, 1, 40)
+
+      # Enlace Dominio -> Indicador
+      enlaces_sankey <- rbind(enlaces_sankey, data.frame(origen = dom_formateado, destino = ind_formateado, valor = 3))
 
       relaciones <- matriz_trans %>% filter(tolower(Pregunta_ID) == tolower(pregunta))
       if(nrow(relaciones) > 0) {
         for(j in 1:nrow(relaciones)) {
-          enlaces_sankey <- rbind(enlaces_sankey, data.frame(origen = indicador, destino = relaciones$Valor_Transversal[j], valor = 1))
+          enlaces_sankey <- rbind(enlaces_sankey, data.frame(origen = ind_formateado, destino = relaciones$Valor_Transversal[j], valor = 1))
         }
       }
     }
