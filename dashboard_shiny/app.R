@@ -238,28 +238,40 @@ server <- function(input, output) {
     req(nrow(datos_largos_filtrados()) > 0)
 
     # Preparamos datos para la matriz de calor (Burbujas)
-    datos_burbujas <- datos_largos_filtrados() %>%
+    datos_burbujas_completos <- datos_largos_filtrados() %>%
       filter(!is.na(indicador_dominio_marco_excelencia) & !is.na(lineas_tematicas_orientaciones_cosac)) %>%
       group_by(indicador_dominio_marco_excelencia, lineas_tematicas_orientaciones_cosac) %>%
-      summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop")
+      summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+      arrange(desc(promedio))
 
-    # Creamos el Bubble Chart
-    ggplot(datos_burbujas, aes(x = stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 20),
-                               y = stringr::str_wrap(indicador_dominio_marco_excelencia, 35))) +
-      geom_point(aes(size = promedio, color = promedio), alpha = 0.85) +
-      geom_text(aes(label = round(promedio, 1)), color = "white", size = 3.5, fontface = "bold") +
+    # Extracción de extremos estratégicos: Top 3 (Críticos) y Bottom 2 (Fortalezas)
+    # Se añade un control para evitar errores si hay muy pocas cruzas posibles
+    if(nrow(datos_burbujas_completos) > 5) {
+      top_3 <- head(datos_burbujas_completos, 3)
+      bottom_2 <- tail(datos_burbujas_completos, 2)
+      datos_burbujas <- bind_rows(top_3, bottom_2)
+    } else {
+      datos_burbujas <- datos_burbujas_completos
+    }
+
+    # Creamos el Bubble Chart Ejecutivo
+    ggplot(datos_burbujas, aes(x = stringr::str_wrap(lineas_tematicas_orientaciones_cosac, 30),
+                               y = stringr::str_wrap(indicador_dominio_marco_excelencia, 50))) +
+      geom_point(aes(size = promedio, color = promedio), alpha = 0.9) +
+      geom_text(aes(label = round(promedio, 2)), color = "white", size = 5, fontface = "bold") +
       scale_color_gradient(low = "#DDC8A4", high = "#56212F") +
-      scale_size(range = c(8, 22), guide = "none") +
-      theme_minimal(base_size = 13) +
+      scale_size(range = c(15, 30), guide = "none") + # Burbujas más grandes para texto legible
+      theme_minimal(base_size = 16) + # Letra base más grande
       theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 11, face = "bold", color = "#333333"),
-        axis.text.y = element_text(size = 11, color = "#333333"),
+        axis.text.x = element_text(angle = 15, hjust = 0.5, size = 13, face = "bold", color = "#56212F"),
+        axis.text.y = element_text(size = 14, color = "#333333", face = "bold"),
         panel.grid.major = element_line(color = "#e0e0e0", linetype = "dashed"),
-        legend.position = "right"
+        legend.position = "right",
+        plot.margin = margin(20, 20, 20, 20)
       ) +
       labs(
-        x = "Línea Temática (COSAC)",
-        y = "Indicador (USICAMM)",
+        x = "\nLínea Temática (COSAC)",
+        y = "Indicador Crítico (USICAMM)\n",
         color = "Urgencia\n(1-5)"
       )
   })
