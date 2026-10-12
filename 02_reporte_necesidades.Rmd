@@ -56,6 +56,12 @@ library(broom)       # Para mostrar resultados de modelos estadísticos
 if(file.exists("datos_limpios.rds") & file.exists("matriz_dimensiones.rds")){
   datos <- readRDS("datos_limpios.rds")
   matriz <- readRDS("matriz_dimensiones.rds")
+
+  if(file.exists("matriz_transversal.csv")) {
+    matriz_trans <- read.csv("matriz_transversal.csv", stringsAsFactors = FALSE)
+  } else {
+    matriz_trans <- data.frame(Pregunta_ID = character(), Categoria = character(), Valor_Transversal = character())
+  }
 } else {
   stop("No se encontraron los datos limpios. Por favor ejecuta el script 01_preparacion_datos.R primero.")
 }
@@ -527,7 +533,177 @@ if("comentarios_finales" %in% names(datos) && exists("frecuencias_sentir") && nr
 }
 ```
 
-## 5. Resumen Ejecutivo (Conclusiones de Impacto)
+## 5. Modelo de Formación Transversal
+
+```{r transversalidad_inteligente, echo=FALSE, results='asis', warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+if(nrow(matriz_trans) > 0) {
+  cat("<p>La siguiente sección detalla las necesidades formativas más urgentes (Top 3) desglosadas en su diseño instruccional transversal. Esto permite que una misma intervención atienda el Indicador Principal, ramificándose simultáneamente a múltiples Líneas Temáticas y Atributos de acuerdo con la matriz de la mesa de expertos.</p>\n")
+
+  # Extraer el Top 3 de Indicadores más críticos
+  top_3_indicadores <- datos_likert %>%
+    filter(!is.na(indicador_dominio_marco_excelencia)) %>%
+    group_by(indicador_dominio_marco_excelencia, dominio_marco_excelencia, pregunta_id) %>%
+    summarise(promedio = mean(respuesta, na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(promedio)) %>%
+    head(3)
+
+  # Iterar sobre el Top 3 y generar prosa inteligente
+  for(i in 1:nrow(top_3_indicadores)) {
+    indicador_actual <- as.character(top_3_indicadores$indicador_dominio_marco_excelencia[i])
+    dominio_actual <- as.character(top_3_indicadores$dominio_marco_excelencia[i])
+    pregunta_actual <- as.character(top_3_indicadores$pregunta_id[i])
+    promedio_actual <- round(top_3_indicadores$promedio[i], 2)
+
+    # Filtrar las relaciones transversales para este Indicador/Pregunta
+    relaciones <- matriz_trans %>% filter(tolower(Pregunta_ID) == tolower(pregunta_actual))
+
+    lineas <- relaciones %>% filter(tolower(Categoria) %in% c("linea", "línea", "linea tematica", "línea temática")) %>% pull(Valor_Transversal)
+    atributos <- relaciones %>% filter(tolower(Categoria) %in% c("atributo")) %>% pull(Valor_Transversal)
+
+    # Construcción de la prosa
+    cat(paste0("\n<div style='background-color: #fcf8e3; padding: 20px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>\n"))
+    cat(paste0("<h4 style='color: #9F2241; margin-top: 0;'>Prioridad de Diseño #", i, ": ", indicador_actual, "</h4>\n"))
+    cat(paste0("<p style='font-size: 16px; margin-bottom: 10px;'><strong>Nivel de Necesidad:</strong> ", promedio_actual, " / 5.0</p>\n"))
+
+    cat(paste0("<p style='font-size: 16px; text-align: justify;'>\n"))
+    cat(paste0("Para resolver esta necesidad crítica, la formación deberá enmarcarse en el eje central de <strong>", dominio_actual, "</strong>. "))
+    cat(paste0("El objetivo de aprendizaje específico deberá centrarse de lleno en <strong>", indicador_actual, "</strong>. "))
+
+    if(length(lineas) > 0 || length(atributos) > 0) {
+      cat("Sin embargo, para garantizar un impacto integral, el programa formativo debe tejer de manera transversal los siguientes componentes complementarios: ")
+
+      if(length(lineas) > 0) {
+        cat(paste0("alineándose estratégicamente con las líneas de <em>", paste(lineas, collapse = ", "), "</em>"))
+        if(length(atributos) > 0) cat("; y ") else cat(".")
+      }
+
+      if(length(atributos) > 0) {
+        cat(paste0("fomentando directamente atributos docentes como el <em>", paste(atributos, collapse = ", "), "</em>."))
+      }
+    } else {
+      cat("No se registraron cruces transversales adicionales en la matriz de expertos para este rubro.")
+    }
+
+    cat("</p>\n</div>\n\n")
+  }
+} else {
+  cat("<p><em>La matriz transversal no fue proporcionada o se encuentra vacía. No es posible generar el análisis ramificado.</em></p>")
+}
+```
+
+### Visualización de Transversalidad: Grafo de Red (Network)
+
+```{r grafico_red, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+if(nrow(matriz_trans) > 0 && exists("top_3_indicadores")) {
+  library(igraph)
+  library(ggraph)
+
+  # Preparar los nodos y enlaces para el grafo
+  enlaces <- data.frame(origen = character(), destino = character(), tipo = character(), stringsAsFactors = FALSE)
+
+  for(i in 1:nrow(top_3_indicadores)) {
+    indicador <- as.character(top_3_indicadores$indicador_dominio_marco_excelencia[i])
+    pregunta <- as.character(top_3_indicadores$pregunta_id[i])
+
+    # Acortar el nombre del indicador para el nodo central
+    ind_corto <- paste0("Pri.", i, "\n", stringr::str_sub(indicador, 1, 30), "...")
+
+    relaciones <- matriz_trans %>% filter(tolower(Pregunta_ID) == tolower(pregunta))
+
+    if(nrow(relaciones) > 0) {
+      for(j in 1:nrow(relaciones)) {
+        categoria <- relaciones$Categoria[j]
+        valor <- relaciones$Valor_Transversal[j]
+        enlaces <- rbind(enlaces, data.frame(origen = ind_corto, destino = valor, tipo = categoria))
+      }
+    }
+  }
+
+  if(nrow(enlaces) > 0) {
+    # Crear el grafo igraph
+    grafo <- graph_from_data_frame(d = enlaces, directed = FALSE)
+
+    # Asignar colores según tipo (Indicador, Línea, Atributo)
+    V(grafo)$tipo <- "Transversal"
+    V(grafo)$tipo[V(grafo)$name %in% enlaces$origen] <- "Indicador Crítico"
+
+    # Plotear con ggraph
+    set.seed(42)
+    ggraph(grafo, layout = "fr") +
+      geom_edge_link(aes(edge_alpha = 0.5), edge_width = 1, color = "#DDC8A4") +
+      geom_node_point(aes(color = tipo, size = tipo)) +
+      geom_node_text(aes(label = name), repel = TRUE, size = 4, fontface = "bold") +
+      scale_color_manual(values = c("Indicador Crítico" = "#9F2241", "Transversal" = "#56212F")) +
+      scale_size_manual(values = c("Indicador Crítico" = 12, "Transversal" = 8)) +
+      theme_void() +
+      labs(title = "Ecosistema de Formación (Modelo de Red)", subtitle = "Cómo los indicadores prioritarios interactúan con las líneas y atributos transversales") +
+      theme(plot.title = element_text(color = "#56212F", size = 18, face = "bold"),
+            legend.position = "bottom",
+            legend.title = element_blank())
+  } else {
+    cat("<p><em>No hay suficientes datos de enlaces transversales para renderizar el grafo.</em></p>")
+  }
+}
+```
+
+### Visualización de Transversalidad: Flujo Estructural (Sankey)
+
+```{r grafico_sankey, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+# Utilizamos un chunk estándar sin asis y forzamos la renderización del widget html
+if(nrow(matriz_trans) > 0 && exists("top_3_indicadores")) {
+  library(networkD3)
+  library(dplyr)
+
+  enlaces_sankey <- data.frame(origen = character(), destino = character(), valor = numeric(), stringsAsFactors = FALSE)
+
+  for(i in 1:nrow(top_3_indicadores)) {
+    dominio <- as.character(top_3_indicadores$dominio_marco_excelencia[i])
+    indicador <- paste0("Top ", i, ": ", stringr::str_sub(as.character(top_3_indicadores$indicador_dominio_marco_excelencia[i]), 1, 40), "...")
+    pregunta <- as.character(top_3_indicadores$pregunta_id[i])
+
+    # Enlace: Dominio -> Indicador (Peso 3)
+    enlaces_sankey <- rbind(enlaces_sankey, data.frame(origen = stringr::str_sub(dominio, 1, 30), destino = indicador, valor = 3))
+
+    relaciones <- matriz_trans %>% filter(tolower(Pregunta_ID) == tolower(pregunta))
+
+    if(nrow(relaciones) > 0) {
+      for(j in 1:nrow(relaciones)) {
+        # Enlace: Indicador -> Transversal (Peso 1)
+        enlaces_sankey <- rbind(enlaces_sankey, data.frame(origen = indicador, destino = relaciones$Valor_Transversal[j], valor = 1))
+      }
+    }
+  }
+
+  if(nrow(enlaces_sankey) > 0) {
+    # Nodos únicos
+    nodos <- data.frame(name = unique(c(enlaces_sankey$origen, enlaces_sankey$destino)))
+
+    # Indices basados en 0 para networkD3
+    enlaces_sankey$IDorigen <- match(enlaces_sankey$origen, nodos$name) - 1
+    enlaces_sankey$IDdestino <- match(enlaces_sankey$destino, nodos$name) - 1
+
+    # Configurar colores institucionales
+    color_scale <- 'd3.scaleOrdinal().range(["#56212F", "#9F2241", "#BC955B", "#977E5B", "#DDC8A4"])'
+
+    # Generar Sankey
+    sankey <- sankeyNetwork(Links = enlaces_sankey, Nodes = nodos,
+                            Source = "IDorigen", Target = "IDdestino",
+                            Value = "valor", NodeID = "name",
+                            fontSize = 13, nodeWidth = 30, colourScale = color_scale,
+                            margin = list(top = 40, right = 10, bottom = 10, left = 10))
+
+    # Imprimir para renderizado
+    htmltools::browsable(
+      htmltools::tagList(
+        htmltools::tags$h4("Ruta de Implementación Instruccional (Sankey)", style="color:#56212F; text-align:center;"),
+        sankey
+      )
+    )
+  }
+}
+```
+
+## 6. Resumen Ejecutivo (Conclusiones de Impacto)
 
 ```{r conclusiones, results='asis'}
 # Calculamos variables clave
