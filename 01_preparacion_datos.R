@@ -42,8 +42,8 @@ cat("Cargando matriz de dimensiones...\n")
 # Utilizamos locale para detectar y forzar caracteres especiales (como acentos y ñ de Windows)
 matriz <- read_csv("matriz_dimensiones.csv", locale = locale(encoding = "latin1")) %>%
   clean_names() %>%
-  # Forzamos la codificación UTF-8 pura en todas las columnas de texto para que knitr/kable no falle
-  mutate(across(where(is.character), ~ enc2utf8(as.character(.))))
+  # Limpiamos "espacios fantasmas" (trim/squish) y forzamos UTF-8 puro en todas las columnas de texto
+  mutate(across(where(is.character), ~ enc2utf8(stringr::str_squish(as.character(.)))))
 
 # Nota: En esta fase, asumimos que las columnas de las 22 preguntas de la escala Likert
 # tienen nombres específicos. Para el análisis automatizado, será útil tener
