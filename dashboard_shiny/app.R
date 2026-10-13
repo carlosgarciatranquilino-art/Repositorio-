@@ -17,11 +17,25 @@ library(networkD3)
 if(file.exists("../datos_limpios.rds")){
   datos <- readRDS("../datos_limpios.rds")
   matriz <- readRDS("../matriz_dimensiones.rds")
-  matriz_trans <- if(file.exists("../matriz_transversal.csv")) read.csv("../matriz_transversal.csv", stringsAsFactors = FALSE) else data.frame(Pregunta_ID = character(), Categoria = character(), Valor_Transversal = character())
+  if(file.exists("../matriz_transversal.csv")) {
+    matriz_trans <- readr::read_csv("../matriz_transversal.csv", locale = readr::locale(encoding = "latin1"), show_col_types = FALSE)
+    matriz_trans <- as.data.frame(matriz_trans)
+    matriz_trans$Categoria <- enc2utf8(as.character(matriz_trans$Categoria))
+    matriz_trans$Valor_Transversal <- enc2utf8(as.character(matriz_trans$Valor_Transversal))
+  } else {
+    matriz_trans <- data.frame(Pregunta_ID = character(), Categoria = character(), Valor_Transversal = character())
+  }
 } else if (file.exists("datos_limpios.rds")) {
   datos <- readRDS("datos_limpios.rds")
   matriz <- readRDS("matriz_dimensiones.rds")
-  matriz_trans <- if(file.exists("matriz_transversal.csv")) read.csv("matriz_transversal.csv", stringsAsFactors = FALSE) else data.frame(Pregunta_ID = character(), Categoria = character(), Valor_Transversal = character())
+  if(file.exists("matriz_transversal.csv")) {
+    matriz_trans <- readr::read_csv("matriz_transversal.csv", locale = readr::locale(encoding = "latin1"), show_col_types = FALSE)
+    matriz_trans <- as.data.frame(matriz_trans)
+    matriz_trans$Categoria <- enc2utf8(as.character(matriz_trans$Categoria))
+    matriz_trans$Valor_Transversal <- enc2utf8(as.character(matriz_trans$Valor_Transversal))
+  } else {
+    matriz_trans <- data.frame(Pregunta_ID = character(), Categoria = character(), Valor_Transversal = character())
+  }
 } else {
   stop("No se encontraron los datos. Ejecuta la Fase 1 primero.")
 }

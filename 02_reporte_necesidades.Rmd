@@ -58,7 +58,12 @@ if(file.exists("datos_limpios.rds") & file.exists("matriz_dimensiones.rds")){
   matriz <- readRDS("matriz_dimensiones.rds")
 
   if(file.exists("matriz_transversal.csv")) {
-    matriz_trans <- read.csv("matriz_transversal.csv", stringsAsFactors = FALSE)
+    matriz_trans <- readr::read_csv("matriz_transversal.csv", locale = readr::locale(encoding = "latin1"), show_col_types = FALSE)
+    # Convertir explícitamente a data.frame estándar
+    matriz_trans <- as.data.frame(matriz_trans)
+    # Asegurar codificación utf8 para rendering HTML seguro
+    matriz_trans$Categoria <- enc2utf8(as.character(matriz_trans$Categoria))
+    matriz_trans$Valor_Transversal <- enc2utf8(as.character(matriz_trans$Valor_Transversal))
   } else {
     matriz_trans <- data.frame(Pregunta_ID = character(), Categoria = character(), Valor_Transversal = character())
   }
@@ -537,7 +542,7 @@ if("comentarios_finales" %in% names(datos) && exists("frecuencias_sentir") && nr
 
 ```{r transversalidad_inteligente, echo=FALSE, results='asis', warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
 if(nrow(matriz_trans) > 0) {
-  cat("<p>La siguiente sección detalla las necesidades formativas más urgentes (Top 3) desglosadas en su diseño instruccional transversal. Esto permite que una misma intervención atienda el Indicador Principal, ramificándose simultáneamente a múltiples Líneas Temáticas y Atributos de acuerdo con la matriz de la mesa de expertos.</p>\n")
+  cat(enc2utf8("<p>La siguiente sección detalla las necesidades formativas más urgentes (Top 3) desglosadas en su diseño instruccional transversal. Esto permite que una misma intervención atienda el Indicador Principal, ramificándose simultáneamente a múltiples Líneas Temáticas y Atributos de acuerdo con la matriz de la mesa de expertos.</p>\n"))
 
   # Extraer el Top 3 de Indicadores más críticos
   top_3_indicadores <- datos_likert %>%
@@ -561,30 +566,30 @@ if(nrow(matriz_trans) > 0) {
     atributos <- relaciones %>% filter(tolower(Categoria) %in% c("atributo")) %>% pull(Valor_Transversal)
 
     # Construcción de la prosa
-    cat(paste0("\n<div style='background-color: #fcf8e3; padding: 20px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>\n"))
-    cat(paste0("<h4 style='color: #9F2241; margin-top: 0;'>Prioridad de Diseño #", i, ": ", indicador_actual, "</h4>\n"))
-    cat(paste0("<p style='font-size: 16px; margin-bottom: 10px;'><strong>Nivel de Necesidad:</strong> ", promedio_actual, " / 5.0</p>\n"))
+    cat(enc2utf8(paste0("\n<div style='background-color: #fcf8e3; padding: 20px; border-left: 5px solid #9F2241; margin-bottom: 20px;'>\n")))
+    cat(enc2utf8(paste0("<h4 style='color: #9F2241; margin-top: 0;'>Prioridad de Diseño #", i, ": ", indicador_actual, "</h4>\n")))
+    cat(enc2utf8(paste0("<p style='font-size: 16px; margin-bottom: 10px;'><strong>Nivel de Necesidad:</strong> ", promedio_actual, " / 5.0</p>\n")))
 
-    cat(paste0("<p style='font-size: 16px; text-align: justify;'>\n"))
-    cat(paste0("Para resolver esta necesidad crítica, la formación deberá enmarcarse en el eje central de <strong>", dominio_actual, "</strong>. "))
-    cat(paste0("El objetivo de aprendizaje específico deberá centrarse de lleno en <strong>", indicador_actual, "</strong>. "))
+    cat(enc2utf8(paste0("<p style='font-size: 16px; text-align: justify;'>\n")))
+    cat(enc2utf8(paste0("Para resolver esta necesidad crítica, la formación deberá enmarcarse en el eje central de <strong>", dominio_actual, "</strong>. ")))
+    cat(enc2utf8(paste0("El objetivo de aprendizaje específico deberá centrarse de lleno en <strong>", indicador_actual, "</strong>. ")))
 
     if(length(lineas) > 0 || length(atributos) > 0) {
-      cat("Sin embargo, para garantizar un impacto integral, el programa formativo debe tejer de manera transversal los siguientes componentes complementarios: ")
+      cat(enc2utf8("Sin embargo, para garantizar un impacto integral, el programa formativo debe tejer de manera transversal los siguientes componentes complementarios: "))
 
       if(length(lineas) > 0) {
-        cat(paste0("alineándose estratégicamente con las líneas de <em>", paste(lineas, collapse = ", "), "</em>"))
-        if(length(atributos) > 0) cat("; y ") else cat(".")
+        cat(enc2utf8(paste0("alineándose estratégicamente con las líneas de <em>", paste(lineas, collapse = ", "), "</em>")))
+        if(length(atributos) > 0) cat(enc2utf8("; y ")) else cat(enc2utf8("."))
       }
 
       if(length(atributos) > 0) {
-        cat(paste0("fomentando directamente atributos docentes como el <em>", paste(atributos, collapse = ", "), "</em>."))
+        cat(enc2utf8(paste0("fomentando directamente atributos docentes como el <em>", paste(atributos, collapse = ", "), "</em>.")))
       }
     } else {
-      cat("No se registraron cruces transversales adicionales en la matriz de expertos para este rubro.")
+      cat(enc2utf8("No se registraron cruces transversales adicionales en la matriz de expertos para este rubro."))
     }
 
-    cat("</p>\n</div>\n\n")
+    cat(enc2utf8("</p>\n</div>\n\n"))
   }
 } else {
   cat("<p><em>La matriz transversal no fue proporcionada o se encuentra vacía. No es posible generar el análisis ramificado.</em></p>")
