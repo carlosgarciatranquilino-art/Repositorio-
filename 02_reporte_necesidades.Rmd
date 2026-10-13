@@ -526,7 +526,7 @@ if("comentarios_finales" %in% names(datos)) {
 # Separamos el widget html (wordcloud) en un chunk diferente sin results='asis'
 # Quitamos los cat() con HTML raw dentro del chunk normal para evitar que RMarkdown los imprima como texto plano
 if("tematica_prioritaria" %in% names(datos) && exists("frecuencias") && nrow(frecuencias) > 0) {
-  htmltools::tagList(wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9"))
+  wordcloud2(frecuencias, size = 1.0, color = "#9F2241", backgroundColor = "#f9f9f9")
 }
 ```
 
@@ -534,7 +534,7 @@ if("tematica_prioritaria" %in% names(datos) && exists("frecuencias") && nrow(fre
 
 ```{r nube_render_sentir, echo=FALSE, fig.width=10, fig.height=5}
 if("comentarios_finales" %in% names(datos) && exists("frecuencias_sentir") && nrow(frecuencias_sentir) > 0) {
-  htmltools::tagList(wordcloud2(frecuencias_sentir, size = 1.0, color = "#56212F", backgroundColor = "#f9f9f9"))
+  wordcloud2(frecuencias_sentir, size = 1.0, color = "#56212F", backgroundColor = "#f9f9f9")
 }
 ```
 
